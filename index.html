@@ -48,7 +48,6 @@
             transition: all 0.2s ease;
         }
         
-        /* CORREGIDO: Focus con box-shadow en lugar de ring */
         .neto-input:focus {
             outline: none;
             border-color: #f97316;
@@ -63,7 +62,6 @@
             color: #64748b;
         }
         
-        /* Estilos para el modo oscuro de los selects y otros elementos */
         .neto-select {
             background: #0f172a;
             border: 1px solid #334155;
@@ -76,7 +74,6 @@
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
         
-        /* Scrollbar personalizada */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -96,7 +93,6 @@
             background: #ea580c;
         }
         
-        /* Animaciones adicionales */
         .promo-card {
             transition: all 0.2s ease;
         }
@@ -106,7 +102,6 @@
             border-color: #475569;
         }
         
-        /* Mejoras para móviles */
         @media (max-width: 400px) {
             .promo-card {
                 padding: 8px !important;
@@ -175,12 +170,10 @@
             </div>
         </div>
         
-        <!-- Botón rápido de escaneo -->
         <button class="btn btn-orange btn-scan" onclick="window.activarEscaneo()">
             <i class="fas fa-camera"></i> Escanear Código de Barras
         </button>
         
-        <!-- Botón de instalación PWA -->
         <button id="btnInstalarApp" onclick="window.instalarApp()"
             class="btn btn-secondary" style="margin-top: 10px;">
             <i class="fas fa-download"></i> Instalar App
@@ -188,17 +181,15 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- PANTALLA: PROMOCIONES (TU VERSIÓN)        -->
+    <!-- PANTALLA: PROMOCIONES                      -->
     <!-- ========================================== -->
     <section id="screen-promociones" class="screen">
         <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
-        <!-- ===== TU SISTEMA DE PROMOCIONES ===== -->
         <div class="neto-dark rounded-3xl p-5 shadow-2xl space-y-5" style="background: #0f172a; border: 1px solid #1e293b;">
             
-            <!-- Header NETO -->
             <div class="text-center">
                 <div class="inline-flex items-center gap-2 bg-orange-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-2 shadow-md">
                     ⚡ Tiendas NETO Style
@@ -207,14 +198,12 @@
                 <p class="text-xs text-blue-200 mt-1">Generador de Prompts Comercial para Imágenes AI</p>
             </div>
             
-            <!-- 1. Nombre del producto -->
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Nombre del producto *</label>
                 <input type="text" id="prodNombre" placeholder="Ej: Coca-Cola 600ml, Sabritas 3x2, Shampoo Sedal"
                     class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
 
-            <!-- 2. TIPO DE PROMOCIÓN -->
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-2 flex items-center gap-1">
                     <span>🎨</span> <span>Tipo de Promoción / Estilo Visual *</span>
@@ -265,34 +254,29 @@
                 </div>
             </div>
 
-            <!-- 3. Fecha Vencimiento -->
             <div id="campoVencimiento" class="hidden transition-all bg-amber-900/30 p-3 rounded-xl border border-amber-700">
                 <label class="block text-xs font-bold text-amber-400 mb-1">🗓️ Fecha de Vencimiento</label>
                 <input type="date" id="prodVencimiento"
                     class="w-full neto-input rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500">
             </div>
 
-            <!-- Toggle vencimiento -->
             <div class="flex items-center gap-2">
                 <input type="checkbox" id="checkPerecedero" class="w-4 h-4 rounded border-slate-600 text-orange-500 focus:ring-orange-400 bg-slate-700">
                 <label for="checkPerecedero" class="text-xs font-medium text-slate-300 cursor-pointer">¿Tiene fecha de caducidad?</label>
             </div>
 
-            <!-- 4. Precio -->
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Precio o Promoción *</label>
                 <input type="text" id="prodPrecio" placeholder="Ej: $18.00 ó 3x2 en botanas"
                     class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
 
-            <!-- 5. Existencia -->
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Piezas en existencia</label>
                 <input type="number" id="prodExistencia" placeholder="Ej: 24"
                     class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
 
-            <!-- 6. Foto -->
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Foto del producto</label>
                 <div class="relative border-2 border-dashed border-slate-600 rounded-xl p-4 text-center hover:border-orange-500 transition bg-slate-800/50">
@@ -311,14 +295,12 @@
                 </div>
             </div>
 
-            <!-- Botón Generar -->
             <button onclick="window.generarPrompt()"
                 class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition text-sm tracking-wide">
                 ⚡ GENERAR PROMPT PUBLICITARIO
             </button>
         </div>
 
-        <!-- Output Section -->
         <div id="outputSection" class="mt-4 neto-dark rounded-3xl p-5 hidden space-y-3 shadow-2xl" style="background: #0f172a; border: 1px solid #1e293b;">
             <div class="flex justify-between items-center">
                 <h2 class="text-xs font-bold text-orange-400 uppercase tracking-wider">📋 Tu Prompt listo:</h2>
@@ -337,7 +319,6 @@
             </button>
         </div>
 
-        <!-- Lista de promociones guardadas -->
         <div class="card mt-4">
             <div class="card-title">
                 <span><i class="fas fa-history"></i> Promociones Guardadas</span>
@@ -572,17 +553,46 @@
 </div>
 
 <!-- ========================================== -->
-<!-- JAVASCRIPT                                 -->
+<!-- JAVASCRIPT - RUTA FIJA PARA Invetario_neto -->
 <!-- ========================================== -->
-<script src="js/utils/storage.js"></script>
-<script src="js/utils/scanner.js"></script>
-<script src="js/screens/home.js"></script>
-<script src="js/screens/promociones.js"></script>
-<script src="js/screens/caducidades.js"></script>
-<script src="js/screens/ciclicos.js"></script>
-<script src="js/screens/inventario.js"></script>
-<script src="js/screens/visual.js"></script>
-<script src="js/app.js"></script>
+
+<script>
+    // Ruta base fija para GitHub Pages
+    // Tu repositorio se llama: Invetario_neto
+    window.repoPath = '/Invetario_neto';
+    console.log('📁 Repositorio:', window.repoPath);
+    
+    // Función para cargar scripts con la ruta correcta
+    window.loadScript = function(src) {
+        const script = document.createElement('script');
+        script.src = window.repoPath + src;
+        document.body.appendChild(script);
+    };
+</script>
+
+<!-- Cargar todos los scripts con la ruta base -->
+<script>
+    // Lista de scripts a cargar
+    const scripts = [
+        '/js/utils/storage.js',
+        '/js/utils/scanner.js',
+        '/js/screens/home.js',
+        '/js/screens/promociones.js',
+        '/js/screens/caducidades.js',
+        '/js/screens/ciclicos.js',
+        '/js/screens/inventario.js',
+        '/js/screens/visual.js',
+        '/js/app.js'
+    ];
+    
+    // Cargar cada script
+    scripts.forEach(function(src) {
+        const script = document.createElement('script');
+        script.src = window.repoPath + src;
+        document.body.appendChild(script);
+        console.log('✅ Cargando:', script.src);
+    });
+</script>
 
 </body>
 </html>
