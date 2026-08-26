@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NETO Inventario">
     
-    <!-- CSS Principal - Ruta relativa -->
+    <!-- CSS Principal -->
     <link rel="stylesheet" href="./css/styles.css">
     
     <!-- Tailwind CSS -->
@@ -21,15 +21,15 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- QuaggaJS para leer códigos de barras desde imágenes -->
+    <!-- QuaggaJS para leer códigos de barras -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    
+    <!-- PDF.js para procesar archivos PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <style>
         /* Estilos generales */
-        * {
-            box-sizing: border-box;
-        }
-        
+        * { box-sizing: border-box; }
         body {
             background: #0f172a;
             margin: 0;
@@ -37,38 +37,24 @@
             color: #ffffff;
             min-height: 100vh;
         }
-        
-        .neto-dark {
-            background: #0f172a;
-        }
-        
+        .neto-dark { background: #0f172a; }
         .neto-card {
             background: #1e293b;
             border: 1px solid #334155;
         }
-        
         .neto-input {
             background: #0f172a;
             border: 1px solid #334155;
             color: #ffffff;
             transition: all 0.2s ease;
         }
-        
         .neto-input:focus {
             outline: none;
             border-color: #f97316;
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
-        
-        .neto-input:hover {
-            border-color: #475569;
-        }
-        
-        .neto-input::placeholder {
-            color: #94a3b8;
-        }
+        .neto-input::placeholder { color: #94a3b8; }
 
-        /* Estilo especial para el campo de código de barras - TEXTO NEGRO */
         .barcode-input {
             width: 100%;
             padding: 8px 12px;
@@ -92,26 +78,11 @@
             font-weight: 400;
         }
         
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #f97316;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #ea580c;
-        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
 
-        /* Header */
         .header {
             background: #0f172a;
             padding: 16px 20px;
@@ -130,7 +101,6 @@
             margin: 4px 0 0;
         }
 
-        /* Screens */
         .screen {
             display: none;
             padding: 16px;
@@ -138,11 +108,8 @@
             margin: 0 auto;
             padding-bottom: 100px;
         }
-        .screen.active {
-            display: block;
-        }
+        .screen.active { display: block; }
 
-        /* Botones */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -159,50 +126,17 @@
             text-align: center;
             color: #ffffff;
         }
-        .btn:active {
-            transform: scale(0.97);
-        }
-        
-        .btn-primary {
-            background: #1e3a8a;
-            color: #ffffff;
-        }
-        .btn-primary:hover {
-            background: #1e40af;
-        }
-        
-        .btn-orange {
-            background: #f97316;
-            color: #ffffff;
-        }
-        .btn-orange:hover {
-            background: #ea580c;
-        }
-        
-        .btn-success {
-            background: #16a34a;
-            color: #ffffff;
-        }
-        .btn-success:hover {
-            background: #15803d;
-        }
-        
-        .btn-danger {
-            background: #dc2626;
-            color: #ffffff;
-        }
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-        
-        .btn-secondary {
-            background: #334155;
-            color: #ffffff;
-        }
-        .btn-secondary:hover {
-            background: #475569;
-        }
-        
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: #1e3a8a; color: #ffffff; }
+        .btn-primary:hover { background: #1e40af; }
+        .btn-orange { background: #f97316; color: #ffffff; }
+        .btn-orange:hover { background: #ea580c; }
+        .btn-success { background: #16a34a; color: #ffffff; }
+        .btn-success:hover { background: #15803d; }
+        .btn-danger { background: #dc2626; color: #ffffff; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-secondary { background: #334155; color: #ffffff; }
+        .btn-secondary:hover { background: #475569; }
         .btn-back {
             background: transparent;
             color: #ffffff;
@@ -212,70 +146,8 @@
             width: auto;
             margin-bottom: 12px;
         }
-        .btn-back:hover {
-            color: #f97316;
-        }
+        .btn-back:hover { color: #f97316; }
 
-        .btn-scan {
-            margin-top: 16px;
-        }
-
-        /* Menú principal */
-        .main-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .menu-item {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            color: #ffffff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        .menu-item:hover {
-            border-color: #f97316;
-            transform: translateY(-2px);
-        }
-        .menu-item:active {
-            transform: scale(0.97);
-        }
-        .menu-item .icon {
-            font-size: 1.5rem;
-            display: block;
-            margin-bottom: 6px;
-            color: #ffffff;
-        }
-        .menu-item .label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            display: block;
-            color: #ffffff;
-        }
-        .menu-item.full-width {
-            grid-column: 1 / -1;
-        }
-        .menu-item.orange .label {
-            color: #f97316;
-        }
-        .badge-count {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #f97316;
-            color: #ffffff;
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 12px;
-            min-width: 20px;
-        }
-
-        /* Cards */
         .card {
             background: #1e293b;
             border: 1px solid #334155;
@@ -292,10 +164,7 @@
             font-size: 0.875rem;
             margin-bottom: 12px;
         }
-        .card-title span i {
-            margin-right: 8px;
-            color: #ffffff;
-        }
+        .card-title span i { margin-right: 8px; color: #ffffff; }
         .count-badge {
             background: #f97316;
             color: #ffffff;
@@ -312,10 +181,7 @@
             border: 1px solid #334155;
         }
 
-        /* Formularios */
-        .form-group {
-            margin-bottom: 12px;
-        }
+        .form-group { margin-bottom: 12px; }
         .form-group label {
             display: block;
             color: #ffffff;
@@ -323,12 +189,8 @@
             font-weight: 600;
             margin-bottom: 4px;
         }
-        .form-group label i {
-            margin-right: 6px;
-            color: #ffffff;
-        }
-        .form-group input,
-        .form-group select {
+        .form-group label i { margin-right: 6px; color: #ffffff; }
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px 14px;
             border-radius: 10px;
@@ -338,21 +200,14 @@
             font-size: 0.875rem;
             transition: all 0.2s ease;
         }
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #f97316;
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
-        .form-group input::placeholder {
-            color: #94a3b8;
-        }
-        .form-group select option {
-            background: #1e293b;
-            color: #ffffff;
-        }
+        .form-group input::placeholder { color: #94a3b8; }
+        .form-group select option { background: #1e293b; color: #ffffff; }
 
-        /* Scan area */
         .scan-area {
             background: #0f172a;
             border: 2px dashed #334155;
@@ -363,9 +218,7 @@
             transition: all 0.2s ease;
             margin-bottom: 12px;
         }
-        .scan-area:hover {
-            border-color: #f97316;
-        }
+        .scan-area:hover { border-color: #f97316; }
         .scan-area-orange {
             border-color: #f97316;
             background: #1e293b;
@@ -382,7 +235,6 @@
             display: block;
         }
 
-        /* Scrollable lists */
         .scrollable {
             max-height: 300px;
             overflow-y: auto;
@@ -394,7 +246,6 @@
             font-size: 0.8rem;
         }
 
-        /* Items en listas */
         .list-item {
             background: #0f172a;
             border: 1px solid #334155;
@@ -407,21 +258,10 @@
             color: #ffffff;
             font-size: 0.8rem;
         }
-        .list-item .item-info {
-            flex: 1;
-        }
-        .list-item .item-name {
-            font-weight: 600;
-            color: #ffffff;
-        }
-        .list-item .item-detail {
-            color: #94a3b8;
-            font-size: 0.7rem;
-        }
-        .list-item .item-actions {
-            display: flex;
-            gap: 6px;
-        }
+        .list-item .item-info { flex: 1; }
+        .list-item .item-name { font-weight: 600; color: #ffffff; }
+        .list-item .item-detail { color: #94a3b8; font-size: 0.7rem; }
+        .list-item .item-actions { display: flex; gap: 6px; }
         .list-item .item-actions button {
             background: transparent;
             border: none;
@@ -431,18 +271,10 @@
             border-radius: 6px;
             transition: all 0.2s ease;
         }
-        .list-item .item-actions button:hover {
-            background: #334155;
-            color: #ffffff;
-        }
-        .list-item .item-actions .delete-btn:hover {
-            color: #ef4444;
-        }
+        .list-item .item-actions button:hover { background: #334155; color: #ffffff; }
+        .list-item .item-actions .delete-btn:hover { color: #ef4444; }
 
-        /* Categorías en inventario */
-        .categoria-section {
-            margin-bottom: 16px;
-        }
+        .categoria-section { margin-bottom: 16px; }
         .categoria-title {
             color: #f97316;
             font-weight: 700;
@@ -464,220 +296,49 @@
             color: #94a3b8;
         }
 
-        /* Stats grid */
-        .stats-grid {
+        .main-menu {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
-        .stat-card {
-            background: #0f172a;
-            border-radius: 12px;
-            padding: 14px;
-            text-align: center;
-            border: 1px solid #334155;
-        }
-        .stat-card .stat-icon {
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-            color: #ffffff;
-        }
-        .stat-card .stat-number {
-            font-size: 1.3rem;
-            font-weight: 900;
-            color: #ffffff;
-        }
-        .stat-card .stat-label {
-            font-size: 0.6rem;
-            color: #94a3b8;
-        }
-        .stat-card.blue .stat-icon { color: #ffffff; }
-        .stat-card.orange .stat-icon { color: #f97316; }
-        .stat-card.green .stat-icon { color: #4ade80; }
-
-        /* Divider */
-        .divider {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 0.7rem;
-            padding: 8px 0;
-        }
-
-        /* Toast */
-        #toastContainer {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            width: 90%;
-            max-width: 400px;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            opacity: 0;
-        }
-        #toastContainer.show {
-            opacity: 1;
-        }
-        #toastContent {
-            background: #1e293b;
-            border: 1px solid #f97316;
-            border-radius: 12px;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-        }
-        #toastIcon {
-            font-size: 1.2rem;
-            color: #ffffff;
-        }
-        #toastMessage {
-            color: #ffffff;
-            font-size: 0.8rem;
-            flex: 1;
-        }
-
-        /* Hidden */
-        .hidden {
-            display: none !important;
-        }
-
-        /* Input file */
-        input[type="file"] {
-            color: #94a3b8;
-            font-size: 0.7rem;
-            margin: 8px 0;
-        }
-        input[type="file"]::file-selector-button {
-            background: #334155;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 8px;
-            color: #ffffff;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-        input[type="file"]::file-selector-button:hover {
-            background: #475569;
-        }
-
-        /* Producto item en inventario */
-        .producto-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: #0f172a;
-            border-radius: 8px;
-            margin-bottom: 4px;
-            border-left: 3px solid transparent;
-        }
-        .producto-item .nombre {
-            color: #ffffff;
-            font-size: 0.78rem;
-            font-weight: 500;
-        }
-        .producto-item .cantidad {
-            color: #94a3b8;
-            font-size: 0.7rem;
-        }
-        .producto-item .input-cantidad {
-            width: 60px;
-            padding: 4px 8px;
-            border-radius: 6px;
+        .menu-item {
             background: #1e293b;
             border: 1px solid #334155;
-            color: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
             text-align: center;
-            font-size: 0.8rem;
-        }
-        .producto-item .input-cantidad:focus {
-            outline: none;
-            border-color: #f97316;
-        }
-
-        /* Botón finalizar */
-        .btn-finalizar {
-            margin-top: 16px;
-            background: #16a34a;
             color: #ffffff;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            border: none;
-            width: 100%;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 0.9rem;
+            position: relative;
         }
-        .btn-finalizar:hover {
-            background: #15803d;
-        }
-        .btn-finalizar:active {
-            transform: scale(0.97);
-        }
-
-        /* Login */
-        #screen-login {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        #screen-login.active {
-            display: flex;
-        }
-        .login-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 24px;
-            padding: 32px 24px;
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-        }
-        .login-card .logo {
-            font-size: 3rem;
-            margin-bottom: 8px;
-        }
-        .login-card h2 {
-            color: #f97316;
+        .menu-item:hover { border-color: #f97316; transform: translateY(-2px); }
+        .menu-item:active { transform: scale(0.97); }
+        .menu-item .icon {
             font-size: 1.5rem;
-            font-weight: 900;
-            margin: 0 0 4px;
-        }
-        .login-card p {
-            color: #94a3b8;
-            font-size: 0.8rem;
-            margin: 0 0 24px;
-        }
-        .login-card .form-group {
-            text-align: left;
-        }
-        .login-card .form-group label {
-            color: #ffffff;
-        }
-        .login-card .form-group input {
-            color: #ffffff;
-        }
-        .login-card .form-group input::placeholder {
-            color: #94a3b8;
-        }
-        .login-card .btn {
-            margin-top: 8px;
-        }
-        .login-error {
-            color: #ef4444;
-            font-size: 0.75rem;
-            margin-top: 8px;
-            display: none;
-        }
-        .login-error.show {
             display: block;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+        .menu-item .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: block;
+            color: #ffffff;
+        }
+        .menu-item.full-width { grid-column: 1 / -1; }
+        .menu-item.orange .label { color: #f97316; }
+        .badge-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #f97316;
+            color: #ffffff;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 20px;
         }
 
         .user-welcome {
@@ -692,7 +353,6 @@
             text-align: center;
         }
 
-        /* Ciclico - tabs */
         .tab-container {
             display: flex;
             gap: 8px;
@@ -716,69 +376,82 @@
             color: #ffffff;
             border-color: #f97316;
         }
-        .tab-btn:hover:not(.active) {
-            border-color: #f97316;
-            color: #ffffff;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        .tab-btn:hover:not(.active) { border-color: #f97316; color: #ffffff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        /* Estilos para promociones */
-        .promo-card {
-            transition: all 0.2s ease;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
         }
-        .promo-card.selected {
-            border-color: #f97316 !important;
-            background-color: #1e293b !important;
-            box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
-            transform: translateY(-2px);
-            border-width: 2px !important;
-        }
-        .promo-card:hover {
-            transform: translateY(-1px);
-            border-color: #475569;
-        }
-
-        /* Estilo para la vista previa de la imagen escaneada */
-        .scan-preview {
-            margin-top: 8px;
-            padding: 8px;
+        .stat-card {
             background: #0f172a;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            display: none;
-        }
-        .scan-preview img {
-            max-width: 100%;
-            max-height: 150px;
-            border-radius: 6px;
-            margin: 0 auto;
-            display: block;
-        }
-        .scan-preview .codigo-detectado {
-            color: #4ade80;
-            font-size: 0.8rem;
-            font-weight: 700;
+            border-radius: 12px;
+            padding: 14px;
             text-align: center;
-            margin-top: 6px;
-            padding: 4px;
-            background: #0f172a;
-            border-radius: 4px;
+            border: 1px solid #334155;
         }
-        .scan-preview .codigo-detectado span {
-            color: #ffffff;
-            background: #1e293b;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 1rem;
-        }
+        .stat-card .stat-icon { font-size: 1.2rem; margin-bottom: 4px; color: #ffffff; }
+        .stat-card .stat-number { font-size: 1.3rem; font-weight: 900; color: #ffffff; }
+        .stat-card .stat-label { font-size: 0.6rem; color: #94a3b8; }
+        .stat-card.blue .stat-icon { color: #ffffff; }
+        .stat-card.orange .stat-icon { color: #f97316; }
+        .stat-card.green .stat-icon { color: #4ade80; }
 
-        /* Estilo para el resultado de procesamiento de imágenes */
+        .btn-finalizar {
+            margin-top: 16px;
+            background: #16a34a;
+            color: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .btn-finalizar:hover { background: #15803d; }
+        .btn-finalizar:active { transform: scale(0.97); }
+
+        #screen-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #screen-login.active { display: flex; }
+        .login-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 24px;
+            padding: 32px 24px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+        .login-card .logo { font-size: 3rem; margin-bottom: 8px; }
+        .login-card h2 {
+            color: #f97316;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 0 0 4px;
+        }
+        .login-card p { color: #94a3b8; font-size: 0.8rem; margin: 0 0 24px; }
+        .login-card .form-group { text-align: left; }
+        .login-card .form-group label { color: #ffffff; }
+        .login-card .form-group input { color: #ffffff; }
+        .login-card .form-group input::placeholder { color: #94a3b8; }
+        .login-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            display: none;
+        }
+        .login-error.show { display: block; }
+
         .img-result-item {
             display: flex;
             align-items: center;
@@ -796,18 +469,9 @@
             padding: 2px 10px;
             border-radius: 12px;
         }
-        .img-result-item .status.success {
-            color: #4ade80;
-            background: #064e3b;
-        }
-        .img-result-item .status.error {
-            color: #ef4444;
-            background: #7f1d1d;
-        }
-        .img-result-item .status.pending {
-            color: #f97316;
-            background: #451a03;
-        }
+        .img-result-item .status.success { color: #4ade80; background: #064e3b; }
+        .img-result-item .status.error { color: #ef4444; background: #7f1d1d; }
+        .img-result-item .status.pending { color: #f97316; background: #451a03; }
         .img-result-item .codigo-leido {
             color: #ffffff;
             font-family: monospace;
@@ -817,39 +481,84 @@
             border-radius: 4px;
         }
 
-        /* Responsive */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        #toastContainer.show { opacity: 1; }
+        #toastContent {
+            background: #1e293b;
+            border: 1px solid #f97316;
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        #toastIcon { font-size: 1.2rem; color: #ffffff; }
+        #toastMessage { color: #ffffff; font-size: 0.8rem; flex: 1; }
+
+        .hidden { display: none !important; }
+
+        /* Estilos para la vista de PDF */
+        .pdf-preview {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #334155;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .pdf-preview .page-thumb {
+            display: inline-block;
+            margin: 4px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+        }
+        .pdf-preview .page-thumb img {
+            border-radius: 4px;
+            max-width: 100px;
+            max-height: 100px;
+        }
+        .progress-bar-container {
+            background: #1e293b;
+            border-radius: 8px;
+            height: 8px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: #f97316;
+            height: 100%;
+            width: 0%;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
         @media (max-width: 400px) {
-            .main-menu {
-                gap: 8px;
-            }
-            .menu-item {
-                padding: 12px;
-            }
-            .menu-item .icon {
-                font-size: 1.2rem;
-            }
-            .menu-item .label {
-                font-size: 0.6rem;
-            }
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
-            }
-            .stat-card {
-                padding: 10px;
-            }
-            .stat-card .stat-number {
-                font-size: 1rem;
-            }
-            .login-card {
-                padding: 24px 16px;
-            }
-            .img-result-item {
-                flex-wrap: wrap;
-            }
-            .img-result-item .codigo-leido {
-                font-size: 0.6rem;
-            }
+            .main-menu { gap: 8px; }
+            .menu-item { padding: 12px; }
+            .menu-item .icon { font-size: 1.2rem; }
+            .menu-item .label { font-size: 0.6rem; }
+            .stats-grid { gap: 6px; }
+            .stat-card { padding: 10px; }
+            .stat-card .stat-number { font-size: 1rem; }
+            .login-card { padding: 24px 16px; }
         }
     </style>
 </head>
@@ -1072,8 +781,7 @@
                 </button>
             </div>
             
-            <textarea id="promptResult" rows="7" readonly
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
+            <textarea id="promptResult" rows="7" readonly                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
 
             <button onclick="window.enviarWhatsApp()"
                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
@@ -1113,7 +821,6 @@
                 <input type="text" id="cad-codigo" placeholder="Código detectado automáticamente" class="barcode-input" readonly />
             </div>
             
-            <!-- Vista previa de la imagen escaneada -->
             <div id="scanPreview" class="scan-preview">
                 <img id="previewImage" src="" alt="Código escaneado">
                 <div class="codigo-detectado">📷 Código detectado: <span id="detectedCode">---</span></div>
@@ -1160,13 +867,16 @@
                 <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
             </div>
             
-            <!-- Tabs: Manual y Cíclico -->
+            <!-- Tabs: Manual, Cíclico (imágenes) y PDF -->
             <div class="tab-container">
                 <button class="tab-btn active" onclick="window.cambiarTabCiclico('manual', this)">
                     <i class="fas fa-pen"></i> Manual
                 </button>
                 <button class="tab-btn" onclick="window.cambiarTabCiclico('ciclico', this)">
-                    <i class="fas fa-image"></i> Cíclico
+                    <i class="fas fa-image"></i> Imágenes
+                </button>
+                <button class="tab-btn" onclick="window.cambiarTabCiclico('pdf', this)">
+                    <i class="fas fa-file-pdf"></i> PDF
                 </button>
             </div>
             
@@ -1248,7 +958,7 @@
             <div id="tab-ciclico" class="tab-content">
                 <div class="scan-area scan-area-orange">
                     <i class="fas fa-images scan-icon"></i>
-                    <span class="scan-hint">Sube foto del sistema para detectar códigos</span>
+                    <span class="scan-hint">Sube fotos para detectar códigos de barras</span>
                     <input type="file" accept="image/*" multiple id="ciclico-imagenes" />
                     <button class="btn btn-orange" onclick="window.procesarImagenesCiclico()" style="margin-top:8px;">
                         <i class="fas fa-file-image"></i> Procesar Imágenes
@@ -1257,6 +967,29 @@
                 
                 <div id="ciclico-imagen-resultados" class="scrollable" style="max-height:200px; margin-top:8px;">
                     <p class="empty-message">Las imágenes procesadas aparecerán aquí</p>
+                </div>
+            </div>
+            
+            <!-- Tab PDF (NUEVO) -->
+            <div id="tab-pdf" class="tab-content">
+                <div class="scan-area scan-area-orange">
+                    <i class="fas fa-file-pdf scan-icon"></i>
+                    <span class="scan-hint">Sube un archivo PDF con códigos de barras</span>
+                    <input type="file" accept=".pdf" id="ciclico-pdf" />
+                    <button class="btn btn-orange" onclick="window.procesarPDFCiclico()" style="margin-top:8px;">
+                        <i class="fas fa-file-pdf"></i> Procesar PDF
+                    </button>
+                </div>
+                
+                <div id="ciclico-pdf-progreso" style="display:none;">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="pdfProgressBar"></div>
+                    </div>
+                    <div class="progress-text" id="pdfProgressText">Procesando páginas...</div>
+                </div>
+                
+                <div id="ciclico-pdf-resultados" class="scrollable" style="max-height:200px; margin-top:8px;">
+                    <p class="empty-message">Los códigos extraídos del PDF aparecerán aquí</p>
                 </div>
             </div>
         </div>
@@ -1366,7 +1099,6 @@
             </button>
         </div>
 
-        <!-- Productos agrupados por categoría -->
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-list"></i> Productos en Inventario</span>
@@ -1436,7 +1168,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- JAVASCRIPT - TODO EN UN SOLO ARCHIVO      -->
+<!-- JAVASCRIPT - TODAS LAS FUNCIONES          -->
 <!-- ========================================== -->
 <script>
 // ============================================
@@ -1993,7 +1725,7 @@ window.renderizarCiclicos = function() {
         html += '<div class="list-item">';
         html += '  <div class="item-info">';
         html += '    <div class="item-name">' + p.nombre + '</div>';
-        html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 🏷️ ' + (p.categoria || 'Sin categoría') + '</div>';
+        html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 🏷️ ' + (p.categoria || 'Sin categoría') + ' | 🔢 ' + p.codigo + '</div>';
         html += '  </div>';
         html += '  <div class="item-actions">';
         html += '    <button onclick="window.eliminarCiclico(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
@@ -2047,6 +1779,9 @@ window.guardarConteoCiclico = function() {
     window.mostrarToast('✅ Conteo cíclico guardado correctamente', '✅');
 };
 
+// ============================================
+// PROCESAR IMÁGENES PARA CICLICOS
+// ============================================
 window.procesarImagenesCiclico = function() {
     var input = document.getElementById('ciclico-imagenes');
     var files = input.files;
@@ -2085,16 +1820,20 @@ window.procesarImagenesCiclico = function() {
                         statusEl.textContent = '✅ ' + codigo;
                         statusEl.className = 'status success';
                         
-                        // Agregar el código a la lista de detectados
                         codigosDetectados.push(codigo);
                         
-                        // Mostrar el código en el item
                         var codigoSpan = document.createElement('span');
                         codigoSpan.className = 'codigo-leido';
                         codigoSpan.textContent = '🔢 ' + codigo;
                         itemEl.appendChild(codigoSpan);
                         
-                        // Agregar a productos detectados (solo si no está duplicado)
+                        // Buscar en inventario para obtener nombre
+                        var producto = window.datos.inventario.find(function(p) {
+                            return p.codigo === codigo;
+                        });
+                        var nombre = producto ? producto.nombre : 'Producto ' + codigo;
+                        var categoria = producto ? producto.categoria : 'Otros';
+                        
                         var existe = window.datos.ciclicos.some(function(p) {
                             return p.codigo === codigo;
                         });
@@ -2102,8 +1841,8 @@ window.procesarImagenesCiclico = function() {
                             window.datos.ciclicos.push({
                                 id: Date.now(),
                                 codigo: codigo,
-                                nombre: 'Producto ' + codigo,
-                                categoria: 'Otros',
+                                nombre: nombre,
+                                categoria: categoria,
                                 cantidad: 1
                             });
                         }
@@ -2128,6 +1867,155 @@ window.procesarImagenesCiclico = function() {
     
     container.innerHTML = html;
     window.mostrarToast('📷 Procesando ' + files.length + ' imagen(es)...', '📷');
+};
+
+// ============================================
+// PROCESAR PDF PARA CICLICOS (NUEVO)
+// ============================================
+window.procesarPDFCiclico = function() {
+    var input = document.getElementById('ciclico-pdf');
+    var file = input.files[0];
+    var container = document.getElementById('ciclico-pdf-resultados');
+    var progressContainer = document.getElementById('ciclico-pdf-progreso');
+    var progressBar = document.getElementById('pdfProgressBar');
+    var progressText = document.getElementById('pdfProgressText');
+    
+    if (!file) {
+        window.mostrarToast('⚠️ Selecciona un archivo PDF', '⚠️');
+        return;
+    }
+    
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressText.textContent = '📄 Cargando PDF...';
+    container.innerHTML = '<p class="empty-message">⏳ Procesando archivo PDF...</p>';
+    
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var pdfData = new Uint8Array(e.target.result);
+        
+        // Configurar PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
+            var totalPages = pdf.numPages;
+            progressText.textContent = '📄 Procesando ' + totalPages + ' páginas...';
+            
+            var html = '';
+            var codigosDetectados = [];
+            var paginasProcesadas = 0;
+            
+            // Función para procesar cada página
+            function procesarPagina(numPagina) {
+                pdf.getPage(numPagina).then(function(page) {
+                    var viewport = page.getViewport({scale: 1.5});
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    
+                    page.render(renderContext).promise.then(function() {
+                        var imageDataURL = canvas.toDataURL('image/png');
+                        
+                        // Leer código de barras de la imagen
+                        window.leerCodigoBarras(imageDataURL, function(error, codigo) {
+                            var statusText = '';
+                            var statusClass = '';
+                            
+                            if (error) {
+                                statusText = '❌ No detectado';
+                                statusClass = 'status error';
+                            } else {
+                                statusText = '✅ ' + codigo;
+                                statusClass = 'status success';
+                                codigosDetectados.push(codigo);
+                                
+                                // Buscar en inventario
+                                var producto = window.datos.inventario.find(function(p) {
+                                    return p.codigo === codigo;
+                                });
+                                var nombre = producto ? producto.nombre : 'Producto ' + codigo;
+                                var categoria = producto ? producto.categoria : 'Otros';
+                                
+                                var existe = window.datos.ciclicos.some(function(p) {
+                                    return p.codigo === codigo;
+                                });
+                                if (!existe) {
+                                    window.datos.ciclicos.push({
+                                        id: Date.now(),
+                                        codigo: codigo,
+                                        nombre: nombre,
+                                        categoria: categoria,
+                                        cantidad: 1,
+                                        origen: 'PDF'
+                                    });
+                                }
+                            }
+                            
+                            html += '<div class="img-result-item">';
+                            html += '  <span style="color:#ffffff; font-size:0.75rem; font-weight:600;">📄 Pág ' + numPagina + '</span>';
+                            html += '  <span style="color:#94a3b8; font-size:0.65rem; flex:1;">' + (codigo || '---') + '</span>';
+                            html += '  <span class="' + statusClass + '">' + statusText + '</span>';
+                            html += '</div>';
+                            
+                            paginasProcesadas++;
+                            var progreso = Math.round((paginasProcesadas / totalPages) * 100);
+                            progressBar.style.width = progreso + '%';
+                            progressText.textContent = '📄 Procesando página ' + paginasProcesadas + ' de ' + totalPages + '...';
+                            
+                            // Actualizar el contenedor con los resultados parciales
+                            container.innerHTML = html;
+                            
+                            // Si es la última página, finalizar
+                            if (paginasProcesadas === totalPages) {
+                                window.Storage.set('ciclicos', window.datos.ciclicos);
+                                window.renderizarCiclicos();
+                                progressText.textContent = '✅ Procesamiento completado. ' + codigosDetectados.length + ' códigos detectados.';
+                                
+                                if (codigosDetectados.length > 0) {
+                                    window.mostrarToast('✅ Se detectaron ' + codigosDetectados.length + ' códigos del PDF', '✅');
+                                } else {
+                                    window.mostrarToast('⚠️ No se detectaron códigos en el PDF', '⚠️');
+                                }
+                            }
+                        });
+                    }).catch(function(err) {
+                        console.error('Error renderizando página:', err);
+                        paginasProcesadas++;
+                        if (paginasProcesadas === totalPages) {
+                            progressText.textContent = '⚠️ Procesamiento completado con errores.';
+                            window.mostrarToast('⚠️ Error al procesar algunas páginas', '⚠️');
+                        }
+                    });
+                }).catch(function(err) {
+                    console.error('Error obteniendo página:', err);
+                    paginasProcesadas++;
+                    if (paginasProcesadas === totalPages) {
+                        progressText.textContent = '⚠️ Procesamiento completado con errores.';
+                        window.mostrarToast('⚠️ Error al procesar algunas páginas', '⚠️');
+                    }
+                });
+            }
+            
+            // Procesar todas las páginas
+            for (var i = 1; i <= totalPages; i++) {
+                procesarPagina(i);
+            }
+            
+        }).catch(function(err) {
+            console.error('Error cargando PDF:', err);
+            progressText.textContent = '❌ Error al cargar el PDF';
+            container.innerHTML = '<p class="empty-message">❌ Error al procesar el PDF: ' + err.message + '</p>';
+            window.mostrarToast('❌ Error al cargar el PDF', '❌');
+        });
+    };
+    
+    reader.readAsArrayBuffer(file);
 };
 
 // ============================================
@@ -2388,6 +2276,11 @@ window.activarEscaneo = function() {
                             window.mostrarToast('❌ ' + error, '❌');
                         } else {
                             window.mostrarToast('✅ Código detectado: ' + codigo, '✅');
+                            // Mostrar el código en el input de inventario si está visible
+                            var invInput = document.getElementById('inv-codigo');
+                            if (invInput && document.getElementById('screen-inventario').classList.contains('active')) {
+                                invInput.value = codigo;
+                            }
                         }
                     });
                 };
