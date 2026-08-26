@@ -778,6 +778,45 @@
             font-size: 1rem;
         }
 
+        /* Estilo para el resultado de procesamiento de imágenes */
+        .img-result-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border: 1px solid #334155;
+        }
+        .img-result-item .status {
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: auto;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .img-result-item .status.success {
+            color: #4ade80;
+            background: #064e3b;
+        }
+        .img-result-item .status.error {
+            color: #ef4444;
+            background: #7f1d1d;
+        }
+        .img-result-item .status.pending {
+            color: #f97316;
+            background: #451a03;
+        }
+        .img-result-item .codigo-leido {
+            color: #ffffff;
+            font-family: monospace;
+            font-size: 0.75rem;
+            background: #1e293b;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
         /* Responsive */
         @media (max-width: 400px) {
             .main-menu {
@@ -804,6 +843,12 @@
             }
             .login-card {
                 padding: 24px 16px;
+            }
+            .img-result-item {
+                flex-wrap: wrap;
+            }
+            .img-result-item .codigo-leido {
+                font-size: 0.6rem;
             }
         }
     </style>
@@ -1428,13 +1473,11 @@ window.mostrarToast = function(mensaje, icono = 'ℹ️') {
 // FUNCIÓN PARA LEER CÓDIGO DE BARRAS CON QUAGGA
 // ============================================
 window.leerCodigoBarras = function(imagenDataURL, callback) {
-    // Crear un elemento imagen
     var img = new Image();
     img.onload = function() {
-        // Usar Quagga para decodificar
         Quagga.decodeSingle({
             src: imagenDataURL,
-            numOfWorkers: 0,  // Necesario para que funcione en algunos navegadores
+            numOfWorkers: 0,
             inputStream: {
                 size: 800,
                 singleChannel: false
@@ -1730,7 +1773,6 @@ window.buscarProductoPorCodigo = function(codigo) {
 };
 
 window.activarEscaneoParaCaducidad = function() {
-    // Crear un input para seleccionar imagen
     var input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -1744,7 +1786,6 @@ window.activarEscaneoParaCaducidad = function() {
             reader.onload = function(ev) {
                 var imageDataURL = ev.target.result;
                 
-                // Mostrar la imagen en la vista previa
                 var preview = document.getElementById('scanPreview');
                 var previewImg = document.getElementById('previewImage');
                 previewImg.src = imageDataURL;
@@ -1752,18 +1793,14 @@ window.activarEscaneoParaCaducidad = function() {
                 
                 window.mostrarToast('📷 Procesando imagen...', '📷');
                 
-                // Leer el código de barras con Quagga
                 window.leerCodigoBarras(imageDataURL, function(error, codigo) {
                     if (error) {
                         window.mostrarToast('❌ ' + error, '❌');
                         document.getElementById('detectedCode').textContent = 'No detectado';
                     } else {
-                        // Colocar el código en el campo
                         document.getElementById('cad-codigo').value = codigo;
                         document.getElementById('detectedCode').textContent = codigo;
                         window.mostrarToast('✅ Código detectado: ' + codigo, '✅');
-                        
-                        // Buscar el producto automáticamente
                         window.buscarProductoPorCodigo(codigo);
                     }
                 });
@@ -1805,7 +1842,6 @@ window.guardarCaducidad = function() {
     document.getElementById('cad-fecha').value = '';
     document.getElementById('cad-cantidad').value = '1';
     
-    // Ocultar preview
     document.getElementById('scanPreview').style.display = 'none';
     document.getElementById('previewImage').src = '';
     document.getElementById('detectedCode').textContent = '---';
@@ -2023,44 +2059,66 @@ window.procesarImagenesCiclico = function() {
     
     var html = '';
     var procesadas = 0;
+    var codigosDetectados = [];
     
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
         var url = URL.createObjectURL(file);
         
-        html += '<div style="display:flex; align-items:center; gap:10px; padding:8px; background:#0f172a; border-radius:8px; margin-bottom:4px; border:1px solid #334155;">';
-        html += '  <img src="' + url + '" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">';
-        html += '  <span style="color:#ffffff; font-size:0.75rem;">' + file.name + '</span>';
-        html += '  <span style="color:#f97316; font-size:0.65rem; margin-left:auto;" id="status-' + i + '">⏳ Procesando...</span>';
+        html += '<div class="img-result-item" id="img-item-' + i + '">';
+        html += '  <img src="' + url + '" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">';
+        html += '  <span style="color:#ffffff; font-size:0.75rem; flex:1;">' + file.name + '</span>';
+        html += '  <span class="status pending" id="status-' + i + '">⏳ Procesando...</span>';
         html += '</div>';
         
-        // Procesar cada imagen con Quagga
         var reader = new FileReader();
         reader.onload = (function(index) {
             return function(ev) {
                 window.leerCodigoBarras(ev.target.result, function(error, codigo) {
                     var statusEl = document.getElementById('status-' + index);
+                    var itemEl = document.getElementById('img-item-' + index);
+                    
                     if (error) {
                         statusEl.textContent = '❌ No detectado';
-                        statusEl.style.color = '#ef4444';
+                        statusEl.className = 'status error';
                     } else {
                         statusEl.textContent = '✅ ' + codigo;
-                        statusEl.style.color = '#4ade80';
+                        statusEl.className = 'status success';
                         
-                        // Agregar al listado de productos detectados
-                        window.datos.ciclicos.push({
-                            id: Date.now(),
-                            codigo: codigo,
-                            nombre: 'Producto ' + codigo,
-                            categoria: 'Otros',
-                            cantidad: 1
+                        // Agregar el código a la lista de detectados
+                        codigosDetectados.push(codigo);
+                        
+                        // Mostrar el código en el item
+                        var codigoSpan = document.createElement('span');
+                        codigoSpan.className = 'codigo-leido';
+                        codigoSpan.textContent = '🔢 ' + codigo;
+                        itemEl.appendChild(codigoSpan);
+                        
+                        // Agregar a productos detectados (solo si no está duplicado)
+                        var existe = window.datos.ciclicos.some(function(p) {
+                            return p.codigo === codigo;
                         });
+                        if (!existe) {
+                            window.datos.ciclicos.push({
+                                id: Date.now(),
+                                codigo: codigo,
+                                nombre: 'Producto ' + codigo,
+                                categoria: 'Otros',
+                                cantidad: 1
+                            });
+                        }
                     }
+                    
                     procesadas++;
                     if (procesadas === files.length) {
                         window.Storage.set('ciclicos', window.datos.ciclicos);
                         window.renderizarCiclicos();
-                        window.mostrarToast('✅ Procesamiento completado', '✅');
+                        
+                        if (codigosDetectados.length > 0) {
+                            window.mostrarToast('✅ Se detectaron ' + codigosDetectados.length + ' códigos', '✅');
+                        } else {
+                            window.mostrarToast('⚠️ No se detectaron códigos en las imágenes', '⚠️');
+                        }
                     }
                 });
             };
