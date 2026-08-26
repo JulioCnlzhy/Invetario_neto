@@ -27,6 +27,9 @@
     <!-- PDF.js para procesar archivos PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
+    <!-- Tesseract.js para OCR (lectura de texto) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    
     <style>
         /* Estilos generales */
         * { box-sizing: border-box; }
@@ -147,6 +150,8 @@
             margin-bottom: 12px;
         }
         .btn-back:hover { color: #f97316; }
+        .btn-purple { background: #7c3aed; color: #ffffff; }
+        .btn-purple:hover { background: #6d28d9; }
 
         .card {
             background: #1e293b;
@@ -222,6 +227,10 @@
         .scan-area-orange {
             border-color: #f97316;
             background: #1e293b;
+        }
+        .scan-area-purple {
+            border-color: #7c3aed;
+            background: #1e1b2b;
         }
         .scan-icon {
             font-size: 1.5rem;
@@ -357,6 +366,7 @@
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             flex: 1;
@@ -366,10 +376,11 @@
             background: #0f172a;
             color: #94a3b8;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
+            min-width: 60px;
         }
         .tab-btn.active {
             background: #f97316;
@@ -398,6 +409,7 @@
         .stat-card.blue .stat-icon { color: #ffffff; }
         .stat-card.orange .stat-icon { color: #f97316; }
         .stat-card.green .stat-icon { color: #4ade80; }
+        .stat-card.purple .stat-icon { color: #a78bfa; }
 
         .btn-finalizar {
             margin-top: 16px;
@@ -461,6 +473,7 @@
             border-radius: 8px;
             margin-bottom: 4px;
             border: 1px solid #334155;
+            flex-wrap: wrap;
         }
         .img-result-item .status {
             font-size: 0.65rem;
@@ -475,10 +488,16 @@
         .img-result-item .codigo-leido {
             color: #ffffff;
             font-family: monospace;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             background: #1e293b;
             padding: 2px 8px;
             border-radius: 4px;
+        }
+        .img-result-item .producto-nombre {
+            color: #4ade80;
+            font-size: 0.7rem;
+            flex: 1;
+            min-width: 100px;
         }
 
         #toastContainer {
@@ -509,27 +528,6 @@
 
         .hidden { display: none !important; }
 
-        /* Estilos para la vista de PDF */
-        .pdf-preview {
-            background: #0f172a;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 8px;
-            border: 1px solid #334155;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .pdf-preview .page-thumb {
-            display: inline-block;
-            margin: 4px;
-            border-radius: 4px;
-            border: 1px solid #334155;
-        }
-        .pdf-preview .page-thumb img {
-            border-radius: 4px;
-            max-width: 100px;
-            max-height: 100px;
-        }
         .progress-bar-container {
             background: #1e293b;
             border-radius: 8px;
@@ -550,6 +548,60 @@
             text-align: center;
         }
 
+        .producto-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border-left: 3px solid transparent;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .producto-item .nombre {
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 500;
+            flex: 1;
+        }
+        .producto-item .cantidad {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+        .producto-item .input-cantidad {
+            width: 60px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #ffffff;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .producto-item .input-cantidad:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+
+        .resultado-ocr {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-left: 3px solid #7c3aed;
+        }
+        .resultado-ocr .texto-extraido {
+            color: #94a3b8;
+            font-size: 0.65rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
         @media (max-width: 400px) {
             .main-menu { gap: 8px; }
             .menu-item { padding: 12px; }
@@ -559,6 +611,9 @@
             .stat-card { padding: 10px; }
             .stat-card .stat-number { font-size: 1rem; }
             .login-card { padding: 24px 16px; }
+            .tab-btn { font-size: 0.6rem; padding: 8px 6px; }
+            .img-result-item { flex-direction: column; align-items: flex-start; }
+            .img-result-item .status { margin-left: 0; }
         }
     </style>
 </head>
@@ -667,11 +722,8 @@
         </button>
         
         <div class="neto-dark rounded-3xl p-5 shadow-2xl space-y-5" style="background: #0f172a; border: 1px solid #1e293b;">
-            
             <div class="text-center">
-                <div class="inline-flex items-center gap-2 bg-orange-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-2 shadow-md">
-                    ⚡ Tiendas NETO Style
-                </div>
+                <div class="inline-flex items-center gap-2 bg-orange-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-2 shadow-md">⚡ Tiendas NETO Style</div>
                 <h2 class="text-2xl font-black text-white drop-shadow-md">🛍️ Promociones Neto</h2>
                 <p class="text-xs text-white mt-1">Generador de Prompts Comercial para Imágenes AI</p>
             </div>
@@ -728,8 +780,7 @@
 
             <div id="campoVencimiento" class="hidden transition-all bg-amber-900/30 p-3 rounded-xl border border-amber-700">
                 <label class="block text-xs font-bold text-amber-400 mb-1">🗓️ Fecha de Vencimiento</label>
-                <input type="date" id="prodVencimiento"
-                    class="w-full neto-input rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                <input type="date" id="prodVencimiento" class="w-full neto-input rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
             </div>
 
             <div class="flex items-center gap-2">
@@ -780,13 +831,10 @@
                     <i class="fas fa-copy"></i> Copiar
                 </button>
             </div>
-            
-            <textarea id="promptResult" rows="7" readonly                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
-
+            <textarea id="promptResult" rows="7" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
             <button onclick="window.enviarWhatsApp()"
                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
-                <i class="fab fa-whatsapp text-lg"></i>
-                Enviar por WhatsApp
+                <i class="fab fa-whatsapp text-lg"></i> Enviar por WhatsApp
             </button>
         </div>
 
@@ -821,9 +869,11 @@
                 <input type="text" id="cad-codigo" placeholder="Código detectado automáticamente" class="barcode-input" readonly />
             </div>
             
-            <div id="scanPreview" class="scan-preview">
-                <img id="previewImage" src="" alt="Código escaneado">
-                <div class="codigo-detectado">📷 Código detectado: <span id="detectedCode">---</span></div>
+            <div id="scanPreview" class="scan-preview" style="display:none; margin-top:8px; padding:8px; background:#0f172a; border-radius:8px; border:1px solid #334155;">
+                <img id="previewImage" src="" alt="Código escaneado" style="max-width:100%; max-height:150px; border-radius:6px; margin:0 auto; display:block;">
+                <div class="codigo-detectado" style="color:#4ade80; font-size:0.8rem; font-weight:700; text-align:center; margin-top:6px;">
+                    📷 Código detectado: <span id="detectedCode" style="color:#ffffff; background:#1e293b; padding:2px 10px; border-radius:4px; font-family:monospace;">---</span>
+                </div>
             </div>
             
             <div class="form-group">
@@ -867,7 +917,7 @@
                 <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
             </div>
             
-            <!-- Tabs: Manual, Cíclico (imágenes) y PDF -->
+            <!-- Tabs: Manual, Imágenes, PDF (OCR) -->
             <div class="tab-container">
                 <button class="tab-btn active" onclick="window.cambiarTabCiclico('manual', this)">
                     <i class="fas fa-pen"></i> Manual
@@ -876,7 +926,7 @@
                     <i class="fas fa-image"></i> Imágenes
                 </button>
                 <button class="tab-btn" onclick="window.cambiarTabCiclico('pdf', this)">
-                    <i class="fas fa-file-pdf"></i> PDF
+                    <i class="fas fa-file-pdf"></i> PDF + OCR
                 </button>
             </div>
             
@@ -970,14 +1020,15 @@
                 </div>
             </div>
             
-            <!-- Tab PDF (NUEVO) -->
+            <!-- Tab PDF con OCR (NUEVO) -->
             <div id="tab-pdf" class="tab-content">
-                <div class="scan-area scan-area-orange">
-                    <i class="fas fa-file-pdf scan-icon"></i>
-                    <span class="scan-hint">Sube un archivo PDF con códigos de barras</span>
+                <div class="scan-area scan-area-purple">
+                    <i class="fas fa-file-pdf scan-icon" style="color:#a78bfa;"></i>
+                    <span class="scan-hint" style="color:#a78bfa;">Sube un PDF para extraer productos con OCR</span>
+                    <span class="scan-hint" style="color:#94a3b8; font-size:0.6rem;">📖 Lee el texto del PDF: códigos, nombres y cantidades</span>
                     <input type="file" accept=".pdf" id="ciclico-pdf" />
-                    <button class="btn btn-orange" onclick="window.procesarPDFCiclico()" style="margin-top:8px;">
-                        <i class="fas fa-file-pdf"></i> Procesar PDF
+                    <button class="btn btn-purple" onclick="window.procesarPDFConOCR()" style="margin-top:8px;">
+                        <i class="fas fa-file-pdf"></i> Procesar PDF con OCR
                     </button>
                 </div>
                 
@@ -985,11 +1036,11 @@
                     <div class="progress-bar-container">
                         <div class="progress-bar" id="pdfProgressBar"></div>
                     </div>
-                    <div class="progress-text" id="pdfProgressText">Procesando páginas...</div>
+                    <div class="progress-text" id="pdfProgressText">⏳ Procesando páginas...</div>
                 </div>
                 
-                <div id="ciclico-pdf-resultados" class="scrollable" style="max-height:200px; margin-top:8px;">
-                    <p class="empty-message">Los códigos extraídos del PDF aparecerán aquí</p>
+                <div id="ciclico-pdf-resultados" class="scrollable" style="max-height:250px; margin-top:8px;">
+                    <p class="empty-message">📄 Los productos extraídos del PDF aparecerán aquí</p>
                 </div>
             </div>
         </div>
@@ -1827,7 +1878,6 @@ window.procesarImagenesCiclico = function() {
                         codigoSpan.textContent = '🔢 ' + codigo;
                         itemEl.appendChild(codigoSpan);
                         
-                        // Buscar en inventario para obtener nombre
                         var producto = window.datos.inventario.find(function(p) {
                             return p.codigo === codigo;
                         });
@@ -1870,9 +1920,9 @@ window.procesarImagenesCiclico = function() {
 };
 
 // ============================================
-// PROCESAR PDF PARA CICLICOS (NUEVO)
+// PROCESAR PDF CON OCR (NUEVO - LEE TEXTO)
 // ============================================
-window.procesarPDFCiclico = function() {
+window.procesarPDFConOCR = function() {
     var input = document.getElementById('ciclico-pdf');
     var file = input.files[0];
     var container = document.getElementById('ciclico-pdf-resultados');
@@ -1888,27 +1938,99 @@ window.procesarPDFCiclico = function() {
     progressContainer.style.display = 'block';
     progressBar.style.width = '0%';
     progressText.textContent = '📄 Cargando PDF...';
-    container.innerHTML = '<p class="empty-message">⏳ Procesando archivo PDF...</p>';
+    container.innerHTML = '<p class="empty-message">⏳ Procesando archivo PDF con OCR...</p>';
     
     var reader = new FileReader();
     reader.onload = function(e) {
         var pdfData = new Uint8Array(e.target.result);
         
-        // Configurar PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         
         pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
             var totalPages = pdf.numPages;
-            progressText.textContent = '📄 Procesando ' + totalPages + ' páginas...';
+            progressText.textContent = '📄 Procesando ' + totalPages + ' páginas con OCR...';
             
             var html = '';
-            var codigosDetectados = [];
+            var productosExtraidos = [];
             var paginasProcesadas = 0;
+            var textoCompleto = '';
             
-            // Función para procesar cada página
-            function procesarPagina(numPagina) {
+            // Función para extraer códigos y nombres del texto
+            function extraerProductosDeTexto(texto) {
+                var productos = [];
+                var lineas = texto.split('\n');
+                
+                // Patrones para detectar líneas con código y nombre
+                var patrones = [
+                    // Patrón: código (número) seguido de nombre
+                    /(\d{6,})\s+([A-ZÁÉÍÓÚÑ\s\.\-]+)/g,
+                    // Patrón: código | nombre
+                    /(\d{6,})\s*[|\-]\s*([A-ZÁÉÍÓÚÑ\s\.\-]+)/g,
+                    // Patrón: código - nombre
+                    /(\d{6,})\s*[-–]\s*([A-ZÁÉÍÓÚÑ\s\.\-]+)/g,
+                    // Patrón: nombre seguido de código entre paréntesis
+                    /([A-ZÁÉÍÓÚÑ\s\.\-]+)\s*\((\d{6,})\)/g
+                ];
+                
+                for (var i = 0; i < lineas.length; i++) {
+                    var linea = lineas[i].trim();
+                    if (linea.length < 10) continue;
+                    
+                    // Buscar coincidencias con patrones
+                    for (var p = 0; p < patrones.length; p++) {
+                        var match;
+                        var patron = patrones[p];
+                        // Resetear el índice del regex
+                        patron.lastIndex = 0;
+                        
+                        while ((match = patron.exec(linea)) !== null) {
+                            var codigo = match[1] ? match[1].trim() : null;
+                            var nombre = match[2] ? match[2].trim() : null;
+                            
+                            // Si el patrón inverso (nombre primero)
+                            if (!codigo && match[2]) {
+                                codigo = match[2].trim();
+                                nombre = match[1].trim();
+                            }
+                            
+                            // Limpiar código (solo números)
+                            if (codigo) {
+                                var codigoLimpio = codigo.replace(/\D/g, '');
+                                if (codigoLimpio.length >= 6 && codigoLimpio.length <= 15) {
+                                    // Limpiar nombre (quitar cosas extrañas)
+                                    if (nombre) {
+                                        nombre = nombre.replace(/^\d+\s*/, '');
+                                        nombre = nombre.replace(/\s{2,}/g, ' ');
+                                        nombre = nombre.trim();
+                                        
+                                        // Buscar cantidad (si hay un número al final)
+                                        var cantidadMatch = nombre.match(/(\d+(?:\.\d+)?)\s*$/);
+                                        var cantidad = 1;
+                                        if (cantidadMatch) {
+                                            cantidad = parseFloat(cantidadMatch[1]);
+                                            nombre = nombre.replace(/\s*\d+(?:\.\d+)?\s*$/, '').trim();
+                                        }
+                                        
+                                        if (nombre.length > 2) {
+                                            productos.push({
+                                                codigo: codigoLimpio,
+                                                nombre: nombre,
+                                                cantidad: cantidad || 1
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return productos;
+            }
+            
+            function procesarPaginaConOCR(numPagina) {
                 pdf.getPage(numPagina).then(function(page) {
-                    var viewport = page.getViewport({scale: 1.5});
+                    var viewport = page.getViewport({scale: 2.0});
                     var canvas = document.createElement('canvas');
                     var context = canvas.getContext('2d');
                     canvas.width = viewport.width;
@@ -1922,66 +2044,85 @@ window.procesarPDFCiclico = function() {
                     page.render(renderContext).promise.then(function() {
                         var imageDataURL = canvas.toDataURL('image/png');
                         
-                        // Leer código de barras de la imagen
-                        window.leerCodigoBarras(imageDataURL, function(error, codigo) {
-                            var statusText = '';
-                            var statusClass = '';
+                        // Usar Tesseract.js para OCR
+                        Tesseract.recognize(
+                            imageDataURL,
+                            'spa+eng',
+                            {
+                                logger: function(m) {
+                                    if (m.status === 'recognizing text') {
+                                        progressText.textContent = '📄 OCR página ' + numPagina + ': ' + Math.round(m.progress * 100) + '%';
+                                    }
+                                }
+                            }
+                        ).then(function(result) {
+                            var texto = result.data.text;
+                            textoCompleto += '\n--- PÁGINA ' + numPagina + ' ---\n' + texto;
                             
-                            if (error) {
-                                statusText = '❌ No detectado';
-                                statusClass = 'status error';
-                            } else {
-                                statusText = '✅ ' + codigo;
-                                statusClass = 'status success';
-                                codigosDetectados.push(codigo);
-                                
-                                // Buscar en inventario
-                                var producto = window.datos.inventario.find(function(p) {
-                                    return p.codigo === codigo;
-                                });
-                                var nombre = producto ? producto.nombre : 'Producto ' + codigo;
-                                var categoria = producto ? producto.categoria : 'Otros';
-                                
+                            // Extraer productos del texto
+                            var productosPagina = extraerProductosDeTexto(texto);
+                            
+                            // Mostrar parte del texto extraído
+                            var textoPreview = texto.substring(0, 200) + (texto.length > 200 ? '...' : '');
+                            
+                            html += '<div class="resultado-ocr">';
+                            html += '  <div style="display:flex; justify-content:space-between; align-items:center;">';
+                            html += '    <span style="color:#a78bfa; font-weight:600; font-size:0.75rem;">📄 Página ' + numPagina + '</span>';
+                            html += '    <span style="color:#4ade80; font-size:0.7rem;">✅ ' + productosPagina.length + ' productos</span>';
+                            html += '  </div>';
+                            html += '  <div class="texto-extraido">' + textoPreview + '</div>';
+                            html += '</div>';
+                            
+                            // Agregar productos encontrados
+                            productosPagina.forEach(function(prod) {
+                                // Verificar si ya existe en el conteo
                                 var existe = window.datos.ciclicos.some(function(p) {
-                                    return p.codigo === codigo;
+                                    return p.codigo === prod.codigo;
                                 });
+                                
+                                // Buscar en inventario para categoría
+                                var productoInv = window.datos.inventario.find(function(p) {
+                                    return p.codigo === prod.codigo;
+                                });
+                                var categoria = productoInv ? productoInv.categoria : window.detectarCategoria(prod.nombre);
+                                
                                 if (!existe) {
                                     window.datos.ciclicos.push({
                                         id: Date.now(),
-                                        codigo: codigo,
-                                        nombre: nombre,
+                                        codigo: prod.codigo,
+                                        nombre: prod.nombre,
                                         categoria: categoria,
-                                        cantidad: 1,
-                                        origen: 'PDF'
+                                        cantidad: prod.cantidad || 1,
+                                        origen: 'OCR'
                                     });
+                                    productosExtraidos.push(prod);
                                 }
-                            }
-                            
-                            html += '<div class="img-result-item">';
-                            html += '  <span style="color:#ffffff; font-size:0.75rem; font-weight:600;">📄 Pág ' + numPagina + '</span>';
-                            html += '  <span style="color:#94a3b8; font-size:0.65rem; flex:1;">' + (codigo || '---') + '</span>';
-                            html += '  <span class="' + statusClass + '">' + statusText + '</span>';
-                            html += '</div>';
+                            });
                             
                             paginasProcesadas++;
                             var progreso = Math.round((paginasProcesadas / totalPages) * 100);
                             progressBar.style.width = progreso + '%';
-                            progressText.textContent = '📄 Procesando página ' + paginasProcesadas + ' de ' + totalPages + '...';
+                            progressText.textContent = '📄 Procesada página ' + paginasProcesadas + ' de ' + totalPages + ' | ' + productosExtraidos.length + ' productos encontrados';
                             
-                            // Actualizar el contenedor con los resultados parciales
                             container.innerHTML = html;
                             
-                            // Si es la última página, finalizar
                             if (paginasProcesadas === totalPages) {
                                 window.Storage.set('ciclicos', window.datos.ciclicos);
                                 window.renderizarCiclicos();
-                                progressText.textContent = '✅ Procesamiento completado. ' + codigosDetectados.length + ' códigos detectados.';
+                                progressText.textContent = '✅ Procesamiento completado. ' + productosExtraidos.length + ' productos extraídos.';
                                 
-                                if (codigosDetectados.length > 0) {
-                                    window.mostrarToast('✅ Se detectaron ' + codigosDetectados.length + ' códigos del PDF', '✅');
+                                if (productosExtraidos.length > 0) {
+                                    window.mostrarToast('✅ Se extrajeron ' + productosExtraidos.length + ' productos del PDF', '✅');
                                 } else {
-                                    window.mostrarToast('⚠️ No se detectaron códigos en el PDF', '⚠️');
+                                    window.mostrarToast('⚠️ No se detectaron productos en el PDF. Revisa que tenga texto legible.', '⚠️');
                                 }
+                            }
+                        }).catch(function(err) {
+                            console.error('Error en OCR:', err);
+                            paginasProcesadas++;
+                            if (paginasProcesadas === totalPages) {
+                                progressText.textContent = '⚠️ Procesamiento completado con errores.';
+                                window.mostrarToast('⚠️ Error en OCR de algunas páginas', '⚠️');
                             }
                         });
                     }).catch(function(err) {
@@ -1989,7 +2130,6 @@ window.procesarPDFCiclico = function() {
                         paginasProcesadas++;
                         if (paginasProcesadas === totalPages) {
                             progressText.textContent = '⚠️ Procesamiento completado con errores.';
-                            window.mostrarToast('⚠️ Error al procesar algunas páginas', '⚠️');
                         }
                     });
                 }).catch(function(err) {
@@ -1997,14 +2137,13 @@ window.procesarPDFCiclico = function() {
                     paginasProcesadas++;
                     if (paginasProcesadas === totalPages) {
                         progressText.textContent = '⚠️ Procesamiento completado con errores.';
-                        window.mostrarToast('⚠️ Error al procesar algunas páginas', '⚠️');
                     }
                 });
             }
             
             // Procesar todas las páginas
             for (var i = 1; i <= totalPages; i++) {
-                procesarPagina(i);
+                procesarPaginaConOCR(i);
             }
             
         }).catch(function(err) {
@@ -2073,6 +2212,7 @@ window.categoriasPorPalabra = {
 };
 
 window.detectarCategoria = function(nombre) {
+    if (!nombre) return 'Otros';
     var nombreLower = nombre.toLowerCase();
     for (var palabra in window.categoriasPorPalabra) {
         if (nombreLower.includes(palabra)) {
@@ -2173,7 +2313,7 @@ window.renderizarInventario = function() {
         items.forEach(function(p) {
             html += '<div class="producto-item">';
             html += '  <div class="nombre">' + p.nombre + '</div>';
-            html += '  <div style="display:flex; align-items:center; gap:8px;">';
+            html += '  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">';
             html += '    <span class="cantidad">💰 $' + (p.precio || 0).toFixed(2) + '</span>';
             html += '    <input type="number" class="input-cantidad" value="' + p.cantidad + '" min="0" data-codigo="' + p.codigo + '" onchange="window.actualizarCantidadInventario(this)">';
             html += '    <button onclick="window.eliminarProductoInventario(\'' + p.codigo + '\')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:4px;">';
@@ -2276,7 +2416,6 @@ window.activarEscaneo = function() {
                             window.mostrarToast('❌ ' + error, '❌');
                         } else {
                             window.mostrarToast('✅ Código detectado: ' + codigo, '✅');
-                            // Mostrar el código en el input de inventario si está visible
                             var invInput = document.getElementById('inv-codigo');
                             if (invInput && document.getElementById('screen-inventario').classList.contains('active')) {
                                 invInput.value = codigo;
