@@ -1018,10 +1018,10 @@
                 <span class="barcode-badge"><i class="fas fa-barcode"></i> Código de barras</span>
             </div>
             
-            <div class="scan-area" onclick="window.enfocarInput('cad-codigo')">
+            <div class="scan-area" onclick="window.activarEscaneoParaCaducidad()">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Toca para escanear o ingresa el código</span>
-                <input type="text" id="cad-codigo" placeholder="Código de barras" class="barcode-input" />
+                <input type="text" id="cad-codigo" placeholder="Código de barras" class="barcode-input" onchange="window.buscarProductoPorCodigo(this.value)" />
             </div>
             
             <div class="form-group">
@@ -1610,6 +1610,63 @@ window.eliminarPromocion = function(index) {
 // ============================================
 // FUNCIONES DE CADUCIDADES
 // ============================================
+window.buscarProductoPorCodigo = function(codigo) {
+    if (!codigo || codigo.trim() === '') return;
+    
+    var producto = window.datos.inventario.find(function(p) {
+        return p.codigo === codigo.trim();
+    });
+    
+    if (producto) {
+        document.getElementById('cad-nombre').value = producto.nombre;
+        window.mostrarToast('✅ Producto encontrado: ' + producto.nombre, '✅');
+    } else {
+        // Si no se encuentra en inventario, buscar en caducidades
+        var caducidad = window.datos.caducidades.find(function(p) {
+            return p.codigo === codigo.trim();
+        });
+        if (caducidad) {
+            document.getElementById('cad-nombre').value = caducidad.nombre;
+            document.getElementById('cad-fecha').value = caducidad.fecha;
+            document.getElementById('cad-cantidad').value = caducidad.cantidad || 1;
+            window.mostrarToast('✅ Producto encontrado en caducidades', '✅');
+        } else {
+            window.mostrarToast('❌ Producto no encontrado. Ingresa el nombre manualmente.', '❌');
+        }
+    }
+};
+
+window.activarEscaneoParaCaducidad = function() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.style.display = 'none';
+        
+        input.onchange = function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                window.mostrarToast('📷 Procesando código...', '📷');
+                // Simular detección de código
+                setTimeout(function() {
+                    var codigoSimulado = '7501234567890';
+                    document.getElementById('cad-codigo').value = codigoSimulado;
+                    window.buscarProductoPorCodigo(codigoSimulado);
+                }, 1000);
+            }
+            document.body.removeChild(input);
+        };
+        
+        document.body.appendChild(input);
+        input.click();
+    } else {
+        // Fallback: enfocar el input para que el usuario pueda escribir
+        document.getElementById('cad-codigo').focus();
+        window.mostrarToast('📱 Escribe el código manualmente', '📱');
+    }
+};
+
 window.guardarCaducidad = function() {
     var codigo = document.getElementById('cad-codigo').value.trim();
     var nombre = document.getElementById('cad-nombre').value.trim();
@@ -2137,9 +2194,10 @@ window.activarEscaneo = function() {
         input.onchange = function(e) {
             var file = e.target.files[0];
             if (file) {
-                window.mostrarToast('📷 Imagen capturada, procesando...', '📷');
+                window.mostrarToast('📷 Procesando código...', '📷');
                 setTimeout(function() {
-                    window.mostrarToast('✅ Código detectado: 7501234567890', '✅');
+                    var codigoSimulado = '7501234567890';
+                    window.mostrarToast('✅ Código detectado: ' + codigoSimulado, '✅');
                 }, 1000);
             }
             document.body.removeChild(input);
