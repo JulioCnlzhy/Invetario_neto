@@ -5,26 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema de Inventario - NETO</title>
     
-    <!-- PWA Metadata -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NETO Inventario">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- QuaggaJS para leer códigos de barras -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
-    
-    <!-- PDF.js para procesar archivos PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
-    <!-- Tesseract.js para OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
     <style>
@@ -512,6 +502,7 @@
             padding: 8px 12px;
             margin: 4px 0;
             border-left: 3px solid #7c3aed;
+            width: 100%;
         }
         .resultado-ocr .texto-extraido {
             color: #94a3b8;
@@ -519,8 +510,22 @@
             font-family: monospace;
             white-space: pre-wrap;
             word-break: break-all;
-            max-height: 100px;
+            max-height: 200px;
             overflow-y: auto;
+        }
+
+        .texto-completo-ocr {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.65rem;
+            color: #94a3b8;
+            font-family: monospace;
+            white-space: pre-wrap;
         }
 
         @media (max-width: 400px) {
@@ -579,16 +584,13 @@
 <!-- ========================================== -->
 <div id="app-content" style="display:none;">
 
-<!-- Header -->
 <header class="header">
     <h1>📦 NETO Inventario</h1>
     <p class="subtitle" id="header-usuario">🔍 Bienvenido</p>
 </header>
 
 <div class="container">
-    <!-- ========================================== -->
-    <!-- PANTALLA DE INICIO                         -->
-    <!-- ========================================== -->
+    <!-- PANTALLA DE INICIO -->
     <section id="screen-home" class="screen active">
         <div id="welcome-message" class="user-welcome">👋 Bienvenido</div>
         
@@ -632,9 +634,7 @@
         </button>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: PROMOCIONES                      -->
-    <!-- ========================================== -->
+    <!-- PANTALLA: PROMOCIONES -->
     <section id="screen-promociones" class="screen">
         <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
@@ -768,9 +768,7 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: CADUCIDADES                      -->
-    <!-- ========================================== -->
+    <!-- PANTALLA: CADUCIDADES -->
     <section id="screen-caducidades" class="screen">
         <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
@@ -823,9 +821,7 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: CICLICOS                         -->
-    <!-- ========================================== -->
+    <!-- PANTALLA: CICLICOS -->
     <section id="screen-ciclicos" class="screen">
         <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
@@ -836,7 +832,6 @@
                 <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
             </div>
             
-            <!-- Tabs -->
             <div class="tab-container">
                 <button class="tab-btn active" onclick="window.cambiarTabCiclico('manual', this)">
                     <i class="fas fa-pen"></i> Manual
@@ -923,19 +918,19 @@
                 </button>
             </div>
             
-            <!-- Tab Imágenes -->
+            <!-- Tab Imágenes con OCR MEJORADO -->
             <div id="tab-ciclico" class="tab-content">
                 <div class="scan-area scan-area-orange">
                     <i class="fas fa-images scan-icon"></i>
                     <span class="scan-hint">Sube fotos para detectar códigos de barras o texto</span>
-                    <span class="scan-hint" style="color:#94a3b8; font-size:0.6rem;">📖 También lee el texto de capturas de pantalla</span>
+                    <span class="scan-hint" style="color:#94a3b8; font-size:0.6rem;">📖 Lee el texto de capturas de pantalla y extrae nombres</span>
                     <input type="file" accept="image/*" multiple id="ciclico-imagenes" />
                     <button class="btn btn-orange" onclick="window.procesarImagenesCiclico()" style="margin-top:8px;">
                         <i class="fas fa-file-image"></i> Procesar Imágenes
                     </button>
                 </div>
                 
-                <div id="ciclico-imagen-resultados" class="scrollable" style="max-height:250px; margin-top:8px;">
+                <div id="ciclico-imagen-resultados" class="scrollable" style="max-height:300px; margin-top:8px;">
                     <p class="empty-message">Las imágenes procesadas aparecerán aquí</p>
                 </div>
             </div>
@@ -979,9 +974,7 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: INVENTARIO                       -->
-    <!-- ========================================== -->
+    <!-- PANTALLA: INVENTARIO -->
     <section id="screen-inventario" class="screen">
         <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
@@ -1085,9 +1078,7 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: VISUAL                           -->
-    <!-- ========================================== -->
+    <!-- PANTALLA: VISUAL -->
     <section id="screen-visual" class="screen">
         <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
@@ -1169,7 +1160,7 @@ window.mostrarToast = function(mensaje, icono = 'ℹ️') {
     
     window.toastTimeout = setTimeout(function() {
         container.classList.remove('show');
-    }, 3500);
+    }, 4000);
 };
 
 // ============================================
@@ -1217,7 +1208,7 @@ window.leerCodigoBarras = function(imagenDataURL, callback) {
 // CATEGORÍAS POR PALABRA CLAVE
 // ============================================
 window.categoriasPorPalabra = {
-    'refresco': 'Refrescos',
+    'salsa': 'Salsas',
     'coca': 'Refrescos',
     'pepsi': 'Refrescos',
     'sprite': 'Refrescos',
@@ -1232,7 +1223,6 @@ window.categoriasPorPalabra = {
     'bimbo': 'Panadería',
     'maruchan': 'Maruchan',
     'sopa': 'Maruchan',
-    'salsa': 'Salsas',
     'valentina': 'Salsas',
     'huichol': 'Salsas',
     'harina': 'Harinas',
@@ -1259,12 +1249,12 @@ window.categoriasPorPalabra = {
     'pampers': 'Pañales',
     'nestlé': 'Nestlé',
     'cerveza': 'Alcohol y Licores',
-    'cárnicos': 'Cámara Fría',
     'pollo': 'Cámara Fría',
     'carne': 'Cámara Fría',
     'queso': 'Cámara Fría',
     'yogurt': 'Cámara Fría',
-    'leche': 'Cámara Fría'
+    'leche': 'Cámara Fría',
+    'refresco': 'Refrescos'
 };
 
 window.detectarCategoria = function(nombre) {
@@ -1285,46 +1275,41 @@ function extraerProductosDeTexto(texto) {
     var productos = [];
     var lineas = texto.split('\n');
     
-    console.log('📝 Texto OCR extraído:', texto);
-    console.log('📝 Líneas:', lineas.length);
+    console.log('📝 Texto OCR completo:');
+    console.log(texto);
     
-    // PATRONES para detectar productos en el texto
-    var patrones = [
-        // Patrón 1: CÓDIGO (número) seguido de NOMBRE
-        // Ej: "738545010481 SALSA BOTANERA CLÁSICA 370 ML"
-        /(\d{6,15})\s+([A-ZÁÉÍÓÚÑ\s\.\-\(\)]+)/gi,
-        
-        // Patrón 2: CÓDIGO | NOMBRE
-        /(\d{6,15})\s*[|\|]\s*([A-ZÁÉÍÓÚÑ\s\.\-\(\)]+)/gi,
-        
-        // Patrón 3: NOMBRE (CÓDIGO)
-        /([A-ZÁÉÍÓÚÑ\s\.\-\(\)]+)\s*\((\d{6,15})\)/gi,
-        
-        // Patrón 4: CÓDIGO - NOMBRE
-        /(\d{6,15})\s*[-–]\s*([A-ZÁÉÍÓÚÑ\s\.\-\(\)]+)/gi,
-        
-        // Patrón 5: NOMBRE seguido de CÓDIGO al final
-        /([A-ZÁÉÍÓÚÑ\s\.\-\(\)]+)\s+(\d{6,15})\s*$/gi
+    // Palabras clave para detectar nombres de productos
+    var palabrasClave = [
+        'SALSA', 'COCA', 'LECHE', 'CREMA', 'GELAT', 'NATILLA', 'FLAN', 
+        'MARGARINA', 'DETERGENTE', 'LIMPIADOR', 'SUAVIZANTE', 'ZOTE', 
+        'BEBIBLE', 'PETIT', 'NUTRI', 'VICTORIA', 'PELON', 'LUCAS', 
+        'CABRITO', 'CHOCOLATE', 'CARAMELO', 'ENCHILADO', 'HIELO', 
+        'ROMA', 'BEST', 'PINOL', 'FABULOSO', 'DANONINO', 'DANETTE', 
+        'LALA', 'COCA COLA', 'PEPSI', 'SPRITE', 'FANTA', 'SABRITAS',
+        'CHEETOS', 'DORITOS', 'OREO', 'GAMESA', 'BIMBO', 'MARUCHAN',
+        'VALENTINA', 'HUICHOL', 'NESTLÉ', 'CERVEZA', 'PAMPER', 'HUGGIES'
     ];
     
-    // Primero, intentar detectar filas de tabla
+    // Primero, buscar líneas con formato CÓDIGO + NOMBRE
     for (var i = 0; i < lineas.length; i++) {
         var linea = lineas[i].trim();
         if (linea.length < 5) continue;
         
-        // Buscar códigos de barras en la línea (6 a 15 dígitos)
+        // Buscar código de barras (6-15 dígitos)
         var codigoMatch = linea.match(/\b(\d{6,15})\b/);
         if (codigoMatch) {
             var codigo = codigoMatch[1];
             var codigoLimpio = codigo.replace(/\D/g, '');
             
-            // Extraer el nombre (todo lo que no sea el código)
+            // Extraer el nombre - todo lo que no sea el código
             var nombre = linea.replace(codigo, '').trim();
+            
             // Limpiar caracteres especiales
             nombre = nombre.replace(/^[\s\|:;]+/, '');
             nombre = nombre.replace(/[\s\|:;]+$/, '');
+            nombre = nombre.replace(/\s{2,}/g, ' ');
             
-            // Si el nombre tiene un número al final (cantidad), extraerlo
+            // Buscar cantidad al final
             var cantidadMatch = nombre.match(/(\d+(?:\.\d+)?)\s*$/);
             var cantidad = 1;
             if (cantidadMatch) {
@@ -1332,98 +1317,117 @@ function extraerProductosDeTexto(texto) {
                 nombre = nombre.replace(/\s*\d+(?:\.\d+)?\s*$/, '').trim();
             }
             
-            // Limpiar el nombre de cosas extrañas
-            nombre = nombre.replace(/^\d+\s*/, '');
-            nombre = nombre.replace(/\s{2,}/g, ' ');
-            nombre = nombre.trim();
+            // Verificar si el nombre parece un producto
+            var esProducto = false;
+            for (var k = 0; k < palabrasClave.length; k++) {
+                if (nombre.toUpperCase().includes(palabrasClave[k])) {
+                    esProducto = true;
+                    break;
+                }
+            }
             
-            if (nombre.length > 2 && codigoLimpio.length >= 6) {
+            if (nombre.length > 2 && codigoLimpio.length >= 6 && esProducto) {
                 var categoria = window.detectarCategoria(nombre);
-                productos.push({
-                    codigo: codigoLimpio,
-                    nombre: nombre,
-                    cantidad: cantidad || 1,
-                    categoria: categoria
+                var existe = productos.some(function(prod) {
+                    return prod.codigo === codigoLimpio;
                 });
-                console.log('✅ Producto extraído:', codigoLimpio, '→', nombre);
+                if (!existe) {
+                    productos.push({
+                        codigo: codigoLimpio,
+                        nombre: nombre,
+                        cantidad: cantidad || 1,
+                        categoria: categoria
+                    });
+                    console.log('✅ Producto extraído:', codigoLimpio, '→', nombre);
+                }
             }
         }
     }
     
-    // Si no se encontraron productos con el método anterior, usar patrones
-    if (productos.length === 0) {
-        for (var p = 0; p < patrones.length; p++) {
-            var patron = patrones[p];
-            var match;
-            patron.lastIndex = 0;
-            
-            while ((match = patron.exec(texto)) !== null) {
-                var codigo = match[1] ? match[1].trim() : null;
-                var nombre = match[2] ? match[2].trim() : null;
-                
-                // Si el patrón inverso (nombre primero)
-                if (!codigo && match[2] && match[2].match(/\d{6,15}/)) {
-                    codigo = match[2].trim();
-                    nombre = match[1].trim();
-                }
-                
-                if (codigo && nombre) {
-                    var codigoLimpio = codigo.replace(/\D/g, '');
-                    if (codigoLimpio.length >= 6 && codigoLimpio.length <= 15) {
-                        nombre = nombre.replace(/^\d+\s*/, '');
-                        nombre = nombre.replace(/\s{2,}/g, ' ');
-                        nombre = nombre.trim();
-                        
-                        if (nombre.length > 2) {
-                            var categoria = window.detectarCategoria(nombre);
-                            // Verificar duplicados
-                            var existe = productos.some(function(prod) {
-                                return prod.codigo === codigoLimpio;
-                            });
-                            if (!existe) {
-                                productos.push({
-                                    codigo: codigoLimpio,
-                                    nombre: nombre,
-                                    cantidad: 1,
-                                    categoria: categoria
-                                });
-                                console.log('✅ Producto extraído (patrón):', codigoLimpio, '→', nombre);
-                            }
-                        }
-                    }
-                }
-            }
-            if (productos.length > 0) break;
-        }
-    }
-    
-    // Si aún no hay productos, intentar extraer solo nombres (sin códigos)
+    // Si no se encontraron productos con código, buscar solo nombres
     if (productos.length === 0) {
         for (var j = 0; j < lineas.length; j++) {
             var linea = lineas[j].trim();
-            // Buscar líneas que parezcan nombres de productos (mayúsculas, con palabras clave)
-            if (linea.length > 5 && linea.length < 80) {
-                // Verificar si parece un nombre de producto
-                var esProducto = /[A-ZÁÉÍÓÚÑ]{3,}/.test(linea);
-                var tienePalabraClave = /(SALSA|COCA|LECHE|CREMA|GELAT|NATILLA|FLAN|MARGARINA|DETERGENTE|LIMPIADOR|SUAVIZANTE|ZOTE|BEBIBLE|PETIT|NUTRI|VICTORIA|PELON|LUCAS|CABRITO|CHOCOLATE|CARAMELO|ENCHILADO|HIELO|ROMA|BEST|PINOL|FABULOSO|DANONINO|DANETTE|LALA)/i.test(linea);
-                
-                if (esProducto && tienePalabraClave) {
-                    // Generar un código temporal
+            if (linea.length < 5) continue;
+            
+            // Buscar nombres que contengan palabras clave
+            for (var k = 0; k < palabrasClave.length; k++) {
+                if (linea.toUpperCase().includes(palabrasClave[k])) {
+                    // Generar código temporal
                     var codigoTemp = 'OCR-' + Date.now() + '-' + j;
                     var categoria = window.detectarCategoria(linea);
-                    productos.push({
-                        codigo: codigoTemp,
-                        nombre: linea,
-                        cantidad: 1,
-                        categoria: categoria
+                    var existe = productos.some(function(prod) {
+                        return prod.nombre === linea;
                     });
-                    console.log('✅ Producto extraído (solo nombre):', linea);
+                    if (!existe && linea.length < 80) {
+                        productos.push({
+                            codigo: codigoTemp,
+                            nombre: linea,
+                            cantidad: 1,
+                            categoria: categoria
+                        });
+                        console.log('✅ Producto extraído (solo nombre):', linea);
+                    }
+                    break;
                 }
             }
         }
     }
     
     return productos;
+}
+
+// ============================================
+// FUNCIÓN PARA PRE-PROCESAR IMAGEN (mejorar OCR)
+// ============================================
+function preprocesarImagen(imageDataURL, callback) {
+    var img = new Image();
+    img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        
+        // Aumentar resolución para mejor OCR
+        var scale = 2;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        
+        // Dibujar imagen con mejor calidad
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Aplicar contraste para mejorar texto
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var data = imageData.data;
+        
+        // Aumentar contraste
+        for (var i = 0; i < data.length; i += 4) {
+            var r = data[i];
+            var g = data[i + 1];
+            var b = data[i + 2];
+            
+            // Convertir a escala de grises con énfasis en contraste
+            var gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            // Aumentar contraste
+            var contrast = 1.5;
+            var newGray = ((gray / 255 - 0.5) * contrast + 0.5) * 255;
+            newGray = Math.max(0, Math.min(255, newGray));
+            
+            data[i] = newGray;
+            data[i + 1] = newGray;
+            data[i + 2] = newGray;
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        var processedDataURL = canvas.toDataURL('image/png');
+        callback(processedDataURL);
+    };
+    img.onerror = function() {
+        callback(imageDataURL);
+    };
+    img.src = imageDataURL;
 }
 
 // ============================================
@@ -1964,7 +1968,7 @@ window.guardarConteoCiclico = function() {
 };
 
 // ============================================
-// PROCESAR IMÁGENES CON OCR (NUEVO - LEE TEXTO DE IMÁGENES)
+// PROCESAR IMÁGENES CON OCR MEJORADO
 // ============================================
 window.procesarImagenesCiclico = function() {
     var input = document.getElementById('ciclico-imagenes');
@@ -2029,6 +2033,11 @@ window.procesarImagenesCiclico = function() {
                                 origen: 'Barcode'
                             });
                             totalProductos++;
+                            
+                            var nombreSpan = document.createElement('span');
+                            nombreSpan.className = 'producto-nombre';
+                            nombreSpan.textContent = '📦 ' + nombre;
+                            itemEl.appendChild(nombreSpan);
                         }
                         
                         procesadas++;
@@ -2042,86 +2051,90 @@ window.procesarImagenesCiclico = function() {
                             }
                         }
                     } else {
-                        // No se detectó código de barras → USAR OCR para leer texto
-                        statusEl.textContent = '📖 Leyendo texto...';
+                        // No se detectó código de barras → USAR OCR MEJORADO
+                        statusEl.textContent = '📖 Pre-procesando...';
                         statusEl.className = 'status ocr';
                         
-                        Tesseract.recognize(
-                            imageDataURL,
-                            'spa+eng',
-                            {
-                                logger: function(m) {
-                                    if (m.status === 'recognizing text') {
-                                        statusEl.textContent = '📖 OCR ' + Math.round(m.progress * 100) + '%';
+                        // Pre-procesar imagen para mejorar OCR
+                        preprocesarImagen(imageDataURL, function(processedImage) {
+                            statusEl.textContent = '📖 Leyendo texto...';
+                            
+                            Tesseract.recognize(
+                                processedImage,
+                                'spa+eng',
+                                {
+                                    logger: function(m) {
+                                        if (m.status === 'recognizing text') {
+                                            statusEl.textContent = '📖 OCR ' + Math.round(m.progress * 100) + '%';
+                                        }
                                     }
                                 }
-                            }
-                        ).then(function(result) {
-                            var texto = result.data.text;
-                            console.log('📝 OCR Texto extraído:', texto);
-                            
-                            // Mostrar preview del texto
-                            var textoPreview = texto.substring(0, 150) + (texto.length > 150 ? '...' : '');
-                            var divTexto = document.createElement('div');
-                            divTexto.className = 'resultado-ocr';
-                            divTexto.innerHTML = '<div class="texto-extraido">' + textoPreview + '</div>';
-                            itemEl.appendChild(divTexto);
-                            
-                            // Extraer productos del texto
-                            var productosExtraidos = extraerProductosDeTexto(texto);
-                            
-                            if (productosExtraidos.length > 0) {
-                                statusEl.textContent = '✅ ' + productosExtraidos.length + ' productos';
-                                statusEl.className = 'status success';
+                            ).then(function(result) {
+                                var texto = result.data.text;
+                                console.log('📝 OCR Texto completo:');
+                                console.log(texto);
                                 
-                                productosExtraidos.forEach(function(prod) {
-                                    var existe = window.datos.ciclicos.some(function(p) {
-                                        return p.codigo === prod.codigo;
-                                    });
-                                    if (!existe) {
-                                        window.datos.ciclicos.push({
-                                            id: Date.now(),
-                                            codigo: prod.codigo,
-                                            nombre: prod.nombre,
-                                            categoria: prod.categoria || 'Otros',
-                                            cantidad: prod.cantidad || 1,
-                                            origen: 'OCR'
+                                // Mostrar el texto completo extraído
+                                var divTexto = document.createElement('div');
+                                divTexto.className = 'resultado-ocr';
+                                divTexto.innerHTML = '<div class="texto-extraido"><strong>📄 Texto extraído:</strong>\n' + texto + '</div>';
+                                itemEl.appendChild(divTexto);
+                                
+                                // Extraer productos del texto
+                                var productosExtraidos = extraerProductosDeTexto(texto);
+                                
+                                if (productosExtraidos.length > 0) {
+                                    statusEl.textContent = '✅ ' + productosExtraidos.length + ' productos';
+                                    statusEl.className = 'status success';
+                                    
+                                    productosExtraidos.forEach(function(prod) {
+                                        var existe = window.datos.ciclicos.some(function(p) {
+                                            return p.codigo === prod.codigo;
                                         });
-                                        totalProductos++;
-                                        
-                                        // Mostrar nombre del producto extraído
-                                        var nombreSpan = document.createElement('span');
-                                        nombreSpan.className = 'producto-nombre';
-                                        nombreSpan.textContent = '📦 ' + prod.nombre;
-                                        itemEl.appendChild(nombreSpan);
-                                    }
-                                });
-                            } else {
-                                statusEl.textContent = '❌ Sin productos';
-                                statusEl.className = 'status error';
-                            }
-                            
-                            procesadas++;
-                            if (procesadas === files.length) {
-                                window.Storage.set('ciclicos', window.datos.ciclicos);
-                                window.renderizarCiclicos();
-                                if (totalProductos > 0) {
-                                    window.mostrarToast('✅ ' + totalProductos + ' productos detectados', '✅');
+                                        if (!existe) {
+                                            window.datos.ciclicos.push({
+                                                id: Date.now(),
+                                                codigo: prod.codigo,
+                                                nombre: prod.nombre,
+                                                categoria: prod.categoria || 'Otros',
+                                                cantidad: prod.cantidad || 1,
+                                                origen: 'OCR'
+                                            });
+                                            totalProductos++;
+                                            
+                                            var nombreSpan = document.createElement('span');
+                                            nombreSpan.className = 'producto-nombre';
+                                            nombreSpan.textContent = '📦 ' + prod.nombre;
+                                            itemEl.appendChild(nombreSpan);
+                                        }
+                                    });
                                 } else {
-                                    window.mostrarToast('⚠️ No se detectaron productos en las imágenes', '⚠️');
+                                    statusEl.textContent = '❌ Sin productos';
+                                    statusEl.className = 'status error';
                                 }
-                            }
-                        }).catch(function(err) {
-                            console.error('Error en OCR:', err);
-                            statusEl.textContent = '❌ Error OCR';
-                            statusEl.className = 'status error';
-                            
-                            procesadas++;
-                            if (procesadas === files.length) {
-                                window.Storage.set('ciclicos', window.datos.ciclicos);
-                                window.renderizarCiclicos();
-                                window.mostrarToast('⚠️ Error en OCR de algunas imágenes', '⚠️');
-                            }
+                                
+                                procesadas++;
+                                if (procesadas === files.length) {
+                                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                                    window.renderizarCiclicos();
+                                    if (totalProductos > 0) {
+                                        window.mostrarToast('✅ ' + totalProductos + ' productos detectados', '✅');
+                                    } else {
+                                        window.mostrarToast('⚠️ No se detectaron productos en las imágenes', '⚠️');
+                                    }
+                                }
+                            }).catch(function(err) {
+                                console.error('Error en OCR:', err);
+                                statusEl.textContent = '❌ Error OCR';
+                                statusEl.className = 'status error';
+                                
+                                procesadas++;
+                                if (procesadas === files.length) {
+                                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                                    window.renderizarCiclicos();
+                                    window.mostrarToast('⚠️ Error en OCR de algunas imágenes', '⚠️');
+                                }
+                            });
                         });
                     }
                 });
@@ -2166,13 +2179,12 @@ window.procesarPDFConOCR = function() {
             progressText.textContent = '📄 Procesando ' + totalPages + ' páginas con OCR...';
             
             var html = '';
-            var productosExtraidos = [];
             var paginasProcesadas = 0;
             var totalProductos = 0;
             
             function procesarPaginaConOCR(numPagina) {
                 pdf.getPage(numPagina).then(function(page) {
-                    var viewport = page.getViewport({scale: 2.0});
+                    var viewport = page.getViewport({scale: 2.5});
                     var canvas = document.createElement('canvas');
                     var context = canvas.getContext('2d');
                     canvas.width = viewport.width;
@@ -2186,75 +2198,77 @@ window.procesarPDFConOCR = function() {
                     page.render(renderContext).promise.then(function() {
                         var imageDataURL = canvas.toDataURL('image/png');
                         
-                        Tesseract.recognize(
-                            imageDataURL,
-                            'spa+eng',
-                            {
-                                logger: function(m) {
-                                    if (m.status === 'recognizing text') {
-                                        progressText.textContent = '📄 OCR página ' + numPagina + ': ' + Math.round(m.progress * 100) + '%';
+                        // Pre-procesar imagen
+                        preprocesarImagen(imageDataURL, function(processedImage) {
+                            Tesseract.recognize(
+                                processedImage,
+                                'spa+eng',
+                                {
+                                    logger: function(m) {
+                                        if (m.status === 'recognizing text') {
+                                            progressText.textContent = '📄 OCR página ' + numPagina + ': ' + Math.round(m.progress * 100) + '%';
+                                        }
                                     }
                                 }
-                            }
-                        ).then(function(result) {
-                            var texto = result.data.text;
-                            
-                            var textoPreview = texto.substring(0, 200) + (texto.length > 200 ? '...' : '');
-                            
-                            html += '<div class="resultado-ocr">';
-                            html += '  <div style="display:flex; justify-content:space-between; align-items:center;">';
-                            html += '    <span style="color:#a78bfa; font-weight:600; font-size:0.75rem;">📄 Página ' + numPagina + '</span>';
-                            html += '  </div>';
-                            html += '  <div class="texto-extraido">' + textoPreview + '</div>';
-                            html += '</div>';
-                            
-                            // Extraer productos del texto
-                            var productosPagina = extraerProductosDeTexto(texto);
-                            
-                            productosPagina.forEach(function(prod) {
-                                var existe = window.datos.ciclicos.some(function(p) {
-                                    return p.codigo === prod.codigo;
+                            ).then(function(result) {
+                                var texto = result.data.text;
+                                
+                                var textoPreview = texto.substring(0, 300) + (texto.length > 300 ? '...' : '');
+                                
+                                html += '<div class="resultado-ocr">';
+                                html += '  <div style="display:flex; justify-content:space-between; align-items:center;">';
+                                html += '    <span style="color:#a78bfa; font-weight:600; font-size:0.75rem;">📄 Página ' + numPagina + '</span>';
+                                html += '  </div>';
+                                html += '  <div class="texto-extraido">' + textoPreview + '</div>';
+                                html += '</div>';
+                                
+                                // Extraer productos del texto
+                                var productosPagina = extraerProductosDeTexto(texto);
+                                
+                                productosPagina.forEach(function(prod) {
+                                    var existe = window.datos.ciclicos.some(function(p) {
+                                        return p.codigo === prod.codigo;
+                                    });
+                                    
+                                    if (!existe) {
+                                        window.datos.ciclicos.push({
+                                            id: Date.now(),
+                                            codigo: prod.codigo,
+                                            nombre: prod.nombre,
+                                            categoria: prod.categoria || 'Otros',
+                                            cantidad: prod.cantidad || 1,
+                                            origen: 'PDF-OCR'
+                                        });
+                                        totalProductos++;
+                                    }
                                 });
                                 
-                                if (!existe) {
-                                    window.datos.ciclicos.push({
-                                        id: Date.now(),
-                                        codigo: prod.codigo,
-                                        nombre: prod.nombre,
-                                        categoria: prod.categoria || 'Otros',
-                                        cantidad: prod.cantidad || 1,
-                                        origen: 'PDF-OCR'
-                                    });
-                                    productosExtraidos.push(prod);
-                                    totalProductos++;
+                                paginasProcesadas++;
+                                var progreso = Math.round((paginasProcesadas / totalPages) * 100);
+                                progressBar.style.width = progreso + '%';
+                                progressText.textContent = '📄 Procesada página ' + paginasProcesadas + ' de ' + totalPages + ' | ' + totalProductos + ' productos encontrados';
+                                
+                                container.innerHTML = html;
+                                
+                                if (paginasProcesadas === totalPages) {
+                                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                                    window.renderizarCiclicos();
+                                    progressText.textContent = '✅ Procesamiento completado. ' + totalProductos + ' productos extraídos.';
+                                    
+                                    if (totalProductos > 0) {
+                                        window.mostrarToast('✅ Se extrajeron ' + totalProductos + ' productos del PDF', '✅');
+                                    } else {
+                                        window.mostrarToast('⚠️ No se detectaron productos en el PDF', '⚠️');
+                                    }
+                                }
+                            }).catch(function(err) {
+                                console.error('Error en OCR:', err);
+                                paginasProcesadas++;
+                                if (paginasProcesadas === totalPages) {
+                                    progressText.textContent = '⚠️ Procesamiento completado con errores.';
+                                    window.mostrarToast('⚠️ Error en OCR de algunas páginas', '⚠️');
                                 }
                             });
-                            
-                            paginasProcesadas++;
-                            var progreso = Math.round((paginasProcesadas / totalPages) * 100);
-                            progressBar.style.width = progreso + '%';
-                            progressText.textContent = '📄 Procesada página ' + paginasProcesadas + ' de ' + totalPages + ' | ' + totalProductos + ' productos encontrados';
-                            
-                            container.innerHTML = html;
-                            
-                            if (paginasProcesadas === totalPages) {
-                                window.Storage.set('ciclicos', window.datos.ciclicos);
-                                window.renderizarCiclicos();
-                                progressText.textContent = '✅ Procesamiento completado. ' + totalProductos + ' productos extraídos.';
-                                
-                                if (totalProductos > 0) {
-                                    window.mostrarToast('✅ Se extrajeron ' + totalProductos + ' productos del PDF', '✅');
-                                } else {
-                                    window.mostrarToast('⚠️ No se detectaron productos en el PDF', '⚠️');
-                                }
-                            }
-                        }).catch(function(err) {
-                            console.error('Error en OCR:', err);
-                            paginasProcesadas++;
-                            if (paginasProcesadas === totalPages) {
-                                progressText.textContent = '⚠️ Procesamiento completado con errores.';
-                                window.mostrarToast('⚠️ Error en OCR de algunas páginas', '⚠️');
-                            }
                         });
                     }).catch(function(err) {
                         console.error('Error renderizando página:', err);
