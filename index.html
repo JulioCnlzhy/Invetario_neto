@@ -6,14 +6,14 @@
     <title>Sistema de Inventario - NETO</title>
     
     <!-- PWA Metadata -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NETO Inventario">
     
-    <!-- CSS Principal -->
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- CSS Principal - Ruta relativa -->
+    <link rel="stylesheet" href="./css/styles.css">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,7 +31,6 @@
             border-width: 2px !important;
         }
         
-        /* Ajustes para el modo oscuro de NETO */
         .neto-dark {
             background: #0f172a;
         }
@@ -60,18 +59,6 @@
         
         .neto-input::placeholder {
             color: #64748b;
-        }
-        
-        .neto-select {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #e2e8f0;
-        }
-        
-        .neto-select:focus {
-            outline: none;
-            border-color: #f97316;
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
         
         ::-webkit-scrollbar {
@@ -209,42 +196,36 @@
                     <span>🎨</span> <span>Tipo de Promoción / Estilo Visual *</span>
                 </label>
                 <div class="grid grid-cols-2 gap-2.5" id="gridPromociones">
-                    
                     <button type="button" onclick="window.seleccionarEstilo(this, 'coca')"
                         class="promo-card selected flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-red-500 transition text-slate-200">
                         <span class="text-xl mb-1">🥤</span>
                         <span class="text-xs font-bold text-red-400">Coca / Bebida Hielo</span>
                         <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Refrescante, condensación</span>
                     </button>
-
                     <button type="button" onclick="window.seleccionarEstilo(this, 'botanero')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-amber-500 transition text-slate-200">
                         <span class="text-xl mb-1">🍿</span>
                         <span class="text-xs font-bold text-amber-400">Botanero / 3x2</span>
                         <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Vibrante, fiesta</span>
                     </button>
-
                     <button type="button" onclick="window.seleccionarEstilo(this, 'frescura')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-cyan-600 transition text-slate-200">
                         <span class="text-xl mb-1">🥛</span>
                         <span class="text-xs font-bold text-cyan-400">Lácteos & Frescura</span>
                         <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Limpio, natural</span>
                     </button>
-
                     <button type="button" onclick="window.seleccionarEstilo(this, 'estudio')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-emerald-600 transition text-slate-200">
                         <span class="text-xl mb-1">🧼</span>
                         <span class="text-xs font-bold text-emerald-400">Higiene / Premium</span>
                         <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Estudio elegante</span>
                     </button>
-
                     <button type="button" onclick="window.seleccionarEstilo(this, 'remate')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-fuchsia-600 transition text-slate-200">
                         <span class="text-xl mb-1">⚡</span>
                         <span class="text-xs font-bold text-fuchsia-400">Remate Relámpago</span>
                         <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Neón, ofertas</span>
                     </button>
-
                     <button type="button" onclick="window.seleccionarEstilo(this, 'clasico')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-blue-600 transition text-slate-200">
                         <span class="text-xl mb-1">🏷️</span>
@@ -553,45 +534,104 @@
 </div>
 
 <!-- ========================================== -->
-<!-- JAVASCRIPT - RUTA FIJA PARA Invetario_neto -->
+<!-- JAVASCRIPT - CARGA DE SCRIPTS              -->
 <!-- ========================================== -->
 
 <script>
-    // Ruta base fija para GitHub Pages
-    // Tu repositorio se llama: Invetario_neto
-    window.repoPath = '/Invetario_neto';
-    console.log('📁 Repositorio:', window.repoPath);
-    
-    // Función para cargar scripts con la ruta correcta
-    window.loadScript = function(src) {
-        const script = document.createElement('script');
-        script.src = window.repoPath + src;
-        document.body.appendChild(script);
-    };
+    // ============================================
+    // DETECCIÓN AUTOMÁTICA DE RUTA BASE
+    // ============================================
+    (function() {
+        // Obtener la ruta actual
+        var path = window.location.pathname;
+        console.log('📍 Path actual:', path);
+        
+        // Si estamos en GitHub Pages (el path tiene más de 1 segmento)
+        var parts = path.split('/').filter(function(p) { return p !== ''; });
+        console.log('📂 Segmentos:', parts);
+        
+        if (parts.length > 0) {
+            // El primer segmento es el nombre del repositorio
+            window.repoPath = '/' + parts[0];
+            console.log('📁 Repositorio detectado:', window.repoPath);
+        } else {
+            window.repoPath = '';
+            console.log('📁 Ejecutando en local o dominio personalizado');
+        }
+        
+        // Función para cargar scripts
+        window.loadScript = function(src) {
+            return new Promise(function(resolve, reject) {
+                var script = document.createElement('script');
+                script.src = window.repoPath + src;
+                script.onload = function() {
+                    console.log('✅ Cargado:', script.src);
+                    resolve();
+                };
+                script.onerror = function() {
+                    console.error('❌ Error al cargar:', script.src);
+                    // Intentar con ruta alternativa (sin repoPath)
+                    var fallbackScript = document.createElement('script');
+                    fallbackScript.src = src;
+                    fallbackScript.onload = function() {
+                        console.log('✅ Cargado (fallback):', src);
+                        resolve();
+                    };
+                    fallbackScript.onerror = function() {
+                        reject(new Error('Error al cargar ' + src));
+                    };
+                    document.body.appendChild(fallbackScript);
+                };
+                document.body.appendChild(script);
+            });
+        };
+    })();
 </script>
 
-<!-- Cargar todos los scripts con la ruta base -->
+<!-- ========================================== -->
+<!-- CARGA SECUENCIAL DE SCRIPTS                -->
+<!-- ========================================== -->
 <script>
-    // Lista de scripts a cargar
-    const scripts = [
-        '/js/utils/storage.js',
-        '/js/utils/scanner.js',
-        '/js/screens/home.js',
-        '/js/screens/promociones.js',
-        '/js/screens/caducidades.js',
-        '/js/screens/ciclicos.js',
-        '/js/screens/inventario.js',
-        '/js/screens/visual.js',
-        '/js/app.js'
-    ];
-    
-    // Cargar cada script
-    scripts.forEach(function(src) {
-        const script = document.createElement('script');
-        script.src = window.repoPath + src;
-        document.body.appendChild(script);
-        console.log('✅ Cargando:', script.src);
-    });
+    (async function() {
+        try {
+            console.log('🚀 Iniciando carga de scripts...');
+            
+            var scripts = [
+                '/js/utils/storage.js',
+                '/js/utils/scanner.js',
+                '/js/screens/home.js',
+                '/js/screens/promociones.js',
+                '/js/screens/caducidades.js',
+                '/js/screens/ciclicos.js',
+                '/js/screens/inventario.js',
+                '/js/screens/visual.js',
+                '/js/app.js'
+            ];
+            
+            for (var i = 0; i < scripts.length; i++) {
+                await window.loadScript(scripts[i]);
+            }
+            
+            console.log('🚀 Todos los scripts cargados correctamente');
+            
+            // Inicializar la aplicación después de cargar todos los scripts
+            setTimeout(function() {
+                if (typeof App !== 'undefined' && App.init) {
+                    console.log('📱 Inicializando App...');
+                    App.init();
+                } else {
+                    console.warn('⚠️ App no está definido después de cargar los scripts');
+                    // Intentar con window.initApp
+                    if (typeof window.initApp === 'function') {
+                        window.initApp();
+                    }
+                }
+            }, 200);
+            
+        } catch (error) {
+            console.error('❌ Error cargando scripts:', error);
+        }
+    })();
 </script>
 
 </body>
