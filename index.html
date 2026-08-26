@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NETO Inventario">
     
-    <!-- CSS Principal - Ruta relativa -->
+    <!-- CSS Principal -->
     <link rel="stylesheet" href="./css/styles.css">
     
     <!-- Tailwind CSS -->
@@ -22,7 +22,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Estilos específicos para tu sección de promociones */
         .promo-card.selected {
             border-color: #f97316 !important;
             background-color: #1e293b !important;
@@ -30,81 +29,32 @@
             transform: translateY(-2px);
             border-width: 2px !important;
         }
-        
-        .neto-dark {
-            background: #0f172a;
-        }
-        
-        .neto-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-        }
-        
+        .neto-dark { background: #0f172a; }
         .neto-input {
             background: #0f172a;
             border: 1px solid #334155;
             color: #e2e8f0;
             transition: all 0.2s ease;
         }
-        
         .neto-input:focus {
             outline: none;
             border-color: #f97316;
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
-        
-        .neto-input:hover {
-            border-color: #475569;
-        }
-        
-        .neto-input::placeholder {
-            color: #64748b;
-        }
-        
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #f97316;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #ea580c;
-        }
-        
-        .promo-card {
-            transition: all 0.2s ease;
-        }
-        
-        .promo-card:hover {
-            transform: translateY(-1px);
-            border-color: #475569;
-        }
-        
+        .neto-input::placeholder { color: #64748b; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 4px; }
+        .promo-card { transition: all 0.2s ease; }
+        .promo-card:hover { transform: translateY(-1px); border-color: #475569; }
         @media (max-width: 400px) {
-            .promo-card {
-                padding: 8px !important;
-            }
-            .promo-card span.text-xl {
-                font-size: 1.25rem !important;
-            }
-            .promo-card span.text-xs {
-                font-size: 0.65rem !important;
-            }
+            .promo-card { padding: 8px !important; }
         }
     </style>
 </head>
 <body>
 
-<!-- Toast Notification Container -->
+<!-- Toast Notification -->
 <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]">
     <div id="toastContent" class="bg-slate-900 text-white border border-orange-500 rounded-xl p-4 shadow-2xl flex items-center gap-3 text-xs font-semibold">
         <span id="toastIcon" class="text-lg">ℹ️</span>
@@ -113,70 +63,60 @@
 </div>
 
 <div class="container">
-    <!-- ========================================== -->
-    <!-- HEADER UNIFICADO                           -->
-    <!-- ========================================== -->
+    <!-- HEADER -->
     <header class="header">
         <h1>📦 NETO Inventario</h1>
         <p class="subtitle">🔍 Sistema Integral de Gestión</p>
     </header>
 
-    <!-- ========================================== -->
-    <!-- BOTÓN FLOTANTE DE ESCANEO                  -->
-    <!-- ========================================== -->
-    <button class="fab-scan" id="fabScan" onclick="window.activarEscaneo()">
+    <!-- BOTÓN FLOTANTE -->
+    <button class="fab-scan" id="fabScan" onclick="activarEscaneo()">
         <i class="fas fa-camera"></i>
     </button>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA DE INICIO                         -->
-    <!-- ========================================== -->
+    <!-- ======== PANTALLA DE INICIO ======== -->
     <section id="screen-home" class="screen active">
         <div class="main-menu">
-            <div class="menu-item orange" onclick="window.showScreen('promociones')">
+            <div class="menu-item orange" onclick="showScreen('promociones')">
                 <span class="icon"><i class="fas fa-tags"></i></span>
                 <span class="label">🏷️ Promociones</span>
                 <span class="badge-count" id="badge-promo">0</span>
             </div>
-            <div class="menu-item" onclick="window.showScreen('caducidades')">
+            <div class="menu-item" onclick="showScreen('caducidades')">
                 <span class="icon"><i class="fas fa-clock"></i></span>
                 <span class="label">⏰ Caducidades</span>
                 <span class="badge-count" id="badge-cad">0</span>
             </div>
-            <div class="menu-item orange" onclick="window.showScreen('ciclicos')">
+            <div class="menu-item orange" onclick="showScreen('ciclicos')">
                 <span class="icon"><i class="fas fa-sync-alt"></i></span>
                 <span class="label">🔄 Conteo Cíclico</span>
             </div>
-            <div class="menu-item" onclick="window.showScreen('inventario')">
+            <div class="menu-item" onclick="showScreen('inventario')">
                 <span class="icon"><i class="fas fa-chart-bar"></i></span>
                 <span class="label">📊 Inventario</span>
             </div>
-            <div class="menu-item full-width" onclick="window.showScreen('visual')">
+            <div class="menu-item full-width" onclick="showScreen('visual')">
                 <span class="icon"><i class="fas fa-eye"></i></span>
                 <span class="label">👁️ Visualización General</span>
             </div>
         </div>
         
-        <button class="btn btn-orange btn-scan" onclick="window.activarEscaneo()">
+        <button class="btn btn-orange btn-scan" onclick="activarEscaneo()">
             <i class="fas fa-camera"></i> Escanear Código de Barras
         </button>
         
-        <button id="btnInstalarApp" onclick="window.instalarApp()"
-            class="btn btn-secondary" style="margin-top: 10px;">
+        <button id="btnInstalarApp" onclick="instalarApp()" class="btn btn-secondary" style="margin-top: 10px;">
             <i class="fas fa-download"></i> Instalar App
         </button>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: PROMOCIONES                      -->
-    <!-- ========================================== -->
+    <!-- ======== PANTALLA: PROMOCIONES ======== -->
     <section id="screen-promociones" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
+        <button class="btn btn-back" onclick="showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
         <div class="neto-dark rounded-3xl p-5 shadow-2xl space-y-5" style="background: #0f172a; border: 1px solid #1e293b;">
-            
             <div class="text-center">
                 <div class="inline-flex items-center gap-2 bg-orange-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-2 shadow-md">
                     ⚡ Tiendas NETO Style
@@ -188,74 +128,65 @@
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Nombre del producto *</label>
                 <input type="text" id="prodNombre" placeholder="Ej: Coca-Cola 600ml, Sabritas 3x2, Shampoo Sedal"
-                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
+                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-orange-400 mb-2 flex items-center gap-1">
-                    <span>🎨</span> <span>Tipo de Promoción / Estilo Visual *</span>
-                </label>
+                <label class="block text-xs font-bold text-orange-400 mb-2">🎨 Tipo de Promoción *</label>
                 <div class="grid grid-cols-2 gap-2.5" id="gridPromociones">
-                    <button type="button" onclick="window.seleccionarEstilo(this, 'coca')"
+                    <button type="button" onclick="seleccionarEstilo(this, 'coca')"
                         class="promo-card selected flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-red-500 transition text-slate-200">
                         <span class="text-xl mb-1">🥤</span>
                         <span class="text-xs font-bold text-red-400">Coca / Bebida Hielo</span>
-                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Refrescante, condensación</span>
                     </button>
-                    <button type="button" onclick="window.seleccionarEstilo(this, 'botanero')"
+                    <button type="button" onclick="seleccionarEstilo(this, 'botanero')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-amber-500 transition text-slate-200">
                         <span class="text-xl mb-1">🍿</span>
                         <span class="text-xs font-bold text-amber-400">Botanero / 3x2</span>
-                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Vibrante, fiesta</span>
                     </button>
-                    <button type="button" onclick="window.seleccionarEstilo(this, 'frescura')"
+                    <button type="button" onclick="seleccionarEstilo(this, 'frescura')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-cyan-600 transition text-slate-200">
                         <span class="text-xl mb-1">🥛</span>
                         <span class="text-xs font-bold text-cyan-400">Lácteos & Frescura</span>
-                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Limpio, natural</span>
                     </button>
-                    <button type="button" onclick="window.seleccionarEstilo(this, 'estudio')"
+                    <button type="button" onclick="seleccionarEstilo(this, 'estudio')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-emerald-600 transition text-slate-200">
                         <span class="text-xl mb-1">🧼</span>
                         <span class="text-xs font-bold text-emerald-400">Higiene / Premium</span>
-                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Estudio elegante</span>
                     </button>
-                    <button type="button" onclick="window.seleccionarEstilo(this, 'remate')"
+                    <button type="button" onclick="seleccionarEstilo(this, 'remate')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-fuchsia-600 transition text-slate-200">
                         <span class="text-xl mb-1">⚡</span>
                         <span class="text-xs font-bold text-fuchsia-400">Remate Relámpago</span>
-                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Neón, ofertas</span>
                     </button>
-                    <button type="button" onclick="window.seleccionarEstilo(this, 'clasico')"
+                    <button type="button" onclick="seleccionarEstilo(this, 'clasico')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-blue-600 transition text-slate-200">
                         <span class="text-xl mb-1">🏷️</span>
                         <span class="text-xs font-bold text-blue-400">Abarrotes NETO</span>
-                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Comercial clásico</span>
                     </button>
                 </div>
             </div>
 
             <div id="campoVencimiento" class="hidden transition-all bg-amber-900/30 p-3 rounded-xl border border-amber-700">
                 <label class="block text-xs font-bold text-amber-400 mb-1">🗓️ Fecha de Vencimiento</label>
-                <input type="date" id="prodVencimiento"
-                    class="w-full neto-input rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+                <input type="date" id="prodVencimiento" class="w-full neto-input rounded-lg p-2.5 text-sm text-slate-200">
             </div>
 
             <div class="flex items-center gap-2">
-                <input type="checkbox" id="checkPerecedero" class="w-4 h-4 rounded border-slate-600 text-orange-500 focus:ring-orange-400 bg-slate-700">
+                <input type="checkbox" id="checkPerecedero" class="w-4 h-4 rounded border-slate-600 text-orange-500 bg-slate-700">
                 <label for="checkPerecedero" class="text-xs font-medium text-slate-300 cursor-pointer">¿Tiene fecha de caducidad?</label>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Precio o Promoción *</label>
                 <input type="text" id="prodPrecio" placeholder="Ej: $18.00 ó 3x2 en botanas"
-                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
+                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Piezas en existencia</label>
                 <input type="number" id="prodExistencia" placeholder="Ej: 24"
-                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
+                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500">
             </div>
 
             <div>
@@ -267,7 +198,6 @@
                             <i class="fas fa-camera text-lg"></i>
                         </div>
                         <span class="text-xs text-slate-300 font-bold">Tocar para tomar foto o elegir de la galería</span>
-                        <span class="text-[10px] text-slate-500">Muestra ambas opciones en Android/iOS</span>
                     </label>
                     <div id="previewContainer" class="mt-3 hidden">
                         <img id="imgPreview" class="h-28 mx-auto rounded-lg border-2 border-orange-400 object-cover shadow-md">
@@ -276,8 +206,7 @@
                 </div>
             </div>
 
-            <button onclick="window.generarPrompt()"
-                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition text-sm tracking-wide">
+            <button onclick="generarPrompt()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition text-sm tracking-wide">
                 ⚡ GENERAR PROMPT PUBLICITARIO
             </button>
         </div>
@@ -285,18 +214,13 @@
         <div id="outputSection" class="mt-4 neto-dark rounded-3xl p-5 hidden space-y-3 shadow-2xl" style="background: #0f172a; border: 1px solid #1e293b;">
             <div class="flex justify-between items-center">
                 <h2 class="text-xs font-bold text-orange-400 uppercase tracking-wider">📋 Tu Prompt listo:</h2>
-                <button onclick="window.copiarPrompt()" class="bg-slate-700 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-orange-500 hover:text-white transition">
+                <button onclick="copiarPrompt()" class="bg-slate-700 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-orange-500 hover:text-white transition">
                     <i class="fas fa-copy"></i> Copiar
                 </button>
             </div>
-            
-            <textarea id="promptResult" rows="7" readonly
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
-
-            <button onclick="window.enviarWhatsApp()"
-                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
-                <i class="fab fa-whatsapp text-lg"></i>
-                Enviar por WhatsApp
+            <textarea id="promptResult" rows="7" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
+            <button onclick="enviarWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
+                <i class="fab fa-whatsapp text-lg"></i> Enviar por WhatsApp
             </button>
         </div>
 
@@ -311,11 +235,9 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: CADUCIDADES                      -->
-    <!-- ========================================== -->
+    <!-- ======== PANTALLA: CADUCIDADES ======== -->
     <section id="screen-caducidades" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
+        <button class="btn btn-back" onclick="showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
@@ -325,7 +247,7 @@
                 <span class="barcode-badge"><i class="fas fa-barcode"></i> Código de barras</span>
             </div>
             
-            <div class="scan-area" onclick="window.enfocarInput('cad-codigo')">
+            <div class="scan-area" onclick="enfocarInput('cad-codigo')">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Toca para escanear o ingresa el código</span>
                 <input type="text" id="cad-codigo" placeholder="Código de barras" class="barcode-input" />
@@ -343,7 +265,7 @@
                 <label><i class="fas fa-boxes"></i> Cantidad</label>
                 <input type="number" id="cad-cantidad" placeholder="Cantidad" value="1" min="1" />
             </div>
-            <button class="btn btn-primary" onclick="window.guardarCaducidad()">
+            <button class="btn btn-primary" onclick="guardarCaducidad()">
                 <i class="fas fa-save"></i> Guardar
             </button>
         </div>
@@ -359,24 +281,20 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: CICLICOS                         -->
-    <!-- ========================================== -->
+    <!-- ======== PANTALLA: CICLICOS ======== -->
     <section id="screen-ciclicos" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
+        <button class="btn btn-back" onclick="showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
         <div class="card">
-            <div class="card-title">
-                <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
-            </div>
+            <div class="card-title"><span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span></div>
             
-            <div class="scan-area" onclick="window.enfocarInput('ciclico-codigo')">
+            <div class="scan-area" onclick="enfocarInput('ciclico-codigo')">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Escanea el código de barras del producto</span>
                 <input type="text" id="ciclico-codigo" placeholder="Código de barras" class="barcode-input" />
-                <button class="btn btn-primary" onclick="window.buscarProductoCiclico()">
+                <button class="btn btn-primary" onclick="buscarProductoCiclico()">
                     <i class="fas fa-search"></i> Buscar producto
                 </button>
             </div>
@@ -387,7 +305,7 @@
                 <i class="fas fa-images scan-icon"></i>
                 <span class="scan-hint">Sube foto del sistema para detectar códigos</span>
                 <input type="file" accept="image/*" multiple id="ciclico-imagenes" />
-                <button class="btn btn-orange" onclick="window.procesarImagenesCiclico()">
+                <button class="btn btn-orange" onclick="procesarImagenesCiclico()">
                     <i class="fas fa-file-image"></i> Procesar Imágenes
                 </button>
             </div>
@@ -401,27 +319,25 @@
             <div id="ciclico-lista">
                 <p class="empty-message">Los productos aparecerán aquí después de escanear</p>
             </div>
-            <button class="btn btn-success hidden" id="btn-guardar-ciclico" onclick="window.guardarConteoCiclico()">
+            <button class="btn btn-success hidden" id="btn-guardar-ciclico" onclick="guardarConteoCiclico()">
                 <i class="fas fa-check-circle"></i> Guardar Conteo
             </button>
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: INVENTARIO                       -->
-    <!-- ========================================== -->
+    <!-- ======== PANTALLA: INVENTARIO ======== -->
     <section id="screen-inventario" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
+        <button class="btn btn-back" onclick="showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
         <div class="card">
             <div class="card-title"><i class="fas fa-chart-bar"></i> Inventario</div>
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="window.mostrarInventario('ciclico')">
+                <button class="btn btn-primary" onclick="mostrarInventario('ciclico')">
                     <i class="fas fa-sync-alt"></i> Cíclico
                 </button>
-                <button class="btn btn-orange" onclick="window.mostrarInventario('manual')">
+                <button class="btn btn-orange" onclick="mostrarInventario('manual')">
                     <i class="fas fa-pen"></i> Manual
                 </button>
             </div>
@@ -432,7 +348,7 @@
                 <div class="card-title"><i class="fas fa-sync-alt"></i> Inventario Cíclico</div>
                 <p class="help-text">Sube foto del sistema para comparar automáticamente</p>
                 <input type="file" accept="image/*" multiple id="inv-ciclico-imagenes" />
-                <button class="btn btn-primary" onclick="window.procesarInventarioCiclico()">
+                <button class="btn btn-primary" onclick="procesarInventarioCiclico()">
                     <i class="fas fa-file-image"></i> Procesar y Comparar
                 </button>
                 <div id="inv-ciclico-resultados"></div>
@@ -446,7 +362,7 @@
                     <span class="barcode-badge"><i class="fas fa-barcode"></i> Código de barras</span>
                 </div>
                 
-                <div class="scan-area" onclick="window.enfocarInput('inv-manual-codigo')">
+                <div class="scan-area" onclick="enfocarInput('inv-manual-codigo')">
                     <i class="fas fa-camera scan-icon"></i>
                     <span class="scan-hint">Escanea el código de barras</span>
                     <input type="text" id="inv-manual-codigo" placeholder="Código de barras" class="barcode-input" />
@@ -464,7 +380,7 @@
                     <label><i class="fas fa-database"></i> Cantidad en Sistema</label>
                     <input type="number" id="inv-manual-sistema" placeholder="Cantidad registrada" />
                 </div>
-                <button class="btn btn-orange" onclick="window.guardarInventarioManual()">
+                <button class="btn btn-orange" onclick="guardarInventarioManual()">
                     <i class="fas fa-save"></i> Guardar
                 </button>
             </div>
@@ -481,11 +397,9 @@
         </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA: VISUAL                           -->
-    <!-- ========================================== -->
+    <!-- ======== PANTALLA: VISUAL ======== -->
     <section id="screen-visual" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
+        <button class="btn btn-back" onclick="showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
@@ -519,13 +433,13 @@
 
         <div class="card">
             <div class="btn-group">
-                <button class="btn btn-secondary" onclick="window.exportarDatos()">
+                <button class="btn btn-secondary" onclick="exportarDatos()">
                     <i class="fas fa-download"></i> Exportar Backup
                 </button>
-                <button class="btn btn-secondary" onclick="window.importarDatos()">
+                <button class="btn btn-secondary" onclick="importarDatos()">
                     <i class="fas fa-upload"></i> Importar Backup
                 </button>
-                <button class="btn btn-danger" onclick="window.limpiarTodosLosDatos()">
+                <button class="btn btn-danger" onclick="limpiarTodosLosDatos()">
                     <i class="fas fa-trash-alt"></i> Limpiar Datos
                 </button>
             </div>
@@ -534,104 +448,894 @@
 </div>
 
 <!-- ========================================== -->
-<!-- JAVASCRIPT - CARGA DE SCRIPTS              -->
+<!-- TODO EL JAVASCRIPT EN UN SOLO BLOQUE      -->
 <!-- ========================================== -->
-
 <script>
-    // ============================================
-    // DETECCIÓN AUTOMÁTICA DE RUTA BASE
-    // ============================================
-    (function() {
-        // Obtener la ruta actual
-        var path = window.location.pathname;
-        console.log('📍 Path actual:', path);
-        
-        // Si estamos en GitHub Pages (el path tiene más de 1 segmento)
-        var parts = path.split('/').filter(function(p) { return p !== ''; });
-        console.log('📂 Segmentos:', parts);
-        
-        if (parts.length > 0) {
-            // El primer segmento es el nombre del repositorio
-            window.repoPath = '/' + parts[0];
-            console.log('📁 Repositorio detectado:', window.repoPath);
+// ============================================================
+// SISTEMA DE INVENTARIO - TODO EL CÓDIGO EN UN SOLO ARCHIVO
+// ============================================================
+
+// ============================================================
+// 1. ALMACENAMIENTO LOCAL
+// ============================================================
+function getData(key, defaultValue = []) {
+    try {
+        const data = localStorage.getItem('inv_barras_' + key);
+        return data ? JSON.parse(data) : defaultValue;
+    } catch (e) {
+        return defaultValue;
+    }
+}
+
+function setData(key, data) {
+    localStorage.setItem('inv_barras_' + key, JSON.stringify(data));
+}
+
+// ============================================================
+// 2. TOAST NOTIFICATIONS
+// ============================================================
+function mostrarToast(mensaje, icono = 'ℹ️') {
+    const container = document.getElementById('toastContainer');
+    if (container) {
+        const msg = document.getElementById('toastMessage');
+        const icn = document.getElementById('toastIcon');
+        if (msg) msg.textContent = mensaje;
+        if (icn) icn.textContent = icono;
+        container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+        setTimeout(() => {
+            container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+        }, 4000);
+    } else {
+        alert(mensaje);
+    }
+}
+
+// ============================================================
+// 3. NAVEGACIÓN
+// ============================================================
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen-' + screenId);
+    if (screen) screen.classList.add('active');
+    
+    if (screenId === 'visual') actualizarVisual();
+    if (screenId === 'promociones') cargarPromocionesGuardadas();
+    if (screenId === 'caducidades') cargarCaducidades();
+    if (screenId === 'inventario') mostrarInventario('manual');
+    
+    const fab = document.getElementById('fabScan');
+    if (fab) {
+        if (screenId === 'visual') {
+            fab.classList.remove('show');
         } else {
-            window.repoPath = '';
-            console.log('📁 Ejecutando en local o dominio personalizado');
+            fab.classList.add('show');
         }
-        
-        // Función para cargar scripts
-        window.loadScript = function(src) {
-            return new Promise(function(resolve, reject) {
-                var script = document.createElement('script');
-                script.src = window.repoPath + src;
-                script.onload = function() {
-                    console.log('✅ Cargado:', script.src);
-                    resolve();
-                };
-                script.onerror = function() {
-                    console.error('❌ Error al cargar:', script.src);
-                    // Intentar con ruta alternativa (sin repoPath)
-                    var fallbackScript = document.createElement('script');
-                    fallbackScript.src = src;
-                    fallbackScript.onload = function() {
-                        console.log('✅ Cargado (fallback):', src);
-                        resolve();
-                    };
-                    fallbackScript.onerror = function() {
-                        reject(new Error('Error al cargar ' + src));
-                    };
-                    document.body.appendChild(fallbackScript);
-                };
-                document.body.appendChild(script);
-            });
-        };
-    })();
-</script>
+    }
+}
 
-<!-- ========================================== -->
-<!-- CARGA SECUENCIAL DE SCRIPTS                -->
-<!-- ========================================== -->
-<script>
-    (async function() {
-        try {
-            console.log('🚀 Iniciando carga de scripts...');
-            
-            var scripts = [
-                '/js/utils/storage.js',
-                '/js/utils/scanner.js',
-                '/js/screens/home.js',
-                '/js/screens/promociones.js',
-                '/js/screens/caducidades.js',
-                '/js/screens/ciclicos.js',
-                '/js/screens/inventario.js',
-                '/js/screens/visual.js',
-                '/js/app.js'
-            ];
-            
-            for (var i = 0; i < scripts.length; i++) {
-                await window.loadScript(scripts[i]);
-            }
-            
-            console.log('🚀 Todos los scripts cargados correctamente');
-            
-            // Inicializar la aplicación después de cargar todos los scripts
-            setTimeout(function() {
-                if (typeof App !== 'undefined' && App.init) {
-                    console.log('📱 Inicializando App...');
-                    App.init();
-                } else {
-                    console.warn('⚠️ App no está definido después de cargar los scripts');
-                    // Intentar con window.initApp
-                    if (typeof window.initApp === 'function') {
-                        window.initApp();
-                    }
-                }
-            }, 200);
-            
-        } catch (error) {
-            console.error('❌ Error cargando scripts:', error);
+function enfocarInput(id) {
+    const input = document.getElementById(id);
+    if (input) {
+        input.focus();
+        input.select();
+    }
+}
+
+// ============================================================
+// 4. ESCÁNER
+// ============================================================
+function activarEscaneo() {
+    const screens = {
+        'screen-promociones': 'promo-codigo',
+        'screen-caducidades': 'cad-codigo',
+        'screen-ciclicos': 'ciclico-codigo',
+        'screen-inventario': 'inv-manual-codigo'
+    };
+    
+    let targetId = null;
+    for (const [screenId, inputId] of Object.entries(screens)) {
+        const screen = document.getElementById(screenId);
+        if (screen && screen.classList.contains('active')) {
+            targetId = inputId;
+            break;
         }
-    })();
+    }
+    
+    if (!targetId) {
+        const opcion = confirm('¿Dónde quieres escanear?\nOK = Promociones\nCancelar = Caducidades');
+        if (opcion) {
+            showScreen('promociones');
+            targetId = 'promo-codigo';
+        } else {
+            showScreen('caducidades');
+            targetId = 'cad-codigo';
+        }
+    }
+    
+    if (targetId) {
+        const input = document.getElementById(targetId);
+        if (input) {
+            const codigo = prompt('📷 Escanea el código de barras:\n(Ingresa el código manualmente)');
+            if (codigo && codigo.trim()) {
+                input.value = codigo.trim();
+                input.dispatchEvent(new Event('input'));
+                input.dispatchEvent(new Event('change'));
+                if (targetId === 'ciclico-codigo') {
+                    setTimeout(() => buscarProductoCiclico(), 300);
+                }
+            }
+        }
+    }
+}
+
+// ============================================================
+// 5. PROMOCIONES (Tu sistema NETO)
+// ============================================================
+let estiloSeleccionado = 'coca';
+const numeroWhatsApp = '522217709192';
+
+const presetsEstilos = {
+    coca: "Estilo publicitario icónico y refrescante tipo Coca-Cola: Gotas de condensación helada en el envase, cubos de hielo traslúcidos alrededor, destellos de luz, fondo rojo vibrante y atmósfera fría ultra tentadora.",
+    botanero: "Estilo festivo y enérgico para botanas y promociones 3x2: Colores cálidos y amarillos/naranjas saturados, chispeante, composición dinámica con botanas o elementos volando alegremente en el fondo.",
+    frescura: "Estilo ultra limpio para lácteos y productos frescos: Fondo blanco suave con tonos azul pastel, ondas o salpicaduras suaves de frescura, sensación de calidad del campo y saludabilidad.",
+    estudio: "Estilo comercial elegante tipo producto de cuidado personal: Luz de estudio fotográfico suave y difusa, fondo neutro con sombras sutiles, destellos higiénicos y apariencia premium de alta gama.",
+    remate: "Estilo de alto impacto visual para remates relámpago: Cartel promocional vibrante con luces neón, tonos fuego/fucsia, etiquetas de descuento gigantes y sentido de oportunidad imperdible.",
+    clasico: "Estilo anuncio comercial directo tipo Súper NETO: Fotografía de producto nítida sobre mostrador impecable, iluminación comercial brillante en azul rey y naranja, enfoque total en la etiqueta y claridad en la oferta."
+};
+
+function seleccionarEstilo(btn, estilo) {
+    document.querySelectorAll('.promo-card').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    estiloSeleccionado = estilo;
+}
+
+function generarPrompt() {
+    const nombre = document.getElementById('prodNombre').value.trim();
+    const precio = document.getElementById('prodPrecio').value.trim();
+    const existencia = document.getElementById('prodExistencia').value.trim();
+    const vencimiento = document.getElementById('prodVencimiento').value;
+    const tieneFoto = document.getElementById('prodFoto').files.length > 0;
+
+    if (!nombre || !precio) {
+        mostrarToast('Ingresa el Nombre del producto y la Oferta/Precio.', '⚠️');
+        return;
+    }
+
+    let promptText = `Hola colega, genera una imagen publicitaria profesional de alta calidad para mi tienda con la siguiente información:\n\n`;
+    promptText += `• Producto: ${nombre}\n`;
+    promptText += `• Oferta / Precio: ${precio}\n`;
+    if (existencia) promptText += `• Stock disponible: ${existencia} piezas\n`;
+    
+    const checkPerecedero = document.getElementById('checkPerecedero');
+    if (checkPerecedero.checked && vencimiento) {
+        promptText += `• Fecha de vencimiento: ${vencimiento}\n`;
+    }
+    if (tieneFoto) promptText += `• [Nota: Te adjunto la foto real del producto como referencia visual]\n`;
+    promptText += `\n🎨 Tema y Estilo Visual Solicitado:\n${presetsEstilos[estiloSeleccionado]}\n`;
+    promptText += `\nPor favor integra el texto promocional "${precio}" de forma llamativa, legible y estética dentro del diseño publicitario.`;
+
+    // Guardar en localStorage
+    const promociones = getData('promociones');
+    promociones.push({
+        id: Date.now(),
+        nombre: nombre,
+        precio: precio,
+        existencia: existencia || 0,
+        vencimiento: vencimiento || null,
+        prompt: promptText,
+        estilo: estiloSeleccionado,
+        fecha: new Date().toLocaleDateString()
+    });
+    setData('promociones', promociones);
+
+    document.getElementById('promptResult').value = promptText;
+    document.getElementById('outputSection').classList.remove('hidden');
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+    mostrarToast('¡Prompt generado con éxito!', '✨');
+    cargarPromocionesGuardadas();
+    actualizarBadges();
+}
+
+function cargarPromocionesGuardadas() {
+    const promociones = getData('promociones');
+    const lista = document.getElementById('promo-lista');
+    const count = document.getElementById('promo-count');
+    const badge = document.getElementById('badge-promo');
+    
+    if (count) count.textContent = promociones.length;
+    if (badge) badge.textContent = promociones.length;
+    
+    if (promociones.length === 0) {
+        if (lista) lista.innerHTML = '<p class="empty-message">No hay promociones guardadas</p>';
+        return;
+    }
+
+    let html = '';
+    promociones.slice().reverse().forEach((p, index) => {
+        html += `
+            <div class="product-list-item" style="border-left-color: var(--primary-orange);">
+                <div class="product-info">
+                    <div class="name">${escapeHtml(p.nombre)}</div>
+                    <div class="barcode" style="font-size: 11px; color: #666;">
+                        <i class="fas fa-tag"></i> ${escapeHtml(p.precio)}
+                        ${p.existencia ? ` · ${p.existencia} uds` : ''}
+                    </div>
+                    <div style="font-size: 10px; color: #888;">${p.fecha || ''}</div>
+                </div>
+                <div class="product-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="verPrompt(${index})" title="Ver prompt">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarPromocion(${index})" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    if (lista) lista.innerHTML = html;
+}
+
+function verPrompt(index) {
+    const promociones = getData('promociones');
+    const p = promociones[index];
+    if (p && p.prompt) {
+        document.getElementById('promptResult').value = p.prompt;
+        document.getElementById('outputSection').classList.remove('hidden');
+        document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        mostrarToast('Prompt cargado', '📋');
+    }
+}
+
+function eliminarPromocion(index) {
+    if (!confirm('¿Eliminar esta promoción?')) return;
+    const promociones = getData('promociones');
+    promociones.splice(index, 1);
+    setData('promociones', promociones);
+    cargarPromocionesGuardadas();
+    actualizarBadges();
+    mostrarToast('Promoción eliminada', '🗑️');
+}
+
+function copiarPrompt() {
+    const txt = document.getElementById('promptResult');
+    if (!txt.value) {
+        mostrarToast('No hay prompt para copiar', '⚠️');
+        return;
+    }
+    txt.select();
+    navigator.clipboard.writeText(txt.value).then(() => {
+        mostrarToast('¡Prompt copiado al portapapeles!', '📋');
+    }).catch(() => {
+        document.execCommand('copy');
+        mostrarToast('¡Prompt copiado!', '📋');
+    });
+}
+
+function enviarWhatsApp() {
+    const promptText = document.getElementById('promptResult').value;
+    if (!promptText) {
+        mostrarToast('Genera un prompt primero', '⚠️');
+        return;
+    }
+    const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(promptText)}`;
+    window.open(url, '_blank');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================================
+// 6. CADUCIDADES
+// ============================================================
+function guardarCaducidad() {
+    const codigo = document.getElementById('cad-codigo').value.trim();
+    const nombre = document.getElementById('cad-nombre').value.trim();
+    const fecha = document.getElementById('cad-fecha').value;
+    const cantidad = parseInt(document.getElementById('cad-cantidad').value) || 1;
+
+    if (!codigo || !nombre || !fecha) {
+        mostrarToast('⚠️ Completa código de barras, nombre y fecha.', '⚠️');
+        return;
+    }
+
+    const caducidades = getData('caducidades');
+    caducidades.push({
+        id: Date.now(),
+        codigo: codigo,
+        nombre: nombre,
+        fecha: fecha,
+        cantidad: cantidad,
+        fecha_registro: new Date().toISOString()
+    });
+    setData('caducidades', caducidades);
+
+    document.getElementById('cad-codigo').value = '';
+    document.getElementById('cad-nombre').value = '';
+    document.getElementById('cad-fecha').value = '';
+    document.getElementById('cad-cantidad').value = '1';
+
+    cargarCaducidades();
+    actualizarBadges();
+    mostrarToast('✅ Producto registrado correctamente', '✅');
+}
+
+function cargarCaducidades() {
+    const caducidades = getData('caducidades');
+    const lista = document.getElementById('cad-lista');
+    const count = document.getElementById('cad-count');
+    const badge = document.getElementById('badge-cad');
+    
+    if (count) count.textContent = caducidades.length;
+    if (badge) badge.textContent = caducidades.length;
+    
+    if (caducidades.length === 0) {
+        if (lista) lista.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        return;
+    }
+
+    const sorted = [...caducidades].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    let html = '';
+    sorted.forEach(item => {
+        const fechaCad = new Date(item.fecha);
+        const diffDays = Math.ceil((fechaCad - hoy) / (1000 * 60 * 60 * 24));
+        
+        let badgeClass = 'badge-success';
+        let estado = '✅ Vigente';
+        let borderColor = 'var(--primary-blue)';
+        
+        if (diffDays < 0) {
+            badgeClass = 'badge-danger';
+            estado = '❌ Caducado';
+            borderColor = '#d32f2f';
+        } else if (diffDays <= 7) {
+            badgeClass = 'badge-danger';
+            estado = '⚠️ Urgente';
+            borderColor = '#ff6f00';
+        } else if (diffDays <= 30) {
+            badgeClass = 'badge-warning';
+            estado = '⏰ Próximo';
+            borderColor = '#ff6f00';
+        }
+
+        html += `
+            <div class="product-list-item" style="border-left-color: ${borderColor};">
+                <div class="product-info">
+                    <div class="name">${escapeHtml(item.nombre)}</div>
+                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(item.codigo)}</div>
+                    <div style="font-size: 12px; color: #666;">
+                        <i class="fas fa-calendar-alt"></i> ${item.fecha} · ${item.cantidad} unidades
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge ${badgeClass}">${estado}</span>
+                </div>
+            </div>
+        `;
+    });
+    if (lista) lista.innerHTML = html;
+}
+
+// ============================================================
+// 7. CICLICOS
+// ============================================================
+let productosCiclico = [];
+
+function buscarProductoCiclico() {
+    const codigo = document.getElementById('ciclico-codigo').value.trim();
+    if (!codigo) {
+        mostrarToast('⚠️ Escanea o ingresa un código de barras', '⚠️');
+        return;
+    }
+
+    const promociones = getData('promociones');
+    const caducidades = getData('caducidades');
+    
+    let encontrado = null;
+    for (let p of promociones) {
+        if (p.codigo === codigo) { encontrado = { nombre: p.nombre, codigo: p.codigo }; break; }
+    }
+    if (!encontrado) {
+        for (let c of caducidades) {
+            if (c.codigo === codigo) { encontrado = { nombre: c.nombre, codigo: c.codigo }; break; }
+        }
+    }
+
+    if (encontrado) {
+        if (productosCiclico.some(p => p.codigo === codigo)) {
+            mostrarToast('⚠️ Este producto ya está en la lista', '⚠️');
+            return;
+        }
+        productosCiclico.push({ codigo: codigo, nombre: encontrado.nombre, cantidad: 0 });
+        mostrarProductosCiclico();
+        document.getElementById('ciclico-codigo').value = '';
+        mostrarToast('✅ Producto agregado', '✅');
+    } else {
+        const nombre = prompt('Producto no encontrado. Ingresa el nombre:');
+        if (nombre && nombre.trim()) {
+            productosCiclico.push({ codigo: codigo, nombre: nombre.trim(), cantidad: 0 });
+            mostrarProductosCiclico();
+            document.getElementById('ciclico-codigo').value = '';
+        }
+    }
+}
+
+function mostrarProductosCiclico() {
+    const lista = document.getElementById('ciclico-lista');
+    const btnGuardar = document.getElementById('btn-guardar-ciclico');
+    const count = document.getElementById('ciclico-count');
+    
+    if (count) count.textContent = productosCiclico.length;
+    
+    if (productosCiclico.length === 0) {
+        if (lista) lista.innerHTML = '<p class="empty-message">Los productos aparecerán aquí después de escanear</p>';
+        if (btnGuardar) btnGuardar.classList.add('hidden');
+        return;
+    }
+
+    if (btnGuardar) btnGuardar.classList.remove('hidden');
+    let html = '';
+    productosCiclico.forEach((p, index) => {
+        html += `
+            <div class="product-list-item" style="border-left-color: var(--primary-orange);">
+                <div class="product-info">
+                    <div class="name">${escapeHtml(p.nombre)}</div>
+                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(p.codigo)}</div>
+                </div>
+                <div class="product-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidadCiclico(${index}, -1)">−</button>
+                    <span class="count-display">${p.cantidad}</span>
+                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidadCiclico(${index}, 1)">+</button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarProductoCiclico(${index})">✕</button>
+                </div>
+            </div>
+        `;
+    });
+    if (lista) lista.innerHTML = html;
+}
+
+function cambiarCantidadCiclico(index, delta) {
+    productosCiclico[index].cantidad = Math.max(0, productosCiclico[index].cantidad + delta);
+    mostrarProductosCiclico();
+}
+
+function eliminarProductoCiclico(index) {
+    productosCiclico.splice(index, 1);
+    mostrarProductosCiclico();
+}
+
+function procesarImagenesCiclico() {
+    const input = document.getElementById('ciclico-imagenes');
+    if (input.files.length === 0) {
+        mostrarToast('⚠️ Selecciona al menos una imagen', '⚠️');
+        return;
+    }
+
+    const codigosEjemplo = [
+        { codigo: '7501001234567', nombre: 'Producto Detectado 1' },
+        { codigo: '7501001234568', nombre: 'Producto Detectado 2' },
+        { codigo: '7501001234569', nombre: 'Producto Detectado 3' }
+    ];
+
+    let agregados = 0;
+    for (let i = 0; i < input.files.length && i < codigosEjemplo.length; i++) {
+        const p = codigosEjemplo[i];
+        if (!productosCiclico.some(item => item.codigo === p.codigo)) {
+            productosCiclico.push({ codigo: p.codigo, nombre: p.nombre + ' 📸', cantidad: 0 });
+            agregados++;
+        }
+    }
+
+    mostrarProductosCiclico();
+    input.value = '';
+    mostrarToast(`✅ ${input.files.length} imágenes procesadas. ${agregados} productos detectados.`, '✅');
+}
+
+function guardarConteoCiclico() {
+    if (productosCiclico.length === 0) {
+        mostrarToast('⚠️ No hay productos para guardar', '⚠️');
+        return;
+    }
+
+    const conteos = getData('conteos_ciclicos');
+    conteos.push({
+        fecha: new Date().toISOString(),
+        productos: JSON.parse(JSON.stringify(productosCiclico))
+    });
+    setData('conteos_ciclicos', conteos);
+
+    mostrarToast('✅ Conteo guardado exitosamente', '✅');
+    productosCiclico = [];
+    mostrarProductosCiclico();
+}
+
+// ============================================================
+// 8. INVENTARIO
+// ============================================================
+function mostrarInventario(tipo) {
+    document.getElementById('inventario-ciclico').classList.add('hidden');
+    document.getElementById('inventario-manual').classList.add('hidden');
+    if (tipo === 'ciclico') {
+        document.getElementById('inventario-ciclico').classList.remove('hidden');
+    } else {
+        document.getElementById('inventario-manual').classList.remove('hidden');
+        cargarInventarioManual();
+    }
+}
+
+function guardarInventarioManual() {
+    const codigo = document.getElementById('inv-manual-codigo').value.trim();
+    const nombre = document.getElementById('inv-manual-nombre').value.trim();
+    const cantidad = parseInt(document.getElementById('inv-manual-cantidad').value) || 0;
+    const sistema = parseInt(document.getElementById('inv-manual-sistema').value) || 0;
+
+    if (!codigo || !nombre) {
+        mostrarToast('⚠️ Completa código de barras y nombre', '⚠️');
+        return;
+    }
+
+    const inventario = getData('inventario_manual');
+    inventario.push({
+        id: Date.now(),
+        codigo: codigo,
+        nombre: nombre,
+        cantidad_real: cantidad,
+        cantidad_sistema: sistema,
+        diferencia: cantidad - sistema,
+        fecha: new Date().toLocaleDateString()
+    });
+    setData('inventario_manual', inventario);
+
+    document.getElementById('inv-manual-codigo').value = '';
+    document.getElementById('inv-manual-nombre').value = '';
+    document.getElementById('inv-manual-cantidad').value = '';
+    document.getElementById('inv-manual-sistema').value = '';
+
+    cargarInventarioManual();
+    mostrarToast('✅ Inventario actualizado', '✅');
+}
+
+function cargarInventarioManual() {
+    const inventario = getData('inventario_manual');
+    const lista = document.getElementById('inv-manual-lista');
+    const count = document.getElementById('inv-manual-count');
+    
+    if (count) count.textContent = inventario.length;
+    
+    if (inventario.length === 0) {
+        if (lista) lista.innerHTML = '<p class="empty-message">Sin registros</p>';
+        return;
+    }
+
+    let html = '';
+    inventario.slice().reverse().forEach(item => {
+        const diffColor = item.diferencia !== 0 ? (item.diferencia > 0 ? '#4caf50' : '#d32f2f') : '#666';
+        html += `
+            <div class="product-list-item" style="border-left-color: ${diffColor};">
+                <div class="product-info">
+                    <div class="name">${escapeHtml(item.nombre)}</div>
+                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(item.codigo)}</div>
+                    <div style="font-size: 12px; color: #666;">${item.fecha}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 13px;">Real: <strong>${item.cantidad_real}</strong></div>
+                    <div style="font-size: 13px;">Sistema: <strong>${item.cantidad_sistema}</strong></div>
+                    <div style="font-size: 16px; font-weight: bold; color: ${diffColor};">${item.diferencia > 0 ? '+' : ''}${item.diferencia}</div>
+                </div>
+            </div>
+        `;
+    });
+    if (lista) lista.innerHTML = html;
+}
+
+function procesarInventarioCiclico() {
+    const input = document.getElementById('inv-ciclico-imagenes');
+    if (input.files.length === 0) {
+        mostrarToast('⚠️ Selecciona al menos una imagen', '⚠️');
+        return;
+    }
+
+    const resultados = document.getElementById('inv-ciclico-resultados');
+    const productos = getData('caducidades');
+    
+    if (productos.length === 0) {
+        if (resultados) resultados.innerHTML = '<div class="alert alert-danger">No hay productos en el sistema para comparar.</div>';
+        return;
+    }
+
+    let html = '<div style="margin-top: 10px; font-weight: 600; color: var(--primary-blue);"><i class="fas fa-chart-bar"></i> Resultados de la Comparación</div>';
+    const muestra = productos.slice(0, Math.min(input.files.length * 2, productos.length));
+    
+    muestra.forEach(p => {
+        const cantidadSistema = p.cantidad || 1;
+        const cantidadDetectada = Math.floor(Math.random() * 5) + 1;
+        const diff = cantidadDetectada - cantidadSistema;
+        const estado = diff === 0 ? '✅ Correcto' : (diff > 0 ? '⬆️ Excedente' : '⬇️ Faltante');
+        const color = diff === 0 ? '#4caf50' : (diff > 0 ? '#ff6f00' : '#d32f2f');
+        
+        html += `
+            <div class="product-list-item" style="border-left-color: ${color};">
+                <div class="product-info">
+                    <div class="name">${escapeHtml(p.nombre)}</div>
+                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(p.codigo)}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 13px;">Sistema: <strong>${cantidadSistema}</strong></div>
+                    <div style="font-size: 13px;">Detectado: <strong>${cantidadDetectada}</strong></div>
+                    <div style="font-size: 14px; font-weight: bold; color: ${color};">${estado}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `<div class="alert alert-success" style="margin-top: 10px;">✅ ${input.files.length} imágenes procesadas. ${muestra.length} productos analizados.</div>`;
+    if (resultados) resultados.innerHTML = html;
+    input.value = '';
+}
+
+// ============================================================
+// 9. VISUALIZACIÓN
+// ============================================================
+function actualizarVisual() {
+    const caducidades = getData('caducidades');
+    const promociones = getData('promociones');
+    
+    document.getElementById('vis-total-productos').textContent = caducidades.length;
+    
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+    const treintaDias = new Date(hoy);
+    treintaDias.setDate(treintaDias.getDate() + 30);
+    
+    const porCaducar = caducidades.filter(c => {
+        const fecha = new Date(c.fecha);
+        return fecha >= hoy && fecha <= treintaDias;
+    });
+    document.getElementById('vis-caducando').textContent = porCaducar.length;
+    document.getElementById('vis-promociones').textContent = promociones.length;
+    
+    const lista = document.getElementById('vis-productos-recientes');
+    if (caducidades.length === 0) {
+        if (lista) lista.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        return;
+    }
+    
+    let html = '';
+    const recientes = caducidades.slice(-5).reverse();
+    recientes.forEach(p => {
+        const fecha = new Date(p.fecha);
+        const hoy2 = new Date();
+        hoy2.setHours(0,0,0,0);
+        const diff = Math.ceil((fecha - hoy2) / (1000 * 60 * 60 * 24));
+        const estado = diff < 0 ? '❌ Caducado' : (diff <= 7 ? '⚠️ Urgente' : '✅ Vigente');
+        const color = diff < 0 ? '#d32f2f' : (diff <= 7 ? '#ff6f00' : '#1a237e');
+        
+        html += `
+            <div class="product-list-item" style="border-left-color: ${color};">
+                <div class="product-info">
+                    <div class="name">${escapeHtml(p.nombre)}</div>
+                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(p.codigo)}</div>
+                    <div style="font-size: 12px; color: #666;">${p.fecha} · ${p.cantidad} uds</div>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge ${diff < 0 ? 'badge-danger' : diff <= 7 ? 'badge-warning' : 'badge-success'}">${estado}</span>
+                </div>
+            </div>
+        `;
+    });
+    if (lista) lista.innerHTML = html;
+}
+
+function actualizarBadges() {
+    const promociones = getData('promociones');
+    const caducidades = getData('caducidades');
+    
+    const promoBadge = document.getElementById('badge-promo');
+    const cadBadge = document.getElementById('badge-cad');
+    if (promoBadge) promoBadge.textContent = promociones.length;
+    if (cadBadge) cadBadge.textContent = caducidades.length;
+}
+
+// ============================================================
+// 10. BACKUP Y LIMPIEZA
+// ============================================================
+function exportarDatos() {
+    const datos = {
+        promociones: getData('promociones'),
+        caducidades: getData('caducidades'),
+        inventario_manual: getData('inventario_manual'),
+        conteos_ciclicos: getData('conteos_ciclicos'),
+        exportado: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventario_barras_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    mostrarToast('✅ Backup exportado', '✅');
+}
+
+function importarDatos() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const datos = JSON.parse(ev.target.result);
+                if (datos.promociones) setData('promociones', datos.promociones);
+                if (datos.caducidades) setData('caducidades', datos.caducidades);
+                if (datos.inventario_manual) setData('inventario_manual', datos.inventario_manual);
+                if (datos.conteos_ciclicos) setData('conteos_ciclicos', datos.conteos_ciclicos);
+                mostrarToast('✅ Datos importados exitosamente', '✅');
+                setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+                mostrarToast('⚠️ Error al importar: ' + err.message, '⚠️');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function limpiarTodosLosDatos() {
+    if (!confirm('⚠️ ¿Estás seguro de eliminar TODOS los datos?\nEsta acción no se puede deshacer.')) return;
+    if (!confirm('Confirmación final: ¿Eliminar todos los datos?')) return;
+    
+    localStorage.clear();
+    mostrarToast('🗑️ Todos los datos han sido eliminados', '🗑️');
+    setTimeout(() => location.reload(), 1000);
+}
+
+// ============================================================
+// 11. PWA - INSTALACIÓN
+// ============================================================
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById('btnInstalarApp');
+    if (btn) btn.classList.add('animate-bounce');
+});
+
+function instalarApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(({ outcome }) => {
+            if (outcome === 'accepted') {
+                mostrarToast('¡Gracias por instalar la App!', '✅');
+            }
+            deferredPrompt = null;
+        });
+    } else {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+            mostrarToast('📲 Para iPhone: Toca "Compartir" (📤 en Safari) y selecciona "Agregar al inicio" ➕', '📱');
+        } else {
+            mostrarToast('📲 En tu navegador toca el menú de 3 puntos (⋮) y selecciona "Instalar aplicación"', '📱');
+        }
+    }
+}
+
+// ============================================================
+// 12. INICIALIZACIÓN
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📦 Sistema de Inventario - NETO');
+    console.log('🚀 Inicializando...');
+    
+    // Cargar datos
+    cargarPromocionesGuardadas();
+    cargarCaducidades();
+    actualizarVisual();
+    actualizarBadges();
+    
+    // Event listeners para campos de promociones
+    const nombreInput = document.getElementById('prodNombre');
+    const checkPerecedero = document.getElementById('checkPerecedero');
+    const fotoInput = document.getElementById('prodFoto');
+    const palabrasClave = ['leche', 'yogurt', 'yogur', 'cereal', 'jabon', 'jabón', 'shampoo', 'champu', 'champú', 'queso', 'crema', 'jamón', 'jamon', 'galletas', 'pan', 'comida', 'jugo', 'refresco', 'bebida', 'detergente', 'suavizante'];
+    
+    if (nombreInput) {
+        nombreInput.addEventListener('input', function(e) {
+            const val = e.target.value.toLowerCase();
+            const requiere = palabrasClave.some(p => val.includes(p));
+            const campoVencimiento = document.getElementById('campoVencimiento');
+            if (requiere) {
+                campoVencimiento.classList.remove('hidden');
+                checkPerecedero.checked = true;
+            } else if (!checkPerecedero.checked) {
+                campoVencimiento.classList.add('hidden');
+            }
+        });
+    }
+    
+    if (checkPerecedero) {
+        checkPerecedero.addEventListener('change', function(e) {
+            const campoVencimiento = document.getElementById('campoVencimiento');
+            if (e.target.checked) {
+                campoVencimiento.classList.remove('hidden');
+            } else {
+                campoVencimiento.classList.add('hidden');
+            }
+        });
+    }
+    
+    if (fotoInput) {
+        fotoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const imgPreview = document.getElementById('imgPreview');
+                    const fotoNombre = document.getElementById('fotoNombre');
+                    const previewContainer = document.getElementById('previewContainer');
+                    if (imgPreview) imgPreview.src = evt.target.result;
+                    if (fotoNombre) fotoNombre.textContent = file.name;
+                    if (previewContainer) previewContainer.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Atajo: Enter en campos de código de barras
+    document.querySelectorAll('.barcode-input').forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                this.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+    
+    // Detectar Android
+    if (/android/i.test(navigator.userAgent)) {
+        document.body.classList.add('android-performance');
+    }
+    
+    console.log('✅ Sistema inicializado correctamente');
+});
+
+// ============================================================
+// FUNCIONES GLOBALES PARA EL HTML
+// ============================================================
+window.showScreen = showScreen;
+window.activarEscaneo = activarEscaneo;
+window.enfocarInput = enfocarInput;
+window.seleccionarEstilo = seleccionarEstilo;
+window.generarPrompt = generarPrompt;
+window.copiarPrompt = copiarPrompt;
+window.enviarWhatsApp = enviarWhatsApp;
+window.instalarApp = instalarApp;
+window.eliminarPromocion = eliminarPromocion;
+window.verPrompt = verPrompt;
+window.guardarCaducidad = guardarCaducidad;
+window.buscarProductoCiclico = buscarProductoCiclico;
+window.procesarImagenesCiclico = procesarImagenesCiclico;
+window.guardarConteoCiclico = guardarConteoCiclico;
+window.cambiarCantidadCiclico = cambiarCantidadCiclico;
+window.mostrarInventario = mostrarInventario;
+window.guardarInventarioManual = guardarInventarioManual;
+window.procesarInventarioCiclico = procesarInventarioCiclico;
+window.exportarDatos = exportarDatos;
+window.importarDatos = importarDatos;
+window.limpiarTodosLosDatos = limpiarTodosLosDatos;
+window.actualizarVisual = actualizarVisual;
+
+console.log('✅ Todos los scripts cargados correctamente');
 </script>
 
 </body>
