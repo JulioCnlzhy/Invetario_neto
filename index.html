@@ -64,6 +64,30 @@
         .neto-input::placeholder {
             color: #94a3b8;
         }
+
+        /* Estilo especial para el campo de código de barras - TEXTO NEGRO */
+        .barcode-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #ffffff;
+            border: 2px solid #334155;
+            color: #000000 !important;
+            font-size: 0.875rem;
+            margin-top: 8px;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .barcode-input:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+        }
+        .barcode-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
         
         ::-webkit-scrollbar {
             width: 4px;
@@ -353,24 +377,6 @@
             color: #94a3b8;
             font-size: 0.7rem;
             display: block;
-        }
-        .barcode-input {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: #ffffff;
-            font-size: 0.875rem;
-            margin-top: 8px;
-            text-align: center;
-        }
-        .barcode-input:focus {
-            outline: none;
-            border-color: #f97316;
-        }
-        .barcode-input::placeholder {
-            color: #94a3b8;
         }
 
         /* Scrollable lists */
@@ -1613,17 +1619,17 @@ window.eliminarPromocion = function(index) {
 window.buscarProductoPorCodigo = function(codigo) {
     if (!codigo || codigo.trim() === '') return;
     
+    var codigoLimpio = codigo.trim();
     var producto = window.datos.inventario.find(function(p) {
-        return p.codigo === codigo.trim();
+        return p.codigo === codigoLimpio;
     });
     
     if (producto) {
         document.getElementById('cad-nombre').value = producto.nombre;
         window.mostrarToast('✅ Producto encontrado: ' + producto.nombre, '✅');
     } else {
-        // Si no se encuentra en inventario, buscar en caducidades
         var caducidad = window.datos.caducidades.find(function(p) {
-            return p.codigo === codigo.trim();
+            return p.codigo === codigoLimpio;
         });
         if (caducidad) {
             document.getElementById('cad-nombre').value = caducidad.nombre;
@@ -1648,10 +1654,13 @@ window.activarEscaneoParaCaducidad = function() {
             var file = e.target.files[0];
             if (file) {
                 window.mostrarToast('📷 Procesando código...', '📷');
-                // Simular detección de código
+                // Simular detección de código - el código real vendría del OCR
                 setTimeout(function() {
                     var codigoSimulado = '7501234567890';
+                    // Colocar el código en el campo correspondiente
                     document.getElementById('cad-codigo').value = codigoSimulado;
+                    window.mostrarToast('✅ Código detectado: ' + codigoSimulado, '✅');
+                    // Buscar el producto automáticamente
                     window.buscarProductoPorCodigo(codigoSimulado);
                 }, 1000);
             }
@@ -1661,7 +1670,6 @@ window.activarEscaneoParaCaducidad = function() {
         document.body.appendChild(input);
         input.click();
     } else {
-        // Fallback: enfocar el input para que el usuario pueda escribir
         document.getElementById('cad-codigo').focus();
         window.mostrarToast('📱 Escribe el código manualmente', '📱');
     }
