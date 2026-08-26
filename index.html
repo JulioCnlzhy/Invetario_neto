@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NETO Inventario</title>
+    <title>Sistema de Inventario - NETO</title>
     
-    <!-- ===== PWA METADATA CORREGIDA ===== -->
-    <link rel="manifest" href="/Invetario_neto/manifest.json">
+    <!-- PWA Metadata -->
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NETO Inventario">
     
-    <!-- Icono para Apple (usando SVG embebido) -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231a237e'/%3E%3Ctext x='256' y='320' font-family='Arial' font-size='180' font-weight='bold' fill='%23ff6f00' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E">
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="/Invetario_neto/css/styles.css">
+    <!-- CSS Principal - Ruta relativa -->
+    <link rel="stylesheet" href="./css/styles.css">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,698 +22,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* ===== TODOS LOS ESTILOS ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #1a237e;
-            padding-bottom: 20px;
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        :root {
-            --primary-blue: #1a237e;
-            --primary-orange: #ff6f00;
-            --light-blue: #e8eaf6;
-            --light-orange: #fff3e0;
-            --text-light: #ffffff;
-            --shadow: 0 2px 8px rgba(0,0,0,0.1);
-            --border-radius: 10px;
-        }
-        
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 10px;
-        }
-        
-        .header {
-            background: var(--primary-blue);
-            color: var(--text-light);
-            padding: 15px;
-            text-align: center;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            box-shadow: var(--shadow);
-        }
-        
-        .header h1 {
-            font-size: 20px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-        
-        .header .subtitle {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 4px;
-        }
-        
-        .main-menu {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .menu-item {
-            background: white;
-            padding: 20px 10px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            border: 2px solid transparent;
-            transition: all 0.15s;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        
-        .menu-item:active {
-            transform: scale(0.95);
-            background: var(--light-blue);
-        }
-        
-        .menu-item .icon {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .menu-item .label {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--primary-blue);
-        }
-        
-        .menu-item.orange {
-            border-color: var(--primary-orange);
-        }
-        
-        .menu-item.orange .label {
-            color: var(--primary-orange);
-        }
-        
-        .menu-item.full-width {
-            grid-column: span 2;
-        }
-        
-        .badge-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-orange);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: bold;
-            min-width: 20px;
-        }
-        
-        .screen {
-            display: none;
-            animation: fadeIn 0.25s ease;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s;
-            width: 100%;
-            text-align: center;
-            margin: 5px 0;
-        }
-        
-        .btn:active {
-            transform: scale(0.97);
-        }
-        
-        .btn-primary {
-            background: var(--primary-blue);
-            color: white;
-        }
-        
-        .btn-orange {
-            background: var(--primary-orange);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: var(--light-blue);
-            color: var(--primary-blue);
-        }
-        
-        .btn-danger {
-            background: #d32f2f;
-            color: white;
-        }
-        
-        .btn-success {
-            background: #2e7d32;
-            color: white;
-        }
-        
-        .btn-back {
-            background: transparent;
-            color: var(--primary-blue);
-            text-align: left;
-            padding: 8px 0;
-            font-size: 16px;
-            width: auto;
-            margin: 0 0 8px 0;
-        }
-        
-        .btn-scan {
-            font-size: 16px;
-            padding: 14px;
-            margin-top: 8px;
-        }
-        
-        .btn-sm {
-            padding: 4px 12px;
-            font-size: 18px;
-            width: auto;
-            min-width: 36px;
-            line-height: 1.4;
-            margin: 0;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-group .btn {
-            flex: 1;
-            min-width: 80px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin: 10px 0;
-            box-shadow: var(--shadow);
-        }
-        
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--primary-blue);
-            margin-bottom: 10px;
-            border-bottom: 2px solid var(--light-blue);
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .count-badge {
-            font-size: 13px;
-            font-weight: normal;
-            background: var(--light-blue);
-            padding: 2px 12px;
-            border-radius: 20px;
-            color: var(--primary-blue);
-        }
-        
-        .form-group {
-            margin: 12px 0;
-        }
-        
-        .form-group label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--primary-blue);
-            margin-bottom: 4px;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            background: white;
-            transition: border-color 0.2s;
-            font-family: inherit;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-        
-        .barcode-input {
-            font-size: 18px !important;
-            letter-spacing: 1px;
-            background: var(--light-blue) !important;
-            border-color: var(--primary-blue) !important;
-            font-family: 'Courier New', monospace !important;
-            text-align: center;
-        }
-        
-        .scan-area {
-            background: var(--light-blue);
-            border: 2px dashed var(--primary-blue);
-            padding: 20px;
-            text-align: center;
-            border-radius: var(--border-radius);
-            margin: 10px 0;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .scan-area:active {
-            transform: scale(0.98);
-        }
-        
-        .scan-area .scan-icon {
-            font-size: 32px;
-            display: block;
-            margin-bottom: 8px;
-            color: var(--primary-blue);
-        }
-        
-        .scan-area .scan-hint {
-            font-size: 13px;
-            color: var(--primary-blue);
-            display: block;
-            margin-bottom: 10px;
-        }
-        
-        .scan-area input {
-            width: 100%;
-            padding: 14px;
-            font-size: 18px;
-            border: 2px solid var(--primary-blue);
-            border-radius: 8px;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-            background: white;
-            margin: 8px 0;
-        }
-        
-        .scan-area-orange {
-            border-color: var(--primary-orange);
-            background: var(--light-orange);
-        }
-        
-        .scan-area-orange .scan-icon {
-            color: var(--primary-orange);
-        }
-        
-        .scan-area-orange .scan-hint {
-            color: var(--primary-orange);
-        }
-        
-        .product-list-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin: 6px 0;
-            border-left: 4px solid var(--primary-blue);
-            transition: all 0.15s;
-        }
-        
-        .product-list-item .product-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .product-list-item .product-info .name {
-            font-weight: 600;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .product-list-item .product-info .barcode {
-            font-size: 12px;
-            color: #666;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .product-list-item .product-actions {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        
-        .product-list-item .product-actions .count-display {
-            font-size: 20px;
-            font-weight: bold;
-            min-width: 30px;
-            text-align: center;
-            color: var(--primary-orange);
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        
-        .badge-success {
-            background: #4caf50;
-            color: white;
-        }
-        
-        .badge-warning {
-            background: var(--primary-orange);
-            color: white;
-        }
-        
-        .badge-danger {
-            background: #d32f2f;
-            color: white;
-        }
-        
-        .badge-info {
-            background: var(--primary-blue);
-            color: white;
-        }
-        
-        .barcode-badge {
-            background: #f5f5f5;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            color: #666;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        
-        .stat-card {
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-card.blue {
-            background: var(--light-blue);
-        }
-        
-        .stat-card.orange {
-            background: var(--light-orange);
-        }
-        
-        .stat-card.green {
-            background: #e8f5e9;
-        }
-        
-        .stat-card .stat-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-        
-        .stat-card .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .stat-card.blue .stat-number {
-            color: var(--primary-blue);
-        }
-        
-        .stat-card.orange .stat-number {
-            color: var(--primary-orange);
-        }
-        
-        .stat-card.green .stat-number {
-            color: #2e7d32;
-        }
-        
-        .stat-card .stat-label {
-            font-size: 11px;
-            color: #666;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        .scrollable {
-            max-height: 400px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .empty-message {
-            color: #666;
-            font-size: 13px;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .divider {
-            text-align: center;
-            color: #999;
-            font-size: 13px;
-            margin: 12px 0;
-            position: relative;
-        }
-        
-        .divider::before,
-        .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 30%;
-            height: 1px;
-            background: #ddd;
-        }
-        
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
-        
-        .help-text {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        
-        .info-card {
-            background: var(--light-orange);
-            border-left: 4px solid var(--primary-orange);
-        }
-        
-        .info-card .info-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .info-card .info-title {
-            font-size: 13px;
-            color: var(--primary-blue);
-            font-weight: 500;
-        }
-        
-        .info-card .info-subtitle {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .fab-scan {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--primary-orange);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            font-size: 28px;
-            box-shadow: 0 4px 16px rgba(255, 111, 0, 0.4);
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.2s;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .fab-scan:active {
-            transform: scale(0.9);
-        }
-        
-        .fab-scan.show {
-            display: flex;
-        }
-        
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-        }
-        
-        .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
-        }
-        
-        .alert-danger {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-        
-        .alert-warning {
-            background: #fff3e0;
-            color: #e65100;
-            border: 1px solid #ffcc80;
-        }
-        
-        .alert-info {
-            background: var(--light-blue);
-            color: var(--primary-blue);
-            border: 1px solid #9fa8da;
-        }
-        
-        input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            background: #fafafa;
-            margin: 8px 0;
-            cursor: pointer;
-        }
-        
-        @media (max-width: 400px) {
-            .main-menu {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-            
-            .menu-item {
-                padding: 14px 8px;
-                min-height: 60px;
-            }
-            
-            .menu-item .icon {
-                font-size: 22px;
-            }
-            
-            .menu-item .label {
-                font-size: 12px;
-            }
-            
-            .form-group input,
-            .form-group textarea {
-                font-size: 14px;
-                padding: 10px;
-            }
-            
-            .scan-area input {
-                font-size: 16px;
-                padding: 10px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px;
-            }
-            
-            .stat-card {
-                padding: 10px;
-            }
-            
-            .stat-card .stat-number {
-                font-size: 20px;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .container {
-                max-width: 560px;
-                padding: 20px;
-            }
-        }
-        
-        .android-performance {
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            will-change: transform;
-        }
-        
-        .android-performance .menu-item,
-        .android-performance .btn {
-            transition: none !important;
-        }
-        
-        .promo-card.selected {
-            border-color: #f97316 !important;
-            background-color: #1e293b !important;
-            box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
-            transform: translateY(-2px);
-            border-width: 2px !important;
-        }
-        
+        /* Estilos generales */
         .neto-dark {
             background: #0f172a;
+        }
+        
+        .neto-card {
+            background: #1e293b;
+            border: 1px solid #334155;
         }
         
         .neto-input {
@@ -732,17 +45,12 @@
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
         
+        .neto-input:hover {
+            border-color: #475569;
+        }
+        
         .neto-input::placeholder {
             color: #64748b;
-        }
-        
-        .promo-card {
-            transition: all 0.2s ease;
-        }
-        
-        .promo-card:hover {
-            transform: translateY(-1px);
-            border-color: #475569;
         }
         
         ::-webkit-scrollbar {
@@ -763,79 +71,649 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #ea580c;
         }
+
+        /* Header */
+        .header {
+            background: #0f172a;
+            padding: 16px 20px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        .header h1 {
+            color: #f97316;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 0;
+        }
+        .header .subtitle {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin: 4px 0 0;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            padding: 16px;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            text-align: center;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
         
+        .btn-primary {
+            background: #1e3a8a;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1e40af;
+        }
+        
+        .btn-orange {
+            background: #f97316;
+            color: white;
+        }
+        .btn-orange:hover {
+            background: #ea580c;
+        }
+        
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        
+        .btn-back {
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            padding: 8px 0;
+            justify-content: flex-start;
+            width: auto;
+            margin-bottom: 12px;
+        }
+        .btn-back:hover {
+            color: white;
+        }
+
+        .btn-scan {
+            margin-top: 16px;
+        }
+
+        /* FAB Scan */
+        .fab-scan {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #f97316;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fab-scan:hover {
+            transform: scale(1.05);
+        }
+        .fab-scan:active {
+            transform: scale(0.95);
+        }
+
+        /* Menú principal */
+        .main-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .menu-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .menu-item:hover {
+            border-color: #f97316;
+            transform: translateY(-2px);
+        }
+        .menu-item:active {
+            transform: scale(0.97);
+        }
+        .menu-item .icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .menu-item .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: block;
+        }
+        .menu-item.full-width {
+            grid-column: 1 / -1;
+        }
+        .menu-item.orange .label {
+            color: #f97316;
+        }
+        .badge-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #f97316;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e2e8f0;
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 12px;
+        }
+        .card-title span i {
+            margin-right: 8px;
+            color: #f97316;
+        }
+        .count-badge {
+            background: #f97316;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .barcode-badge {
+            background: #1e3a8a;
+            color: #93c5fd;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        /* Formularios */
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .form-group label i {
+            margin-right: 6px;
+            color: #f97316;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        /* Scan area */
+        .scan-area {
+            background: #0f172a;
+            border: 2px dashed #334155;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+        .scan-area:hover {
+            border-color: #f97316;
+        }
+        .scan-area-orange {
+            border-color: #f97316;
+            background: #1e293b;
+        }
+        .scan-icon {
+            font-size: 1.5rem;
+            color: #f97316;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .scan-hint {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            display: block;
+        }
+        .barcode-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .barcode-input:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+
+        /* Scrollable lists */
+        .scrollable {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .empty-message {
+            color: #64748b;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 0.8rem;
+        }
+
+        /* Items en listas */
+        .list-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e2e8f0;
+            font-size: 0.8rem;
+        }
+        .list-item .item-info {
+            flex: 1;
+        }
+        .list-item .item-name {
+            font-weight: 600;
+        }
+        .list-item .item-detail {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+        .list-item .item-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .list-item .item-actions button {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .list-item .item-actions button:hover {
+            background: #334155;
+            color: white;
+        }
+        .list-item .item-actions .delete-btn:hover {
+            color: #ef4444;
+        }
+
+        /* Categorías en inventario */
+        .categoria-section {
+            margin-bottom: 16px;
+        }
+        .categoria-title {
+            color: #f97316;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            border-left: 3px solid #f97316;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .categoria-title .count {
+            background: #1e293b;
+            padding: 0 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            color: #94a3b8;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .stat-card {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .stat-card .stat-icon {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-number {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #e2e8f0;
+        }
+        .stat-card .stat-label {
+            font-size: 0.6rem;
+            color: #94a3b8;
+        }
+        .stat-card.blue .stat-icon { color: #60a5fa; }
+        .stat-card.orange .stat-icon { color: #f97316; }
+        .stat-card.green .stat-icon { color: #4ade80; }
+
+        /* Divider */
+        .divider {
+            text-align: center;
+            color: #475569;
+            font-size: 0.7rem;
+            padding: 8px 0;
+        }
+
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        #toastContainer.show {
+            opacity: 1;
+        }
+        #toastContent {
+            background: #1e293b;
+            border: 1px solid #f97316;
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        #toastIcon {
+            font-size: 1.2rem;
+        }
+        #toastMessage {
+            color: #e2e8f0;
+            font-size: 0.8rem;
+            flex: 1;
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Input file */
+        input[type="file"] {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            margin: 8px 0;
+        }
+        input[type="file"]::file-selector-button {
+            background: #334155;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background: #475569;
+        }
+
+        /* Producto item en inventario */
+        .producto-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border-left: 3px solid transparent;
+        }
+        .producto-item .nombre {
+            color: #e2e8f0;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+        .producto-item .cantidad {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+        .producto-item .input-cantidad {
+            width: 60px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .producto-item .input-cantidad:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+
+        /* Botón finalizar */
+        .btn-finalizar {
+            margin-top: 16px;
+            background: #16a34a;
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .btn-finalizar:hover {
+            background: #15803d;
+        }
+        .btn-finalizar:active {
+            transform: scale(0.97);
+        }
+
+        /* Responsive */
         @media (max-width: 400px) {
-            .promo-card {
-                padding: 8px !important;
+            .main-menu {
+                gap: 8px;
+            }
+            .menu-item {
+                padding: 12px;
+            }
+            .menu-item .icon {
+                font-size: 1.2rem;
+            }
+            .menu-item .label {
+                font-size: 0.6rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 10px;
+            }
+            .stat-card .stat-number {
+                font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
 
-<!-- ===== TOAST NOTIFICATION ===== -->
-<div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]">
-    <div id="toastContent" class="bg-slate-900 text-white border border-orange-500 rounded-xl p-4 shadow-2xl flex items-center gap-3 text-xs font-semibold">
-        <span id="toastIcon" class="text-lg">ℹ️</span>
-        <span id="toastMessage" class="flex-1">Notificación</span>
+<!-- Toast Notification Container -->
+<div id="toastContainer">
+    <div id="toastContent">
+        <span id="toastIcon">ℹ️</span>
+        <span id="toastMessage">Notificación</span>
     </div>
 </div>
 
 <div class="container">
-    <!-- HEADER -->
+    <!-- ========================================== -->
+    <!-- HEADER UNIFICADO                           -->
+    <!-- ========================================== -->
     <header class="header">
         <h1>📦 NETO Inventario</h1>
         <p class="subtitle">🔍 Sistema Integral de Gestión</p>
     </header>
 
-    <!-- BOTÓN FLOTANTE -->
-    <button class="fab-scan" id="fabScan" onclick="activarEscaneo()">
+    <!-- ========================================== -->
+    <!-- BOTÓN FLOTANTE DE ESCANEO                  -->
+    <!-- ========================================== -->
+    <button class="fab-scan" id="fabScan" onclick="window.activarEscaneo()">
         <i class="fas fa-camera"></i>
     </button>
 
-    <!-- ========== PANTALLA DE INICIO ========== -->
+    <!-- ========================================== -->
+    <!-- PANTALLA DE INICIO                         -->
+    <!-- ========================================== -->
     <section id="screen-home" class="screen active">
         <div class="main-menu">
-            <div class="menu-item orange" onclick="showScreen('promociones')">
+            <div class="menu-item orange" onclick="window.showScreen('promociones')">
                 <span class="icon"><i class="fas fa-tags"></i></span>
                 <span class="label">🏷️ Promociones</span>
                 <span class="badge-count" id="badge-promo">0</span>
             </div>
-            <div class="menu-item" onclick="showScreen('caducidades')">
+            <div class="menu-item" onclick="window.showScreen('caducidades')">
                 <span class="icon"><i class="fas fa-clock"></i></span>
                 <span class="label">⏰ Caducidades</span>
                 <span class="badge-count" id="badge-cad">0</span>
             </div>
-            <div class="menu-item orange" onclick="showScreen('ciclicos')">
+            <div class="menu-item orange" onclick="window.showScreen('ciclicos')">
                 <span class="icon"><i class="fas fa-sync-alt"></i></span>
                 <span class="label">🔄 Conteo Cíclico</span>
             </div>
-            <div class="menu-item" onclick="showScreen('inventario')">
+            <div class="menu-item" onclick="window.showScreen('inventario')">
                 <span class="icon"><i class="fas fa-chart-bar"></i></span>
                 <span class="label">📊 Inventario</span>
             </div>
-            <div class="menu-item full-width" onclick="showScreen('visual')">
+            <div class="menu-item full-width" onclick="window.showScreen('visual')">
                 <span class="icon"><i class="fas fa-eye"></i></span>
                 <span class="label">👁️ Visualización General</span>
             </div>
         </div>
         
-        <button class="btn btn-orange btn-scan" onclick="activarEscaneo()">
+        <button class="btn btn-orange btn-scan" onclick="window.activarEscaneo()">
             <i class="fas fa-camera"></i> Escanear Código de Barras
         </button>
         
-        <button id="btnInstalarApp" onclick="instalarApp()" class="btn btn-secondary" style="margin-top: 10px;">
+        <button id="btnInstalarApp" onclick="window.instalarApp()"
+            class="btn btn-secondary" style="margin-top: 10px;">
             <i class="fas fa-download"></i> Instalar App
         </button>
     </section>
 
-    <!-- ========== PANTALLA: PROMOCIONES ========== -->
+    <!-- ========================================== -->
+    <!-- PANTALLA: PROMOCIONES                      -->
+    <!-- ========================================== -->
     <section id="screen-promociones" class="screen">
-        <button class="btn btn-back" onclick="showScreen('home')">
+        <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
         <div class="neto-dark rounded-3xl p-5 shadow-2xl space-y-5" style="background: #0f172a; border: 1px solid #1e293b;">
+            
             <div class="text-center">
                 <div class="inline-flex items-center gap-2 bg-orange-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-2 shadow-md">
                     ⚡ Tiendas NETO Style
@@ -847,76 +725,86 @@
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Nombre del producto *</label>
                 <input type="text" id="prodNombre" placeholder="Ej: Coca-Cola 600ml, Sabritas 3x2, Shampoo Sedal"
-                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-orange-400 mb-2">🎨 Tipo de Promoción *</label>
+                <label class="block text-xs font-bold text-orange-400 mb-2 flex items-center gap-1">
+                    <span>🎨</span> <span>Tipo de Promoción / Estilo Visual *</span>
+                </label>
                 <div class="grid grid-cols-2 gap-2.5" id="gridPromociones">
-                    <button type="button" onclick="seleccionarEstilo(this, 'coca')"
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'coca')"
                         class="promo-card selected flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-red-500 transition text-slate-200">
                         <span class="text-xl mb-1">🥤</span>
                         <span class="text-xs font-bold text-red-400">Coca / Bebida Hielo</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Refrescante, condensación</span>
                     </button>
-                    <button type="button" onclick="seleccionarEstilo(this, 'botanero')"
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'botanero')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-amber-500 transition text-slate-200">
                         <span class="text-xl mb-1">🍿</span>
                         <span class="text-xs font-bold text-amber-400">Botanero / 3x2</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Vibrante, fiesta</span>
                     </button>
-                    <button type="button" onclick="seleccionarEstilo(this, 'frescura')"
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'frescura')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-cyan-600 transition text-slate-200">
                         <span class="text-xl mb-1">🥛</span>
                         <span class="text-xs font-bold text-cyan-400">Lácteos & Frescura</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Limpio, natural</span>
                     </button>
-                    <button type="button" onclick="seleccionarEstilo(this, 'estudio')"
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'estudio')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-emerald-600 transition text-slate-200">
                         <span class="text-xl mb-1">🧼</span>
                         <span class="text-xs font-bold text-emerald-400">Higiene / Premium</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Estudio elegante</span>
                     </button>
-                    <button type="button" onclick="seleccionarEstilo(this, 'remate')"
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'remate')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-fuchsia-600 transition text-slate-200">
                         <span class="text-xl mb-1">⚡</span>
                         <span class="text-xs font-bold text-fuchsia-400">Remate Relámpago</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Neón, ofertas</span>
                     </button>
-                    <button type="button" onclick="seleccionarEstilo(this, 'clasico')"
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'clasico')"
                         class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-blue-600 transition text-slate-200">
                         <span class="text-xl mb-1">🏷️</span>
                         <span class="text-xs font-bold text-blue-400">Abarrotes NETO</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Comercial clásico</span>
                     </button>
                 </div>
             </div>
 
             <div id="campoVencimiento" class="hidden transition-all bg-amber-900/30 p-3 rounded-xl border border-amber-700">
                 <label class="block text-xs font-bold text-amber-400 mb-1">🗓️ Fecha de Vencimiento</label>
-                <input type="date" id="prodVencimiento" class="w-full neto-input rounded-lg p-2.5 text-sm text-slate-200">
+                <input type="date" id="prodVencimiento"
+                    class="w-full neto-input rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500">
             </div>
 
             <div class="flex items-center gap-2">
-                <input type="checkbox" id="checkPerecedero" class="w-4 h-4 rounded border-slate-600 text-orange-500 bg-slate-700">
+                <input type="checkbox" id="checkPerecedero" class="w-4 h-4 rounded border-slate-600 text-orange-500 focus:ring-orange-400 bg-slate-700">
                 <label for="checkPerecedero" class="text-xs font-medium text-slate-300 cursor-pointer">¿Tiene fecha de caducidad?</label>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Precio o Promoción *</label>
                 <input type="text" id="prodPrecio" placeholder="Ej: $18.00 ó 3x2 en botanas"
-                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500">
+                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Piezas en existencia</label>
                 <input type="number" id="prodExistencia" placeholder="Ej: 24"
-                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500">
+                    class="w-full neto-input rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-orange-400 mb-1">Foto del producto</label>
                 <div class="relative border-2 border-dashed border-slate-600 rounded-xl p-4 text-center hover:border-orange-500 transition bg-slate-800/50">
-                    <input type="file" id="prodFoto" accept="image/*" class="hidden">
+                    <input type="file" id="prodFoto" accept="image/*" capture="environment" class="hidden">
                     <label for="prodFoto" class="cursor-pointer flex flex-col items-center gap-1.5">
                         <div class="w-10 h-10 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center">
                             <i class="fas fa-camera text-lg"></i>
                         </div>
                         <span class="text-xs text-slate-300 font-bold">Tocar para tomar foto o elegir de la galería</span>
+                        <span class="text-[10px] text-slate-500">Muestra ambas opciones en Android/iOS</span>
                     </label>
                     <div id="previewContainer" class="mt-3 hidden">
                         <img id="imgPreview" class="h-28 mx-auto rounded-lg border-2 border-orange-400 object-cover shadow-md">
@@ -925,7 +813,8 @@
                 </div>
             </div>
 
-            <button onclick="generarPrompt()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition text-sm tracking-wide">
+            <button onclick="window.generarPrompt()"
+                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition text-sm tracking-wide">
                 ⚡ GENERAR PROMPT PUBLICITARIO
             </button>
         </div>
@@ -933,13 +822,18 @@
         <div id="outputSection" class="mt-4 neto-dark rounded-3xl p-5 hidden space-y-3 shadow-2xl" style="background: #0f172a; border: 1px solid #1e293b;">
             <div class="flex justify-between items-center">
                 <h2 class="text-xs font-bold text-orange-400 uppercase tracking-wider">📋 Tu Prompt listo:</h2>
-                <button onclick="copiarPrompt()" class="bg-slate-700 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-orange-500 hover:text-white transition">
+                <button onclick="window.copiarPrompt()" class="bg-slate-700 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-orange-500 hover:text-white transition">
                     <i class="fas fa-copy"></i> Copiar
                 </button>
             </div>
-            <textarea id="promptResult" rows="7" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
-            <button onclick="enviarWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
-                <i class="fab fa-whatsapp text-lg"></i> Enviar por WhatsApp
+            
+            <textarea id="promptResult" rows="7" readonly
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
+
+            <button onclick="window.enviarWhatsApp()"
+                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
+                <i class="fab fa-whatsapp text-lg"></i>
+                Enviar por WhatsApp
             </button>
         </div>
 
@@ -954,9 +848,11 @@
         </div>
     </section>
 
-    <!-- ========== PANTALLA: CADUCIDADES ========== -->
+    <!-- ========================================== -->
+    <!-- PANTALLA: CADUCIDADES                      -->
+    <!-- ========================================== -->
     <section id="screen-caducidades" class="screen">
-        <button class="btn btn-back" onclick="showScreen('home')">
+        <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
@@ -966,7 +862,7 @@
                 <span class="barcode-badge"><i class="fas fa-barcode"></i> Código de barras</span>
             </div>
             
-            <div class="scan-area" onclick="enfocarInput('cad-codigo')">
+            <div class="scan-area" onclick="window.enfocarInput('cad-codigo')">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Toca para escanear o ingresa el código</span>
                 <input type="text" id="cad-codigo" placeholder="Código de barras" class="barcode-input" />
@@ -984,7 +880,7 @@
                 <label><i class="fas fa-boxes"></i> Cantidad</label>
                 <input type="number" id="cad-cantidad" placeholder="Cantidad" value="1" min="1" />
             </div>
-            <button class="btn btn-primary" onclick="guardarCaducidad()">
+            <button class="btn btn-primary" onclick="window.guardarCaducidad()">
                 <i class="fas fa-save"></i> Guardar
             </button>
         </div>
@@ -1000,20 +896,24 @@
         </div>
     </section>
 
-    <!-- ========== PANTALLA: CICLICOS ========== -->
+    <!-- ========================================== -->
+    <!-- PANTALLA: CICLICOS                         -->
+    <!-- ========================================== -->
     <section id="screen-ciclicos" class="screen">
-        <button class="btn btn-back" onclick="showScreen('home')">
+        <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
         <div class="card">
-            <div class="card-title"><span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span></div>
+            <div class="card-title">
+                <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
+            </div>
             
-            <div class="scan-area" onclick="enfocarInput('ciclico-codigo')">
+            <div class="scan-area" onclick="window.enfocarInput('ciclico-codigo')">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Escanea el código de barras del producto</span>
                 <input type="text" id="ciclico-codigo" placeholder="Código de barras" class="barcode-input" />
-                <button class="btn btn-primary" onclick="buscarProductoCiclico()">
+                <button class="btn btn-primary" onclick="window.buscarProductoCiclico()">
                     <i class="fas fa-search"></i> Buscar producto
                 </button>
             </div>
@@ -1024,7 +924,7 @@
                 <i class="fas fa-images scan-icon"></i>
                 <span class="scan-hint">Sube foto del sistema para detectar códigos</span>
                 <input type="file" accept="image/*" multiple id="ciclico-imagenes" />
-                <button class="btn btn-orange" onclick="procesarImagenesCiclico()">
+                <button class="btn btn-orange" onclick="window.procesarImagenesCiclico()">
                     <i class="fas fa-file-image"></i> Procesar Imágenes
                 </button>
             </div>
@@ -1038,87 +938,123 @@
             <div id="ciclico-lista">
                 <p class="empty-message">Los productos aparecerán aquí después de escanear</p>
             </div>
-            <button class="btn btn-success hidden" id="btn-guardar-ciclico" onclick="guardarConteoCiclico()">
+            <button class="btn btn-success hidden" id="btn-guardar-ciclico" onclick="window.guardarConteoCiclico()">
                 <i class="fas fa-check-circle"></i> Guardar Conteo
             </button>
         </div>
     </section>
 
-    <!-- ========== PANTALLA: INVENTARIO ========== -->
+    <!-- ========================================== -->
+    <!-- PANTALLA: INVENTARIO                       -->
+    <!-- ========================================== -->
     <section id="screen-inventario" class="screen">
-        <button class="btn btn-back" onclick="showScreen('home')">
+        <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
         <div class="card">
-            <div class="card-title"><i class="fas fa-chart-bar"></i> Inventario</div>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="mostrarInventario('ciclico')">
-                    <i class="fas fa-sync-alt"></i> Cíclico
-                </button>
-                <button class="btn btn-orange" onclick="mostrarInventario('manual')">
-                    <i class="fas fa-pen"></i> Manual
-                </button>
-            </div>
-        </div>
-
-        <div id="inventario-ciclico" class="hidden">
-            <div class="card">
-                <div class="card-title"><i class="fas fa-sync-alt"></i> Inventario Cíclico</div>
-                <p class="help-text">Sube foto del sistema para comparar automáticamente</p>
-                <input type="file" accept="image/*" multiple id="inv-ciclico-imagenes" />
-                <button class="btn btn-primary" onclick="procesarInventarioCiclico()">
-                    <i class="fas fa-file-image"></i> Procesar y Comparar
-                </button>
-                <div id="inv-ciclico-resultados"></div>
-            </div>
-        </div>
-
-        <div id="inventario-manual" class="hidden">
-            <div class="card">
-                <div class="card-title">
-                    <span><i class="fas fa-pen"></i> Inventario Manual</span>
-                    <span class="barcode-badge"><i class="fas fa-barcode"></i> Código de barras</span>
-                </div>
-                
-                <div class="scan-area" onclick="enfocarInput('inv-manual-codigo')">
-                    <i class="fas fa-camera scan-icon"></i>
-                    <span class="scan-hint">Escanea el código de barras</span>
-                    <input type="text" id="inv-manual-codigo" placeholder="Código de barras" class="barcode-input" />
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Nombre del Producto</label>
-                    <input type="text" id="inv-manual-nombre" placeholder="Nombre" />
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-box"></i> Cantidad Real (Contada)</label>
-                    <input type="number" id="inv-manual-cantidad" placeholder="Cantidad contada" />
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-database"></i> Cantidad en Sistema</label>
-                    <input type="number" id="inv-manual-sistema" placeholder="Cantidad registrada" />
-                </div>
-                <button class="btn btn-orange" onclick="guardarInventarioManual()">
-                    <i class="fas fa-save"></i> Guardar
-                </button>
+            <div class="card-title">
+                <span><i class="fas fa-chart-bar"></i> Inventario General</span>
+                <span class="barcode-badge"><i class="fas fa-barcode"></i> Escanea para agregar</span>
             </div>
             
-            <div class="card">
-                <div class="card-title">
-                    <span>Registro de Inventario</span>
-                    <span id="inv-manual-count" class="count-badge">0</span>
-                </div>
-                <div id="inv-manual-lista" class="scrollable">
-                    <p class="empty-message">Sin registros</p>
-                </div>
+            <div class="scan-area" onclick="window.enfocarInput('inv-codigo')">
+                <i class="fas fa-camera scan-icon"></i>
+                <span class="scan-hint">Escanea el código de barras del producto</span>
+                <input type="text" id="inv-codigo" placeholder="Código de barras" class="barcode-input" />
             </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-tag"></i> Nombre del Producto</label>
+                <input type="text" id="inv-nombre" placeholder="Nombre del producto" />
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-tags"></i> Categoría</label>
+                <select id="inv-categoria">
+                    <option value="Cámara Fría">🧊 Cámara Fría</option>
+                    <option value="Refrescos">🥤 Refrescos</option>
+                    <option value="Botanas">🍿 Botanas</option>
+                    <option value="Galletas">🍪 Galletas</option>
+                    <option value="Comida para Bebé">👶 Comida para Bebé</option>
+                    <option value="Pañales">🧷 Pañales</option>
+                    <option value="Comida para Perro">🐕 Comida para Perro</option>
+                    <option value="Comida para Gato">🐈 Comida para Gato</option>
+                    <option value="Maruchan">🍜 Maruchan</option>
+                    <option value="Salsas">🌶️ Salsas</option>
+                    <option value="Harinas">🌾 Harinas</option>
+                    <option value="Azúcar">🍬 Azúcar</option>
+                    <option value="Sal">🧂 Sal</option>
+                    <option value="Frijoles">🫘 Frijoles</option>
+                    <option value="Aceites">🫒 Aceites</option>
+                    <option value="Toallas Húmedas">🧻 Toallas Húmedas</option>
+                    <option value="Shampoos">🧴 Shampoos</option>
+                    <option value="Rollos">🧻 Rollos</option>
+                    <option value="Servilletas">🧻 Servilletas</option>
+                    <option value="Grasa para Zapatos">👞 Grasa para Zapatos</option>
+                    <option value="Los Más Buscados">⭐ Los Más Buscados</option>
+                    <option value="Nestlé">🍫 Nestlé</option>
+                    <option value="Bolsa para Basura">🗑️ Bolsa para Basura</option>
+                    <option value="Detergente Líquido Ropa">🧺 Detergente Líquido Ropa</option>
+                    <option value="Detergente en Polvo">🧺 Detergente en Polvo</option>
+                    <option value="Cloros">🧴 Cloros</option>
+                    <option value="Jabón para Trastes">🧼 Jabón para Trastes</option>
+                    <option value="Jabón para Trastes Líquido">🧴 Jabón para Trastes Líquido</option>
+                    <option value="Jabones">🧼 Jabones</option>
+                    <option value="Crema para Peinar">💇 Crema para Peinar</option>
+                    <option value="Crema Corporal">🧴 Crema Corporal</option>
+                    <option value="Gel para Manos">🧴 Gel para Manos</option>
+                    <option value="Farmacia">💊 Farmacia</option>
+                    <option value="Desodorantes">🧴 Desodorantes</option>
+                    <option value="Insecticida">🦟 Insecticida</option>
+                    <option value="Audífonos">🎧 Audífonos</option>
+                    <option value="Cosas para Casa">🏠 Cosas para Casa</option>
+                    <option value="Platos">🍽️ Platos</option>
+                    <option value="Vasos">🥤 Vasos</option>
+                    <option value="Peluches">🧸 Peluches</option>
+                    <option value="Cigarros">🚬 Cigarros</option>
+                    <option value="Alcohol y Licores">🍷 Alcohol y Licores</option>
+                    <option value="Hielo">🧊 Hielo</option>
+                    <option value="Papelería">📝 Papelería</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-box"></i> Cantidad</label>
+                <input type="number" id="inv-cantidad" placeholder="Cantidad" value="1" min="1" />
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-dollar-sign"></i> Precio</label>
+                <input type="number" id="inv-precio" placeholder="Precio" step="0.01" />
+            </div>
+            
+            <button class="btn btn-orange" onclick="window.agregarProductoInventario()">
+                <i class="fas fa-plus-circle"></i> Agregar Producto
+            </button>
+        </div>
+
+        <!-- Productos agrupados por categoría -->
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-list"></i> Productos en Inventario</span>
+                <span id="inv-total-count" class="count-badge">0</span>
+            </div>
+            <div id="inv-lista-categorias">
+                <p class="empty-message">No hay productos registrados</p>
+            </div>
+            
+            <button class="btn-finalizar" onclick="window.finalizarInventario()">
+                <i class="fas fa-check-circle"></i> FINALIZAR INVENTARIO
+            </button>
         </div>
     </section>
 
-    <!-- ========== PANTALLA: VISUAL ========== -->
+    <!-- ========================================== -->
+    <!-- PANTALLA: VISUAL                           -->
+    <!-- ========================================== -->
     <section id="screen-visual" class="screen">
-        <button class="btn btn-back" onclick="showScreen('home')">
+        <button class="btn btn-back" onclick="window.showScreen('home')">
             <i class="fas fa-arrow-left"></i> Volver
         </button>
         
@@ -1151,14 +1087,14 @@
         </div>
 
         <div class="card">
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="exportarDatos()">
+            <div class="btn-group" style="display:flex; flex-direction:column; gap:8px;">
+                <button class="btn btn-secondary" onclick="window.exportarDatos()">
                     <i class="fas fa-download"></i> Exportar Backup
                 </button>
-                <button class="btn btn-secondary" onclick="importarDatos()">
+                <button class="btn btn-secondary" onclick="window.importarDatos()">
                     <i class="fas fa-upload"></i> Importar Backup
                 </button>
-                <button class="btn btn-danger" onclick="limpiarTodosLosDatos()">
+                <button class="btn btn-danger" onclick="window.limpiarTodosLosDatos()">
                     <i class="fas fa-trash-alt"></i> Limpiar Datos
                 </button>
             </div>
@@ -1167,890 +1103,877 @@
 </div>
 
 <!-- ========================================== -->
-<!-- TODO EL JAVASCRIPT (incluido aquí)        -->
+<!-- JAVASCRIPT - TODO EN UN SOLO ARCHIVO      -->
 <!-- ========================================== -->
 <script>
-// ============================================================
-// SISTEMA DE INVENTARIO - TODO EL CÓDIGO EN UN SOLO ARCHIVO
-// ============================================================
-
-// ============================================================
-// 1. ALMACENAMIENTO LOCAL
-// ============================================================
-function getData(key, defaultValue = []) {
-    try {
-        const data = localStorage.getItem('inv_barras_' + key);
-        return data ? JSON.parse(data) : defaultValue;
-    } catch (e) {
-        return defaultValue;
-    }
-}
-
-function setData(key, data) {
-    localStorage.setItem('inv_barras_' + key, JSON.stringify(data));
-}
-
-// ============================================================
-// 2. TOAST NOTIFICATIONS
-// ============================================================
-function mostrarToast(mensaje, icono = 'ℹ️') {
-    const container = document.getElementById('toastContainer');
-    if (container) {
-        const msg = document.getElementById('toastMessage');
-        const icn = document.getElementById('toastIcon');
-        if (msg) msg.textContent = mensaje;
-        if (icn) icn.textContent = icono;
-        container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-        setTimeout(() => {
-            container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-        }, 4000);
-    } else {
-        alert(mensaje);
-    }
-}
-
-// ============================================================
-// 3. NAVEGACIÓN
-// ============================================================
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const screen = document.getElementById('screen-' + screenId);
-    if (screen) screen.classList.add('active');
+// ============================================
+// SISTEMA DE NOTIFICACIONES (Toast)
+// ============================================
+window.mostrarToast = function(mensaje, icono = 'ℹ️') {
+    var container = document.getElementById('toastContainer');
+    var message = document.getElementById('toastMessage');
+    var icon = document.getElementById('toastIcon');
     
-    if (screenId === 'visual') actualizarVisual();
-    if (screenId === 'promociones') cargarPromocionesGuardadas();
-    if (screenId === 'caducidades') cargarCaducidades();
-    if (screenId === 'inventario') mostrarInventario('manual');
+    message.textContent = mensaje;
+    icon.textContent = icono;
     
-    const fab = document.getElementById('fabScan');
-    if (fab) {
-        if (screenId === 'visual') {
-            fab.classList.remove('show');
-        } else {
-            fab.classList.add('show');
-        }
-    }
-}
-
-function enfocarInput(id) {
-    const input = document.getElementById(id);
-    if (input) {
-        input.focus();
-        input.select();
-    }
-}
-
-// ============================================================
-// 4. ESCÁNER
-// ============================================================
-function activarEscaneo() {
-    const screens = {
-        'screen-promociones': 'promo-codigo',
-        'screen-caducidades': 'cad-codigo',
-        'screen-ciclicos': 'ciclico-codigo',
-        'screen-inventario': 'inv-manual-codigo'
-    };
+    container.classList.add('show');
+    clearTimeout(window.toastTimeout);
     
-    let targetId = null;
-    for (const [screenId, inputId] of Object.entries(screens)) {
-        const screen = document.getElementById(screenId);
-        if (screen && screen.classList.contains('active')) {
-            targetId = inputId;
-            break;
-        }
-    }
-    
-    if (!targetId) {
-        const opcion = confirm('¿Dónde quieres escanear?\nOK = Promociones\nCancelar = Caducidades');
-        if (opcion) {
-            showScreen('promociones');
-            targetId = 'promo-codigo';
-        } else {
-            showScreen('caducidades');
-            targetId = 'cad-codigo';
-        }
-    }
-    
-    if (targetId) {
-        const input = document.getElementById(targetId);
-        if (input) {
-            const codigo = prompt('📷 Escanea el código de barras:\n(Ingresa el código manualmente)');
-            if (codigo && codigo.trim()) {
-                input.value = codigo.trim();
-                input.dispatchEvent(new Event('input'));
-                input.dispatchEvent(new Event('change'));
-                if (targetId === 'ciclico-codigo') {
-                    setTimeout(() => buscarProductoCiclico(), 300);
-                }
-            }
-        }
-    }
-}
-
-// ============================================================
-// 5. PROMOCIONES
-// ============================================================
-let estiloSeleccionado = 'coca';
-const numeroWhatsApp = '522217709192';
-
-const presetsEstilos = {
-    coca: "Estilo publicitario icónico y refrescante tipo Coca-Cola: Gotas de condensación helada en el envase, cubos de hielo traslúcidos alrededor, destellos de luz, fondo rojo vibrante y atmósfera fría ultra tentadora.",
-    botanero: "Estilo festivo y enérgico para botanas y promociones 3x2: Colores cálidos y amarillos/naranjas saturados, chispeante, composición dinámica con botanas o elementos volando alegremente en el fondo.",
-    frescura: "Estilo ultra limpio para lácteos y productos frescos: Fondo blanco suave con tonos azul pastel, ondas o salpicaduras suaves de frescura, sensación de calidad del campo y saludabilidad.",
-    estudio: "Estilo comercial elegante tipo producto de cuidado personal: Luz de estudio fotográfico suave y difusa, fondo neutro con sombras sutiles, destellos higiénicos y apariencia premium de alta gama.",
-    remate: "Estilo de alto impacto visual para remates relámpago: Cartel promocional vibrante con luces neón, tonos fuego/fucsia, etiquetas de descuento gigantes y sentido de oportunidad imperdible.",
-    clasico: "Estilo anuncio comercial directo tipo Súper NETO: Fotografía de producto nítida sobre mostrador impecable, iluminación comercial brillante en azul rey y naranja, enfoque total en la etiqueta y claridad en la oferta."
+    window.toastTimeout = setTimeout(function() {
+        container.classList.remove('show');
+    }, 3000);
 };
 
-function seleccionarEstilo(btn, estilo) {
-    document.querySelectorAll('.promo-card').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    estiloSeleccionado = estilo;
-}
+// ============================================
+// SISTEMA DE PANTALLAS
+// ============================================
+window.showScreen = function(screenId) {
+    // Ocultar todas las pantallas
+    document.querySelectorAll('.screen').forEach(function(s) {
+        s.classList.remove('active');
+    });
+    
+    // Mostrar la pantalla seleccionada
+    var target = document.getElementById('screen-' + screenId);
+    if (target) {
+        target.classList.add('active');
+    }
+    
+    // Actualizar badges
+    window.actualizarBadges();
+    
+    // Actualizar visualización si es la pantalla visual
+    if (screenId === 'visual') {
+        window.actualizarVisual();
+    }
+    
+    // Actualizar inventario si es la pantalla de inventario
+    if (screenId === 'inventario') {
+        window.renderizarInventario();
+    }
+};
 
-function generarPrompt() {
-    const nombre = document.getElementById('prodNombre').value.trim();
-    const precio = document.getElementById('prodPrecio').value.trim();
-    const existencia = document.getElementById('prodExistencia').value.trim();
-    const vencimiento = document.getElementById('prodVencimiento').value;
-    const tieneFoto = document.getElementById('prodFoto').files.length > 0;
+// ============================================
+// ALMACENAMIENTO LOCAL
+// ============================================
+window.Storage = {
+    get: function(key, defaultValue) {
+        try {
+            var data = localStorage.getItem('neto_' + key);
+            return data ? JSON.parse(data) : defaultValue;
+        } catch (e) {
+            return defaultValue;
+        }
+    },
+    set: function(key, value) {
+        try {
+            localStorage.setItem('neto_' + key, JSON.stringify(value));
+        } catch (e) {
+            console.error('Error guardando:', e);
+        }
+    },
+    remove: function(key) {
+        localStorage.removeItem('neto_' + key);
+    }
+};
 
+// ============================================
+// DATOS GLOBALES
+// ============================================
+window.datos = {
+    promociones: window.Storage.get('promociones', []),
+    caducidades: window.Storage.get('caducidades', []),
+    ciclicos: window.Storage.get('ciclicos', []),
+    inventario: window.Storage.get('inventario', [])
+};
+
+// ============================================
+// FUNCIONES DE PROMOCIONES
+// ============================================
+window.seleccionarEstilo = function(el, estilo) {
+    document.querySelectorAll('.promo-card').forEach(function(card) {
+        card.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    window.estiloSeleccionado = estilo;
+};
+
+window.generarPrompt = function() {
+    var nombre = document.getElementById('prodNombre').value.trim();
+    var precio = document.getElementById('prodPrecio').value.trim();
+    var existencia = document.getElementById('prodExistencia').value.trim();
+    var estilo = window.estiloSeleccionado || 'clasico';
+    var perecedero = document.getElementById('checkPerecedero').checked;
+    var vencimiento = document.getElementById('prodVencimiento').value;
+    var fotoInput = document.getElementById('prodFoto');
+    var fotoFile = fotoInput.files[0];
+    
     if (!nombre || !precio) {
-        mostrarToast('Ingresa el Nombre del producto y la Oferta/Precio.', '⚠️');
+        window.mostrarToast('⚠️ Completa el nombre y precio', '⚠️');
         return;
     }
-
-    let promptText = `Hola colega, genera una imagen publicitaria profesional de alta calidad para mi tienda con la siguiente información:\n\n`;
-    promptText += `• Producto: ${nombre}\n`;
-    promptText += `• Oferta / Precio: ${precio}\n`;
-    if (existencia) promptText += `• Stock disponible: ${existencia} piezas\n`;
     
-    const checkPerecedero = document.getElementById('checkPerecedero');
-    if (checkPerecedero.checked && vencimiento) {
-        promptText += `• Fecha de vencimiento: ${vencimiento}\n`;
-    }
-    if (tieneFoto) promptText += `• [Nota: Te adjunto la foto real del producto como referencia visual]\n`;
-    promptText += `\n🎨 Tema y Estilo Visual Solicitado:\n${presetsEstilos[estiloSeleccionado]}\n`;
-    promptText += `\nPor favor integra el texto promocional "${precio}" de forma llamativa, legible y estética dentro del diseño publicitario.`;
-
-    const promociones = getData('promociones');
-    promociones.push({
+    var estilos = {
+        'coca': 'Refrescante, con hielo y condensación, tonos rojos y blancos, ambiente veraniego',
+        'botanero': 'Vibrante, colores cálidos, ambiente de fiesta, promoción 3x2',
+        'frescura': 'Limpio, natural, tonos pastel, sensación de frescura',
+        'estudio': 'Elegante, iluminación de estudio, fondo oscuro, producto destacado',
+        'remate': 'Neón, colores eléctricos, ambiente de oferta relámpago',
+        'clasico': 'Comercial clásico, iluminación suave, producto en centro'
+    };
+    
+    var prompt = '📸 Imagen publicitaria para ' + nombre + '.\n';
+    prompt += '🎨 Estilo: ' + (estilos[estilo] || estilos['clasico']) + '.\n';
+    prompt += '💰 Promoción: ' + precio + '.\n';
+    if (existencia) prompt += '📦 Disponible: ' + existencia + ' piezas.\n';
+    if (perecedero && vencimiento) prompt += '🗓️ Fecha de caducidad: ' + vencimiento + '.\n';
+    prompt += '🏪 Para tiendas NETO.';
+    
+    document.getElementById('promptResult').value = prompt;
+    document.getElementById('outputSection').classList.remove('hidden');
+    
+    // Guardar promoción
+    var promocion = {
         id: Date.now(),
         nombre: nombre,
         precio: precio,
-        existencia: existencia || 0,
-        vencimiento: vencimiento || null,
-        prompt: promptText,
-        estilo: estiloSeleccionado,
-        fecha: new Date().toLocaleDateString()
-    });
-    setData('promociones', promociones);
-
-    document.getElementById('promptResult').value = promptText;
-    document.getElementById('outputSection').classList.remove('hidden');
-    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
-    mostrarToast('¡Prompt generado con éxito!', '✨');
-    cargarPromocionesGuardadas();
-    actualizarBadges();
-}
-
-function cargarPromocionesGuardadas() {
-    const promociones = getData('promociones');
-    const lista = document.getElementById('promo-lista');
-    const count = document.getElementById('promo-count');
-    const badge = document.getElementById('badge-promo');
+        existencia: existencia,
+        estilo: estilo,
+        perecedero: perecedero,
+        vencimiento: vencimiento,
+        fecha: new Date().toISOString(),
+        foto: fotoFile ? URL.createObjectURL(fotoFile) : null
+    };
     
-    if (count) count.textContent = promociones.length;
-    if (badge) badge.textContent = promociones.length;
+    window.datos.promociones.unshift(promocion);
+    window.Storage.set('promociones', window.datos.promociones);
+    window.actualizarBadges();
+    window.renderizarPromociones();
     
-    if (promociones.length === 0) {
-        if (lista) lista.innerHTML = '<p class="empty-message">No hay promociones guardadas</p>';
-        return;
-    }
+    window.mostrarToast('✅ Prompt generado y promoción guardada', '✅');
+};
 
-    let html = '';
-    promociones.slice().reverse().forEach((p, index) => {
-        html += `
-            <div class="product-list-item" style="border-left-color: var(--primary-orange);">
-                <div class="product-info">
-                    <div class="name">${escapeHtml(p.nombre)}</div>
-                    <div class="barcode" style="font-size: 11px; color: #666;">
-                        <i class="fas fa-tag"></i> ${escapeHtml(p.precio)}
-                        ${p.existencia ? ` · ${p.existencia} uds` : ''}
-                    </div>
-                    <div style="font-size: 10px; color: #888;">${p.fecha || ''}</div>
-                </div>
-                <div class="product-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="verPrompt(${index})" title="Ver prompt">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="eliminarPromocion(${index})" title="Eliminar">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    if (lista) lista.innerHTML = html;
-}
+window.copiarPrompt = function() {
+    var textarea = document.getElementById('promptResult');
+    textarea.select();
+    document.execCommand('copy');
+    window.mostrarToast('📋 Prompt copiado al portapapeles', '📋');
+};
 
-function verPrompt(index) {
-    const promociones = getData('promociones');
-    const p = promociones[index];
-    if (p && p.prompt) {
-        document.getElementById('promptResult').value = p.prompt;
-        document.getElementById('outputSection').classList.remove('hidden');
-        document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
-        mostrarToast('Prompt cargado', '📋');
-    }
-}
-
-function eliminarPromocion(index) {
-    if (!confirm('¿Eliminar esta promoción?')) return;
-    const promociones = getData('promociones');
-    promociones.splice(index, 1);
-    setData('promociones', promociones);
-    cargarPromocionesGuardadas();
-    actualizarBadges();
-    mostrarToast('Promoción eliminada', '🗑️');
-}
-
-function copiarPrompt() {
-    const txt = document.getElementById('promptResult');
-    if (!txt.value) {
-        mostrarToast('No hay prompt para copiar', '⚠️');
-        return;
-    }
-    txt.select();
-    navigator.clipboard.writeText(txt.value).then(() => {
-        mostrarToast('¡Prompt copiado al portapapeles!', '📋');
-    }).catch(() => {
-        document.execCommand('copy');
-        mostrarToast('¡Prompt copiado!', '📋');
-    });
-}
-
-function enviarWhatsApp() {
-    const promptText = document.getElementById('promptResult').value;
-    if (!promptText) {
-        mostrarToast('Genera un prompt primero', '⚠️');
-        return;
-    }
-    const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(promptText)}`;
+window.enviarWhatsApp = function() {
+    var prompt = document.getElementById('promptResult').value;
+    var url = 'https://wa.me/?text=' + encodeURIComponent(prompt);
     window.open(url, '_blank');
-}
+};
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ============================================================
-// 6. CADUCIDADES
-// ============================================================
-function guardarCaducidad() {
-    const codigo = document.getElementById('cad-codigo').value.trim();
-    const nombre = document.getElementById('cad-nombre').value.trim();
-    const fecha = document.getElementById('cad-fecha').value;
-    const cantidad = parseInt(document.getElementById('cad-cantidad').value) || 1;
-
-    if (!codigo || !nombre || !fecha) {
-        mostrarToast('⚠️ Completa código de barras, nombre y fecha.', '⚠️');
+window.renderizarPromociones = function() {
+    var lista = document.getElementById('promo-lista');
+    var count = document.getElementById('promo-count');
+    var promos = window.datos.promociones;
+    
+    count.textContent = promos.length;
+    
+    if (promos.length === 0) {
+        lista.innerHTML = '<p class="empty-message">No hay promociones guardadas</p>';
         return;
     }
+    
+    var html = '';
+    promos.forEach(function(p, i) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">💰 ' + p.precio + ' | 📦 ' + (p.existencia || 'N/A') + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.eliminarPromocion(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    
+    lista.innerHTML = html;
+};
 
-    const caducidades = getData('caducidades');
-    caducidades.push({
+window.eliminarPromocion = function(index) {
+    if (confirm('¿Eliminar esta promoción?')) {
+        window.datos.promociones.splice(index, 1);
+        window.Storage.set('promociones', window.datos.promociones);
+        window.renderizarPromociones();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Promoción eliminada', '🗑️');
+    }
+};
+
+// ============================================
+// FUNCIONES DE CADUCIDADES
+// ============================================
+window.guardarCaducidad = function() {
+    var codigo = document.getElementById('cad-codigo').value.trim();
+    var nombre = document.getElementById('cad-nombre').value.trim();
+    var fecha = document.getElementById('cad-fecha').value;
+    var cantidad = parseInt(document.getElementById('cad-cantidad').value) || 1;
+    
+    if (!codigo || !nombre || !fecha) {
+        window.mostrarToast('⚠️ Completa todos los campos', '⚠️');
+        return;
+    }
+    
+    var producto = {
         id: Date.now(),
         codigo: codigo,
         nombre: nombre,
         fecha: fecha,
         cantidad: cantidad,
-        fecha_registro: new Date().toISOString()
-    });
-    setData('caducidades', caducidades);
-
+        fechaRegistro: new Date().toISOString()
+    };
+    
+    window.datos.caducidades.unshift(producto);
+    window.Storage.set('caducidades', window.datos.caducidades);
+    
     document.getElementById('cad-codigo').value = '';
     document.getElementById('cad-nombre').value = '';
     document.getElementById('cad-fecha').value = '';
     document.getElementById('cad-cantidad').value = '1';
-
-    cargarCaducidades();
-    actualizarBadges();
-    mostrarToast('✅ Producto registrado correctamente', '✅');
-}
-
-function cargarCaducidades() {
-    const caducidades = getData('caducidades');
-    const lista = document.getElementById('cad-lista');
-    const count = document.getElementById('cad-count');
-    const badge = document.getElementById('badge-cad');
     
-    if (count) count.textContent = caducidades.length;
-    if (badge) badge.textContent = caducidades.length;
+    window.renderizarCaducidades();
+    window.actualizarBadges();
+    window.mostrarToast('✅ Producto registrado', '✅');
+};
+
+window.renderizarCaducidades = function() {
+    var lista = document.getElementById('cad-lista');
+    var count = document.getElementById('cad-count');
+    var items = window.datos.caducidades;
     
-    if (caducidades.length === 0) {
-        if (lista) lista.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+    count.textContent = items.length;
+    
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
         return;
     }
-
-    const sorted = [...caducidades].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
-    let html = '';
-    sorted.forEach(item => {
-        const fechaCad = new Date(item.fecha);
-        const diffDays = Math.ceil((fechaCad - hoy) / (1000 * 60 * 60 * 24));
-        
-        let badgeClass = 'badge-success';
-        let estado = '✅ Vigente';
-        let borderColor = 'var(--primary-blue)';
-        
-        if (diffDays < 0) {
-            badgeClass = 'badge-danger';
-            estado = '❌ Caducado';
-            borderColor = '#d32f2f';
-        } else if (diffDays <= 7) {
-            badgeClass = 'badge-danger';
-            estado = '⚠️ Urgente';
-            borderColor = '#ff6f00';
-        } else if (diffDays <= 30) {
-            badgeClass = 'badge-warning';
-            estado = '⏰ Próximo';
-            borderColor = '#ff6f00';
-        }
-
-        html += `
-            <div class="product-list-item" style="border-left-color: ${borderColor};">
-                <div class="product-info">
-                    <div class="name">${escapeHtml(item.nombre)}</div>
-                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(item.codigo)}</div>
-                    <div style="font-size: 12px; color: #666;">
-                        <i class="fas fa-calendar-alt"></i> ${item.fecha} · ${item.cantidad} unidades
-                    </div>
-                </div>
-                <div style="text-align: right;">
-                    <span class="badge ${badgeClass}">${estado}</span>
-                </div>
-            </div>
-        `;
+    
+    var html = '';
+    items.forEach(function(p, i) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">📅 ' + p.fecha + ' | 📦 ' + p.cantidad + ' | 🔢 ' + p.codigo + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.eliminarCaducidad(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
     });
-    if (lista) lista.innerHTML = html;
-}
+    
+    lista.innerHTML = html;
+};
 
-// ============================================================
-// 7. CICLICOS
-// ============================================================
-let productosCiclico = [];
+window.eliminarCaducidad = function(index) {
+    if (confirm('¿Eliminar este producto?')) {
+        window.datos.caducidades.splice(index, 1);
+        window.Storage.set('caducidades', window.datos.caducidades);
+        window.renderizarCaducidades();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Producto eliminado', '🗑️');
+    }
+};
 
-function buscarProductoCiclico() {
-    const codigo = document.getElementById('ciclico-codigo').value.trim();
+// ============================================
+// FUNCIONES DE CICLICOS
+// ============================================
+window.buscarProductoCiclico = function() {
+    var codigo = document.getElementById('ciclico-codigo').value.trim();
     if (!codigo) {
-        mostrarToast('⚠️ Escanea o ingresa un código de barras', '⚠️');
+        window.mostrarToast('⚠️ Ingresa un código de barras', '⚠️');
         return;
     }
-
-    const promociones = getData('promociones');
-    const caducidades = getData('caducidades');
     
-    let encontrado = null;
-    for (let p of promociones) {
-        if (p.codigo === codigo) { encontrado = { nombre: p.nombre, codigo: p.codigo }; break; }
-    }
-    if (!encontrado) {
-        for (let c of caducidades) {
-            if (c.codigo === codigo) { encontrado = { nombre: c.nombre, codigo: c.codigo }; break; }
-        }
-    }
-
-    if (encontrado) {
-        if (productosCiclico.some(p => p.codigo === codigo)) {
-            mostrarToast('⚠️ Este producto ya está en la lista', '⚠️');
-            return;
-        }
-        productosCiclico.push({ codigo: codigo, nombre: encontrado.nombre, cantidad: 0 });
-        mostrarProductosCiclico();
-        document.getElementById('ciclico-codigo').value = '';
-        mostrarToast('✅ Producto agregado', '✅');
-    } else {
-        const nombre = prompt('Producto no encontrado. Ingresa el nombre:');
-        if (nombre && nombre.trim()) {
-            productosCiclico.push({ codigo: codigo, nombre: nombre.trim(), cantidad: 0 });
-            mostrarProductosCiclico();
-            document.getElementById('ciclico-codigo').value = '';
-        }
-    }
-}
-
-function mostrarProductosCiclico() {
-    const lista = document.getElementById('ciclico-lista');
-    const btnGuardar = document.getElementById('btn-guardar-ciclico');
-    const count = document.getElementById('ciclico-count');
-    
-    if (count) count.textContent = productosCiclico.length;
-    
-    if (productosCiclico.length === 0) {
-        if (lista) lista.innerHTML = '<p class="empty-message">Los productos aparecerán aquí después de escanear</p>';
-        if (btnGuardar) btnGuardar.classList.add('hidden');
-        return;
-    }
-
-    if (btnGuardar) btnGuardar.classList.remove('hidden');
-    let html = '';
-    productosCiclico.forEach((p, index) => {
-        html += `
-            <div class="product-list-item" style="border-left-color: var(--primary-orange);">
-                <div class="product-info">
-                    <div class="name">${escapeHtml(p.nombre)}</div>
-                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(p.codigo)}</div>
-                </div>
-                <div class="product-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidadCiclico(${index}, -1)">−</button>
-                    <span class="count-display">${p.cantidad}</span>
-                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidadCiclico(${index}, 1)">+</button>
-                    <button class="btn btn-danger btn-sm" onclick="eliminarProductoCiclico(${index})">✕</button>
-                </div>
-            </div>
-        `;
+    // Buscar en inventario
+    var producto = window.datos.inventario.find(function(p) {
+        return p.codigo === codigo;
     });
-    if (lista) lista.innerHTML = html;
-}
+    
+    if (producto) {
+        window.agregarProductoCiclico(producto);
+    } else {
+        window.mostrarToast('❌ Producto no encontrado en inventario', '❌');
+    }
+    
+    document.getElementById('ciclico-codigo').value = '';
+};
 
-function cambiarCantidadCiclico(index, delta) {
-    productosCiclico[index].cantidad = Math.max(0, productosCiclico[index].cantidad + delta);
-    mostrarProductosCiclico();
-}
+window.agregarProductoCiclico = function(producto) {
+    if (!window.datos.ciclicos) window.datos.ciclicos = [];
+    
+    // Verificar si ya está agregado
+    var existente = window.datos.ciclicos.find(function(p) {
+        return p.codigo === producto.codigo;
+    });
+    
+    if (existente) {
+        existente.cantidad = (existente.cantidad || 0) + 1;
+    } else {
+        window.datos.ciclicos.push({
+            id: Date.now(),
+            codigo: producto.codigo,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            cantidad: 1,
+            precio: producto.precio
+        });
+    }
+    
+    window.Storage.set('ciclicos', window.datos.ciclicos);
+    window.renderizarCiclicos();
+    window.mostrarToast('✅ Producto agregado al conteo', '✅');
+};
 
-function eliminarProductoCiclico(index) {
-    productosCiclico.splice(index, 1);
-    mostrarProductosCiclico();
-}
-
-function procesarImagenesCiclico() {
-    const input = document.getElementById('ciclico-imagenes');
-    if (input.files.length === 0) {
-        mostrarToast('⚠️ Selecciona al menos una imagen', '⚠️');
+window.renderizarCiclicos = function() {
+    var lista = document.getElementById('ciclico-lista');
+    var count = document.getElementById('ciclico-count');
+    var items = window.datos.ciclicos || [];
+    
+    count.textContent = items.length;
+    
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">Los productos aparecerán aquí después de escanear</p>';
+        document.getElementById('btn-guardar-ciclico').classList.add('hidden');
         return;
     }
+    
+    document.getElementById('btn-guardar-ciclico').classList.remove('hidden');
+    
+    var html = '';
+    items.forEach(function(p, i) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 🏷️ ' + (p.categoria || 'Sin categoría') + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.eliminarCiclico(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    
+    lista.innerHTML = html;
+};
 
-    const codigosEjemplo = [
-        { codigo: '7501001234567', nombre: 'Producto Detectado 1' },
-        { codigo: '7501001234568', nombre: 'Producto Detectado 2' },
-        { codigo: '7501001234569', nombre: 'Producto Detectado 3' }
-    ];
+window.eliminarCiclico = function(index) {
+    if (confirm('¿Eliminar este producto del conteo?')) {
+        window.datos.ciclicos.splice(index, 1);
+        window.Storage.set('ciclicos', window.datos.ciclicos);
+        window.renderizarCiclicos();
+        window.mostrarToast('🗑️ Producto eliminado', '🗑️');
+    }
+};
 
-    let agregados = 0;
-    for (let i = 0; i < input.files.length && i < codigosEjemplo.length; i++) {
-        const p = codigosEjemplo[i];
-        if (!productosCiclico.some(item => item.codigo === p.codigo)) {
-            productosCiclico.push({ codigo: p.codigo, nombre: p.nombre + ' 📸', cantidad: 0 });
-            agregados++;
+window.guardarConteoCiclico = function() {
+    if (!window.datos.ciclicos || window.datos.ciclicos.length === 0) {
+        window.mostrarToast('⚠️ No hay productos para guardar', '⚠️');
+        return;
+    }
+    
+    // Actualizar inventario con las cantidades contadas
+    window.datos.ciclicos.forEach(function(item) {
+        var producto = window.datos.inventario.find(function(p) {
+            return p.codigo === item.codigo;
+        });
+        if (producto) {
+            producto.cantidad = item.cantidad;
+        }
+    });
+    
+    window.Storage.set('inventario', window.datos.inventario);
+    window.datos.ciclicos = [];
+    window.Storage.set('ciclicos', window.datos.ciclicos);
+    
+    window.renderizarCiclicos();
+    window.renderizarInventario();
+    window.mostrarToast('✅ Conteo cíclico guardado correctamente', '✅');
+};
+
+window.procesarImagenesCiclico = function() {
+    window.mostrarToast('📷 Función de reconocimiento de imágenes (simulación)', '📷');
+    // Aquí iría la lógica de OCR
+};
+
+// ============================================
+// FUNCIONES DE INVENTARIO
+// ============================================
+// Definición de categorías para detección automática
+window.categoriasPorPalabra = {
+    'refresco': 'Refrescos',
+    'coca': 'Refrescos',
+    'pepsi': 'Refrescos',
+    'sprite': 'Refrescos',
+    'fanta': 'Refrescos',
+    'botana': 'Botanas',
+    'sabritas': 'Botanas',
+    'cheetos': 'Botanas',
+    'doritos': 'Botanas',
+    'galleta': 'Galletas',
+    'oreo': 'Galletas',
+    'gamesa': 'Galletas',
+    'bimbo': 'Panadería',
+    'maruchan': 'Maruchan',
+    'sopa': 'Maruchan',
+    'salsa': 'Salsas',
+    'valentina': 'Salsas',
+    'huichol': 'Salsas',
+    'harina': 'Harinas',
+    'azúcar': 'Azúcar',
+    'sal': 'Sal',
+    'frijol': 'Frijoles',
+    'aceite': 'Aceites',
+    'toalla': 'Toallas Húmedas',
+    'shampoo': 'Shampoos',
+    'rollo': 'Rollos',
+    'servilleta': 'Servilletas',
+    'bolsa': 'Bolsa para Basura',
+    'detergente': 'Detergente Líquido Ropa',
+    'cloro': 'Cloros',
+    'jabón': 'Jabones',
+    'crema': 'Crema Corporal',
+    'desodorante': 'Desodorantes',
+    'insecticida': 'Insecticida',
+    'cigarro': 'Cigarros',
+    'alcohol': 'Alcohol y Licores',
+    'licor': 'Alcohol y Licores',
+    'hielo': 'Hielo',
+    'pañal': 'Pañales',
+    'pampers': 'Pañales',
+    'nestlé': 'Nestlé',
+    'cerveza': 'Alcohol y Licores',
+    'cárnicos': 'Cámara Fría',
+    'pollo': 'Cámara Fría',
+    'carne': 'Cámara Fría',
+    'queso': 'Cámara Fría',
+    'yogurt': 'Cámara Fría',
+    'leche': 'Cámara Fría'
+};
+
+window.detectarCategoria = function(nombre) {
+    var nombreLower = nombre.toLowerCase();
+    for (var palabra in window.categoriasPorPalabra) {
+        if (nombreLower.includes(palabra)) {
+            return window.categoriasPorPalabra[palabra];
         }
     }
+    return 'Otros';
+};
 
-    mostrarProductosCiclico();
-    input.value = '';
-    mostrarToast(`✅ ${input.files.length} imágenes procesadas. ${agregados} productos detectados.`, '✅');
-}
-
-function guardarConteoCiclico() {
-    if (productosCiclico.length === 0) {
-        mostrarToast('⚠️ No hay productos para guardar', '⚠️');
-        return;
-    }
-
-    const conteos = getData('conteos_ciclicos');
-    conteos.push({
-        fecha: new Date().toISOString(),
-        productos: JSON.parse(JSON.stringify(productosCiclico))
-    });
-    setData('conteos_ciclicos', conteos);
-
-    mostrarToast('✅ Conteo guardado exitosamente', '✅');
-    productosCiclico = [];
-    mostrarProductosCiclico();
-}
-
-// ============================================================
-// 8. INVENTARIO
-// ============================================================
-function mostrarInventario(tipo) {
-    document.getElementById('inventario-ciclico').classList.add('hidden');
-    document.getElementById('inventario-manual').classList.add('hidden');
-    if (tipo === 'ciclico') {
-        document.getElementById('inventario-ciclico').classList.remove('hidden');
-    } else {
-        document.getElementById('inventario-manual').classList.remove('hidden');
-        cargarInventarioManual();
-    }
-}
-
-function guardarInventarioManual() {
-    const codigo = document.getElementById('inv-manual-codigo').value.trim();
-    const nombre = document.getElementById('inv-manual-nombre').value.trim();
-    const cantidad = parseInt(document.getElementById('inv-manual-cantidad').value) || 0;
-    const sistema = parseInt(document.getElementById('inv-manual-sistema').value) || 0;
-
+window.agregarProductoInventario = function() {
+    var codigo = document.getElementById('inv-codigo').value.trim();
+    var nombre = document.getElementById('inv-nombre').value.trim();
+    var categoria = document.getElementById('inv-categoria').value;
+    var cantidad = parseInt(document.getElementById('inv-cantidad').value) || 1;
+    var precio = parseFloat(document.getElementById('inv-precio').value) || 0;
+    
     if (!codigo || !nombre) {
-        mostrarToast('⚠️ Completa código de barras y nombre', '⚠️');
+        window.mostrarToast('⚠️ Completa el código y nombre', '⚠️');
         return;
     }
-
-    const inventario = getData('inventario_manual');
-    inventario.push({
+    
+    // Detectar categoría automáticamente si es "Otros"
+    var categoriaFinal = categoria;
+    if (categoria === 'Otros' || !categoria) {
+        categoriaFinal = window.detectarCategoria(nombre);
+        // Actualizar el select
+        var select = document.getElementById('inv-categoria');
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === categoriaFinal) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    var producto = {
         id: Date.now(),
         codigo: codigo,
         nombre: nombre,
-        cantidad_real: cantidad,
-        cantidad_sistema: sistema,
-        diferencia: cantidad - sistema,
-        fecha: new Date().toLocaleDateString()
-    });
-    setData('inventario_manual', inventario);
-
-    document.getElementById('inv-manual-codigo').value = '';
-    document.getElementById('inv-manual-nombre').value = '';
-    document.getElementById('inv-manual-cantidad').value = '';
-    document.getElementById('inv-manual-sistema').value = '';
-
-    cargarInventarioManual();
-    mostrarToast('✅ Inventario actualizado', '✅');
-}
-
-function cargarInventarioManual() {
-    const inventario = getData('inventario_manual');
-    const lista = document.getElementById('inv-manual-lista');
-    const count = document.getElementById('inv-manual-count');
-    
-    if (count) count.textContent = inventario.length;
-    
-    if (inventario.length === 0) {
-        if (lista) lista.innerHTML = '<p class="empty-message">Sin registros</p>';
-        return;
-    }
-
-    let html = '';
-    inventario.slice().reverse().forEach(item => {
-        const diffColor = item.diferencia !== 0 ? (item.diferencia > 0 ? '#4caf50' : '#d32f2f') : '#666';
-        html += `
-            <div class="product-list-item" style="border-left-color: ${diffColor};">
-                <div class="product-info">
-                    <div class="name">${escapeHtml(item.nombre)}</div>
-                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(item.codigo)}</div>
-                    <div style="font-size: 12px; color: #666;">${item.fecha}</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 13px;">Real: <strong>${item.cantidad_real}</strong></div>
-                    <div style="font-size: 13px;">Sistema: <strong>${item.cantidad_sistema}</strong></div>
-                    <div style="font-size: 16px; font-weight: bold; color: ${diffColor};">${item.diferencia > 0 ? '+' : ''}${item.diferencia}</div>
-                </div>
-            </div>
-        `;
-    });
-    if (lista) lista.innerHTML = html;
-}
-
-function procesarInventarioCiclico() {
-    const input = document.getElementById('inv-ciclico-imagenes');
-    if (input.files.length === 0) {
-        mostrarToast('⚠️ Selecciona al menos una imagen', '⚠️');
-        return;
-    }
-
-    const resultados = document.getElementById('inv-ciclico-resultados');
-    const productos = getData('caducidades');
-    
-    if (productos.length === 0) {
-        if (resultados) resultados.innerHTML = '<div class="alert alert-danger">No hay productos en el sistema para comparar.</div>';
-        return;
-    }
-
-    let html = '<div style="margin-top: 10px; font-weight: 600; color: var(--primary-blue);"><i class="fas fa-chart-bar"></i> Resultados de la Comparación</div>';
-    const muestra = productos.slice(0, Math.min(input.files.length * 2, productos.length));
-    
-    muestra.forEach(p => {
-        const cantidadSistema = p.cantidad || 1;
-        const cantidadDetectada = Math.floor(Math.random() * 5) + 1;
-        const diff = cantidadDetectada - cantidadSistema;
-        const estado = diff === 0 ? '✅ Correcto' : (diff > 0 ? '⬆️ Excedente' : '⬇️ Faltante');
-        const color = diff === 0 ? '#4caf50' : (diff > 0 ? '#ff6f00' : '#d32f2f');
-        
-        html += `
-            <div class="product-list-item" style="border-left-color: ${color};">
-                <div class="product-info">
-                    <div class="name">${escapeHtml(p.nombre)}</div>
-                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(p.codigo)}</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 13px;">Sistema: <strong>${cantidadSistema}</strong></div>
-                    <div style="font-size: 13px;">Detectado: <strong>${cantidadDetectada}</strong></div>
-                    <div style="font-size: 14px; font-weight: bold; color: ${color};">${estado}</div>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += `<div class="alert alert-success" style="margin-top: 10px;">✅ ${input.files.length} imágenes procesadas. ${muestra.length} productos analizados.</div>`;
-    if (resultados) resultados.innerHTML = html;
-    input.value = '';
-}
-
-// ============================================================
-// 9. VISUALIZACIÓN
-// ============================================================
-function actualizarVisual() {
-    const caducidades = getData('caducidades');
-    const promociones = getData('promociones');
-    
-    document.getElementById('vis-total-productos').textContent = caducidades.length;
-    
-    const hoy = new Date();
-    hoy.setHours(0,0,0,0);
-    const treintaDias = new Date(hoy);
-    treintaDias.setDate(treintaDias.getDate() + 30);
-    
-    const porCaducar = caducidades.filter(c => {
-        const fecha = new Date(c.fecha);
-        return fecha >= hoy && fecha <= treintaDias;
-    });
-    document.getElementById('vis-caducando').textContent = porCaducar.length;
-    document.getElementById('vis-promociones').textContent = promociones.length;
-    
-    const lista = document.getElementById('vis-productos-recientes');
-    if (caducidades.length === 0) {
-        if (lista) lista.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
-        return;
-    }
-    
-    let html = '';
-    const recientes = caducidades.slice(-5).reverse();
-    recientes.forEach(p => {
-        const fecha = new Date(p.fecha);
-        const hoy2 = new Date();
-        hoy2.setHours(0,0,0,0);
-        const diff = Math.ceil((fecha - hoy2) / (1000 * 60 * 60 * 24));
-        const estado = diff < 0 ? '❌ Caducado' : (diff <= 7 ? '⚠️ Urgente' : '✅ Vigente');
-        const color = diff < 0 ? '#d32f2f' : (diff <= 7 ? '#ff6f00' : '#1a237e');
-        
-        html += `
-            <div class="product-list-item" style="border-left-color: ${color};">
-                <div class="product-info">
-                    <div class="name">${escapeHtml(p.nombre)}</div>
-                    <div class="barcode"><i class="fas fa-barcode"></i> ${escapeHtml(p.codigo)}</div>
-                    <div style="font-size: 12px; color: #666;">${p.fecha} · ${p.cantidad} uds</div>
-                </div>
-                <div style="text-align: right;">
-                    <span class="badge ${diff < 0 ? 'badge-danger' : diff <= 7 ? 'badge-warning' : 'badge-success'}">${estado}</span>
-                </div>
-            </div>
-        `;
-    });
-    if (lista) lista.innerHTML = html;
-}
-
-function actualizarBadges() {
-    const promociones = getData('promociones');
-    const caducidades = getData('caducidades');
-    
-    const promoBadge = document.getElementById('badge-promo');
-    const cadBadge = document.getElementById('badge-cad');
-    if (promoBadge) promoBadge.textContent = promociones.length;
-    if (cadBadge) cadBadge.textContent = caducidades.length;
-}
-
-// ============================================================
-// 10. BACKUP Y LIMPIEZA
-// ============================================================
-function exportarDatos() {
-    const datos = {
-        promociones: getData('promociones'),
-        caducidades: getData('caducidades'),
-        inventario_manual: getData('inventario_manual'),
-        conteos_ciclicos: getData('conteos_ciclicos'),
-        exportado: new Date().toISOString()
+        categoria: categoriaFinal,
+        cantidad: cantidad,
+        precio: precio,
+        fechaRegistro: new Date().toISOString()
     };
     
-    const blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    // Verificar si ya existe
+    var existente = window.datos.inventario.findIndex(function(p) {
+        return p.codigo === codigo;
+    });
+    
+    if (existente !== -1) {
+        window.datos.inventario[existente].cantidad += cantidad;
+        window.datos.inventario[existente].nombre = nombre;
+        window.datos.inventario[existente].categoria = categoriaFinal;
+        window.datos.inventario[existente].precio = precio;
+    } else {
+        window.datos.inventario.push(producto);
+    }
+    
+    window.Storage.set('inventario', window.datos.inventario);
+    
+    document.getElementById('inv-codigo').value = '';
+    document.getElementById('inv-nombre').value = '';
+    document.getElementById('inv-cantidad').value = '1';
+    document.getElementById('inv-precio').value = '';
+    
+    window.renderizarInventario();
+    window.mostrarToast('✅ Producto agregado a ' + categoriaFinal, '✅');
+};
+
+window.renderizarInventario = function() {
+    var container = document.getElementById('inv-lista-categorias');
+    var totalCount = document.getElementById('inv-total-count');
+    var productos = window.datos.inventario || [];
+    
+    totalCount.textContent = productos.length;
+    
+    if (productos.length === 0) {
+        container.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        return;
+    }
+    
+    // Agrupar por categoría
+    var grupos = {};
+    productos.forEach(function(p) {
+        var cat = p.categoria || 'Sin categoría';
+        if (!grupos[cat]) grupos[cat] = [];
+        grupos[cat].push(p);
+    });
+    
+    // Ordenar categorías
+    var categoriasOrdenadas = Object.keys(grupos).sort();
+    
+    var html = '';
+    categoriasOrdenadas.forEach(function(cat) {
+        var items = grupos[cat];
+        html += '<div class="categoria-section">';
+        html += '  <div class="categoria-title">';
+        html += '    <span>' + cat + '</span>';
+        html += '    <span class="count">' + items.length + ' productos</span>';
+        html += '  </div>';
+        
+        items.forEach(function(p) {
+            html += '<div class="producto-item">';
+            html += '  <div class="nombre">' + p.nombre + '</div>';
+            html += '  <div style="display:flex; align-items:center; gap:8px;">';
+            html += '    <span class="cantidad">💰 $' + (p.precio || 0).toFixed(2) + '</span>';
+            html += '    <input type="number" class="input-cantidad" value="' + p.cantidad + '" min="0" data-codigo="' + p.codigo + '" onchange="window.actualizarCantidadInventario(this)">';
+            html += '    <button onclick="window.eliminarProductoInventario(\'' + p.codigo + '\')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:4px;">';
+            html += '      <i class="fas fa-trash"></i>';
+            html += '    </button>';
+            html += '  </div>';
+            html += '</div>';
+        });
+        
+        html += '</div>';
+    });
+    
+    container.innerHTML = html;
+};
+
+window.actualizarCantidadInventario = function(input) {
+    var codigo = input.getAttribute('data-codigo');
+    var nuevaCantidad = parseInt(input.value) || 0;
+    
+    var producto = window.datos.inventario.find(function(p) {
+        return p.codigo === codigo;
+    });
+    
+    if (producto) {
+        producto.cantidad = nuevaCantidad;
+        window.Storage.set('inventario', window.datos.inventario);
+    }
+};
+
+window.eliminarProductoInventario = function(codigo) {
+    if (confirm('¿Eliminar este producto del inventario?')) {
+        window.datos.inventario = window.datos.inventario.filter(function(p) {
+            return p.codigo !== codigo;
+        });
+        window.Storage.set('inventario', window.datos.inventario);
+        window.renderizarInventario();
+        window.mostrarToast('🗑️ Producto eliminado', '🗑️');
+    }
+};
+
+window.finalizarInventario = function() {
+    var productos = window.datos.inventario || [];
+    if (productos.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el inventario', '⚠️');
+        return;
+    }
+    
+    if (confirm('📊 ¿Deseas generar un PDF del inventario y enviarlo por WhatsApp al número 9987313575?')) {
+        // Generar resumen del inventario
+        var resumen = '📊 *INVENTARIO NETO*\n';
+        resumen += '📅 ' + new Date().toLocaleDateString() + '\n';
+        resumen += '────────────────────\n\n';
+        
+        // Agrupar por categoría
+        var grupos = {};
+        productos.forEach(function(p) {
+            var cat = p.categoria || 'Sin categoría';
+            if (!grupos[cat]) grupos[cat] = [];
+            grupos[cat].push(p);
+        });
+        
+        var categoriasOrdenadas = Object.keys(grupos).sort();
+        categoriasOrdenadas.forEach(function(cat) {
+            var items = grupos[cat];
+            resumen += '📂 *' + cat + '* (' + items.length + ' productos)\n';
+            items.forEach(function(p) {
+                resumen += '  • ' + p.nombre + ' | 📦 ' + p.cantidad + ' | 💰 $' + (p.precio || 0).toFixed(2) + '\n';
+            });
+            resumen += '\n';
+        });
+        
+        resumen += '────────────────────\n';
+        resumen += '📦 *Total productos:* ' + productos.length + '\n';
+        resumen += '🏪 Tiendas NETO';
+        
+        // Enviar por WhatsApp al número específico
+        var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(resumen);
+        window.open(url, '_blank');
+        
+        window.mostrarToast('📤 Enviando inventario...', '📤');
+    }
+};
+
+// ============================================
+// FUNCIONES DE ESCANEO
+// ============================================
+window.activarEscaneo = function() {
+    // Verificar si el navegador soporta la API de cámara
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Crear un input de tipo file con capture para usar la cámara
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.style.display = 'none';
+        
+        input.onchange = function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                window.mostrarToast('📷 Imagen capturada, procesando...', '📷');
+                // Aquí iría la lógica de procesamiento de la imagen
+                // Por ahora simulamos un escaneo exitoso
+                setTimeout(function() {
+                    window.mostrarToast('✅ Código detectado: 7501234567890', '✅');
+                }, 1000);
+            }
+            document.body.removeChild(input);
+        };
+        
+        document.body.appendChild(input);
+        input.click();
+    } else {
+        // Fallback: usar la galería
+        window.mostrarToast('📷 Abriendo galería...', '📷');
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        
+        input.onchange = function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                window.mostrarToast('📷 Imagen seleccionada', '📷');
+            }
+            document.body.removeChild(input);
+        };
+        
+        document.body.appendChild(input);
+        input.click();
+    }
+};
+
+window.enfocarInput = function(id) {
+    var input = document.getElementById(id);
+    if (input) {
+        input.focus();
+        // Usar la API de escaneo si está disponible
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            window.activarEscaneo();
+        }
+    }
+};
+
+// ============================================
+// FUNCIONES DE VISUALIZACIÓN
+// ============================================
+window.actualizarVisual = function() {
+    var productos = window.datos.inventario || [];
+    var caducidades = window.datos.caducidades || [];
+    var promociones = window.datos.promociones || [];
+    
+    document.getElementById('vis-total-productos').textContent = productos.length;
+    document.getElementById('vis-caducando').textContent = caducidades.length;
+    document.getElementById('vis-promociones').textContent = promociones.length;
+    
+    // Últimos productos
+    var container = document.getElementById('vis-productos-recientes');
+    var recientes = productos.slice(-5).reverse();
+    
+    if (recientes.length === 0) {
+        container.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        return;
+    }
+    
+    var html = '';
+    recientes.forEach(function(p) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 🏷️ ' + (p.categoria || 'Sin categoría') + '</div>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    
+    container.innerHTML = html;
+};
+
+// ============================================
+// FUNCIONES DE BACKUP
+// ============================================
+window.exportarDatos = function() {
+    var datos = {
+        inventario: window.datos.inventario,
+        promociones: window.datos.promociones,
+        caducidades: window.datos.caducidades,
+        ciclicos: window.datos.ciclicos,
+        fechaExportacion: new Date().toISOString()
+    };
+    
+    var blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
-    a.download = 'inventario_barras_' + new Date().toISOString().slice(0,10) + '.json';
+    a.download = 'neto_backup_' + new Date().toISOString().slice(0,10) + '.json';
     a.click();
     URL.revokeObjectURL(url);
-    mostrarToast('✅ Backup exportado', '✅');
-}
+    window.mostrarToast('📥 Backup exportado', '📥');
+};
 
-function importarDatos() {
-    const input = document.createElement('input');
+window.importarDatos = function() {
+    var input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
     input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            try {
-                const datos = JSON.parse(ev.target.result);
-                if (datos.promociones) setData('promociones', datos.promociones);
-                if (datos.caducidades) setData('caducidades', datos.caducidades);
-                if (datos.inventario_manual) setData('inventario_manual', datos.inventario_manual);
-                if (datos.conteos_ciclicos) setData('conteos_ciclicos', datos.conteos_ciclicos);
-                mostrarToast('✅ Datos importados exitosamente', '✅');
-                setTimeout(() => location.reload(), 1000);
-            } catch (err) {
-                mostrarToast('⚠️ Error al importar: ' + err.message, '⚠️');
-            }
-        };
-        reader.readAsText(file);
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    var datos = JSON.parse(ev.target.result);
+                    if (datos.inventario) window.datos.inventario = datos.inventario;
+                    if (datos.promociones) window.datos.promociones = datos.promociones;
+                    if (datos.caducidades) window.datos.caducidades = datos.caducidades;
+                    if (datos.ciclicos) window.datos.ciclicos = datos.ciclicos;
+                    
+                    window.Storage.set('inventario', window.datos.inventario);
+                    window.Storage.set('promociones', window.datos.promociones);
+                    window.Storage.set('caducidades', window.datos.caducidades);
+                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                    
+                    window.renderizarInventario();
+                    window.renderizarPromociones();
+                    window.renderizarCaducidades();
+                    window.renderizarCiclicos();
+                    window.actualizarVisual();
+                    window.actualizarBadges();
+                    
+                    window.mostrarToast('✅ Datos importados correctamente', '✅');
+                } catch (error) {
+                    window.mostrarToast('❌ Error al importar: archivo inválido', '❌');
+                }
+            };
+            reader.readAsText(file);
+        }
     };
     input.click();
-}
+};
 
-function limpiarTodosLosDatos() {
-    if (!confirm('⚠️ ¿Estás seguro de eliminar TODOS los datos?\nEsta acción no se puede deshacer.')) return;
-    if (!confirm('Confirmación final: ¿Eliminar todos los datos?')) return;
-    
-    localStorage.clear();
-    mostrarToast('🗑️ Todos los datos han sido eliminados', '🗑️');
-    setTimeout(() => location.reload(), 1000);
-}
-
-// ============================================================
-// 11. PWA - INSTALACIÓN
-// ============================================================
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    const btn = document.getElementById('btnInstalarApp');
-    if (btn) btn.classList.add('animate-bounce');
-});
-
-function instalarApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(({ outcome }) => {
-            if (outcome === 'accepted') {
-                mostrarToast('¡Gracias por instalar la App!', '✅');
-            }
-            deferredPrompt = null;
-        });
-    } else {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if (isIOS) {
-            mostrarToast('📲 Para iPhone: Toca "Compartir" (📤 en Safari) y selecciona "Agregar al inicio" ➕', '📱');
-        } else {
-            mostrarToast('📲 En tu navegador toca el menú de 3 puntos (⋮) y selecciona "Instalar aplicación"', '📱');
+window.limpiarTodosLosDatos = function() {
+    if (confirm('⚠️ ¿Estás seguro de que quieres eliminar TODOS los datos? Esta acción no se puede deshacer.')) {
+        if (confirm('⚠️ Confirmación final: ¿Eliminar todos los datos?')) {
+            window.datos.inventario = [];
+            window.datos.promociones = [];
+            window.datos.caducidades = [];
+            window.datos.ciclicos = [];
+            
+            window.Storage.set('inventario', []);
+            window.Storage.set('promociones', []);
+            window.Storage.set('caducidades', []);
+            window.Storage.set('ciclicos', []);
+            
+            window.renderizarInventario();
+            window.renderizarPromociones();
+            window.renderizarCaducidades();
+            window.renderizarCiclicos();
+            window.actualizarVisual();
+            window.actualizarBadges();
+            
+            window.mostrarToast('🗑️ Todos los datos han sido eliminados', '🗑️');
         }
     }
-}
+};
 
-// ============================================================
-// 12. INICIALIZACIÓN
-// ============================================================
+// ============================================
+// ACTUALIZACIÓN DE BADGES
+// ============================================
+window.actualizarBadges = function() {
+    document.getElementById('badge-promo').textContent = (window.datos.promociones || []).length;
+    document.getElementById('badge-cad').textContent = (window.datos.caducidades || []).length;
+};
+
+// ============================================
+// INSTALACIÓN DE APP
+// ============================================
+window.instalarApp = function() {
+    window.mostrarToast('📱 Abre el menú de Chrome y selecciona "Instalar app"', '📱');
+};
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+window.initApp = function() {
+    console.log('🚀 Iniciando NETO Inventario');
+    
+    // Inicializar datos desde storage
+    window.datos.inventario = window.Storage.get('inventario', []);
+    window.datos.promociones = window.Storage.get('promociones', []);
+    window.datos.caducidades = window.Storage.get('caducidades', []);
+    window.datos.ciclicos = window.Storage.get('ciclicos', []);
+    
+    // Renderizar todo
+    window.renderizarPromociones();
+    window.renderizarCaducidades();
+    window.renderizarCiclicos();
+    window.renderizarInventario();
+    window.actualizarBadges();
+    window.actualizarVisual();
+    
+    // Mostrar pantalla de inicio
+    window.showScreen('home');
+    
+    console.log('✅ App inicializada correctamente');
+};
+
+// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📦 Sistema de Inventario - NETO');
-    console.log('🚀 Inicializando...');
-    
-    cargarPromocionesGuardadas();
-    cargarCaducidades();
-    actualizarVisual();
-    actualizarBadges();
-    
-    // Event listeners para promociones
-    const nombreInput = document.getElementById('prodNombre');
-    const checkPerecedero = document.getElementById('checkPerecedero');
-    const fotoInput = document.getElementById('prodFoto');
-    const palabrasClave = ['leche', 'yogurt', 'yogur', 'cereal', 'jabon', 'jabón', 'shampoo', 'champu', 'champú', 'queso', 'crema', 'jamón', 'jamon', 'galletas', 'pan', 'comida', 'jugo', 'refresco', 'bebida', 'detergente', 'suavizante'];
-    
-    if (nombreInput) {
-        nombreInput.addEventListener('input', function(e) {
-            const val = e.target.value.toLowerCase();
-            const requiere = palabrasClave.some(p => val.includes(p));
-            const campoVencimiento = document.getElementById('campoVencimiento');
-            if (requiere) {
-                campoVencimiento.classList.remove('hidden');
-                checkPerecedero.checked = true;
-            } else if (!checkPerecedero.checked) {
-                campoVencimiento.classList.add('hidden');
-            }
-        });
-    }
-    
-    if (checkPerecedero) {
-        checkPerecedero.addEventListener('change', function(e) {
-            const campoVencimiento = document.getElementById('campoVencimiento');
-            if (e.target.checked) {
-                campoVencimiento.classList.remove('hidden');
-            } else {
-                campoVencimiento.classList.add('hidden');
-            }
-        });
-    }
-    
-    if (fotoInput) {
-        fotoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const imgPreview = document.getElementById('imgPreview');
-                    const fotoNombre = document.getElementById('fotoNombre');
-                    const previewContainer = document.getElementById('previewContainer');
-                    if (imgPreview) imgPreview.src = evt.target.result;
-                    if (fotoNombre) fotoNombre.textContent = file.name;
-                    if (previewContainer) previewContainer.classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
-    document.querySelectorAll('.barcode-input').forEach(input => {
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && this.value.trim()) {
-                this.dispatchEvent(new Event('change'));
-            }
-        });
-    });
-    
-    if (/android/i.test(navigator.userAgent)) {
-        document.body.classList.add('android-performance');
-    }
-    
-    console.log('✅ Sistema inicializado correctamente');
+    window.initApp();
 });
 
-// ============================================================
-// FUNCIONES GLOBALES PARA EL HTML
-// ============================================================
-window.showScreen = showScreen;
-window.activarEscaneo = activarEscaneo;
-window.enfocarInput = enfocarInput;
-window.seleccionarEstilo = seleccionarEstilo;
-window.generarPrompt = generarPrompt;
-window.copiarPrompt = copiarPrompt;
-window.enviarWhatsApp = enviarWhatsApp;
-window.instalarApp = instalarApp;
-window.eliminarPromocion = eliminarPromocion;
-window.verPrompt = verPrompt;
-window.guardarCaducidad = guardarCaducidad;
-window.buscarProductoCiclico = buscarProductoCiclico;
-window.procesarImagenesCiclico = procesarImagenesCiclico;
-window.guardarConteoCiclico = guardarConteoCiclico;
-window.cambiarCantidadCiclico = cambiarCantidadCiclico;
-window.mostrarInventario = mostrarInventario;
-window.guardarInventarioManual = guardarInventarioManual;
-window.procesarInventarioCiclico = procesarInventarioCiclico;
-window.exportarDatos = exportarDatos;
-window.importarDatos = importarDatos;
-window.limpiarTodosLosDatos = limpiarTodosLosDatos;
-window.actualizarVisual = actualizarVisual;
-
-console.log('✅ Todos los scripts cargados correctamente');
+// También inicializar si el DOM ya está cargado
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    window.initApp();
+}
 </script>
 
 </body>
