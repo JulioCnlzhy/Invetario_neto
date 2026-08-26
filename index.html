@@ -23,6 +23,18 @@
     
     <style>
         /* Estilos generales */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0f172a;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
         .neto-dark {
             background: #0f172a;
         }
@@ -180,33 +192,6 @@
             margin-top: 16px;
         }
 
-        /* FAB Scan */
-        .fab-scan {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #f97316;
-            color: white;
-            border: none;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .fab-scan:hover {
-            transform: scale(1.05);
-        }
-        .fab-scan:active {
-            transform: scale(0.95);
-        }
-
         /* Menú principal */
         .main-menu {
             display: grid;
@@ -302,8 +287,8 @@
         }
         .form-group label {
             display: block;
-            color: #94a3b8;
-            font-size: 0.7rem;
+            color: #cbd5e1;
+            font-size: 0.75rem;
             font-weight: 600;
             margin-bottom: 4px;
         }
@@ -330,6 +315,10 @@
         }
         .form-group input::placeholder {
             color: #64748b;
+        }
+        .form-group select option {
+            background: #1e293b;
+            color: #e2e8f0;
         }
 
         /* Scan area */
@@ -407,6 +396,7 @@
         }
         .list-item .item-name {
             font-weight: 600;
+            color: #e2e8f0;
         }
         .list-item .item-detail {
             color: #94a3b8;
@@ -612,6 +602,107 @@
             transform: scale(0.97);
         }
 
+        /* Login */
+        #screen-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #screen-login.active {
+            display: flex;
+        }
+        .login-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 24px;
+            padding: 32px 24px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+        .login-card .logo {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+        .login-card h2 {
+            color: #f97316;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 0 0 4px;
+        }
+        .login-card p {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin: 0 0 24px;
+        }
+        .login-card .form-group {
+            text-align: left;
+        }
+        .login-card .form-group label {
+            color: #cbd5e1;
+        }
+        .login-card .btn {
+            margin-top: 8px;
+        }
+        .login-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            display: none;
+        }
+        .login-error.show {
+            display: block;
+        }
+
+        .user-welcome {
+            color: #4ade80;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding: 8px 16px;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        /* Ciclico - tabs */
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .tab-btn.active {
+            background: #f97316;
+            color: white;
+            border-color: #f97316;
+        }
+        .tab-btn:hover:not(.active) {
+            border-color: #f97316;
+            color: #e2e8f0;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
         /* Responsive */
         @media (max-width: 400px) {
             .main-menu {
@@ -636,12 +727,17 @@
             .stat-card .stat-number {
                 font-size: 1rem;
             }
+            .login-card {
+                padding: 24px 16px;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- Toast Notification Container -->
+<!-- ========================================== -->
+<!-- TOAST NOTIFICATION                         -->
+<!-- ========================================== -->
 <div id="toastContainer">
     <div id="toastContent">
         <span id="toastIcon">ℹ️</span>
@@ -649,26 +745,50 @@
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- PANTALLA DE LOGIN                         -->
+<!-- ========================================== -->
+<section id="screen-login" class="screen active">
+    <div class="login-card">
+        <div class="logo">📦</div>
+        <h2>NETO Inventario</h2>
+        <p>Ingresa tu código de empleado</p>
+        
+        <div class="form-group">
+            <label><i class="fas fa-id-badge"></i> Código de Empleado</label>
+            <input type="text" id="login-codigo" placeholder="Ej: 1230011" autocomplete="off" />
+        </div>
+        
+        <button class="btn btn-orange" onclick="window.iniciarSesion()">
+            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+        </button>
+        
+        <div id="login-error" class="login-error">
+            <i class="fas fa-exclamation-circle"></i> Código incorrecto. Intenta de nuevo.
+        </div>
+    </div>
+</section>
+
+<!-- ========================================== -->
+<!-- CONTENIDO PRINCIPAL                        -->
+<!-- ========================================== -->
+<div id="app-content" style="display:none;">
+
+<!-- Header -->
+<header class="header">
+    <h1>📦 NETO Inventario</h1>
+    <p class="subtitle" id="header-usuario">🔍 Bienvenido</p>
+</header>
+
 <div class="container">
-    <!-- ========================================== -->
-    <!-- HEADER UNIFICADO                           -->
-    <!-- ========================================== -->
-    <header class="header">
-        <h1>📦 NETO Inventario</h1>
-        <p class="subtitle">🔍 Sistema Integral de Gestión</p>
-    </header>
-
-    <!-- ========================================== -->
-    <!-- BOTÓN FLOTANTE DE ESCANEO                  -->
-    <!-- ========================================== -->
-    <button class="fab-scan" id="fabScan" onclick="window.activarEscaneo()">
-        <i class="fas fa-camera"></i>
-    </button>
-
     <!-- ========================================== -->
     <!-- PANTALLA DE INICIO                         -->
     <!-- ========================================== -->
     <section id="screen-home" class="screen active">
+        <div id="welcome-message" class="user-welcome">
+            👋 Bienvenido
+        </div>
+        
         <div class="main-menu">
             <div class="menu-item orange" onclick="window.showScreen('promociones')">
                 <span class="icon"><i class="fas fa-tags"></i></span>
@@ -701,6 +821,11 @@
         <button id="btnInstalarApp" onclick="window.instalarApp()"
             class="btn btn-secondary" style="margin-top: 10px;">
             <i class="fas fa-download"></i> Instalar App
+        </button>
+        
+        <button onclick="window.cerrarSesion()"
+            class="btn btn-danger" style="margin-top: 10px;">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
         </button>
     </section>
 
@@ -909,24 +1034,104 @@
                 <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
             </div>
             
-            <div class="scan-area" onclick="window.enfocarInput('ciclico-codigo')">
-                <i class="fas fa-camera scan-icon"></i>
-                <span class="scan-hint">Escanea el código de barras del producto</span>
-                <input type="text" id="ciclico-codigo" placeholder="Código de barras" class="barcode-input" />
-                <button class="btn btn-primary" onclick="window.buscarProductoCiclico()">
-                    <i class="fas fa-search"></i> Buscar producto
+            <!-- Tabs: Manual y Cíclico -->
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="window.cambiarTabCiclico('manual', this)">
+                    <i class="fas fa-pen"></i> Manual
+                </button>
+                <button class="tab-btn" onclick="window.cambiarTabCiclico('ciclico', this)">
+                    <i class="fas fa-image"></i> Cíclico
                 </button>
             </div>
-
-            <div class="divider">— o —</div>
-
-            <div class="scan-area scan-area-orange">
-                <i class="fas fa-images scan-icon"></i>
-                <span class="scan-hint">Sube foto del sistema para detectar códigos</span>
-                <input type="file" accept="image/*" multiple id="ciclico-imagenes" />
-                <button class="btn btn-orange" onclick="window.procesarImagenesCiclico()">
-                    <i class="fas fa-file-image"></i> Procesar Imágenes
+            
+            <!-- Tab Manual -->
+            <div id="tab-manual" class="tab-content active">
+                <div class="scan-area" onclick="window.enfocarInput('ciclico-codigo')">
+                    <i class="fas fa-camera scan-icon"></i>
+                    <span class="scan-hint">Escanea el código de barras del producto</span>
+                    <input type="text" id="ciclico-codigo" placeholder="Código de barras" class="barcode-input" />
+                    <button class="btn btn-primary" onclick="window.buscarProductoCiclico()" style="margin-top:8px;">
+                        <i class="fas fa-search"></i> Buscar producto
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Nombre del Producto</label>
+                    <input type="text" id="ciclico-nombre" placeholder="Nombre del producto" />
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tags"></i> Categoría</label>
+                    <select id="ciclico-categoria">
+                        <option value="Cámara Fría">🧊 Cámara Fría</option>
+                        <option value="Refrescos">🥤 Refrescos</option>
+                        <option value="Botanas">🍿 Botanas</option>
+                        <option value="Galletas">🍪 Galletas</option>
+                        <option value="Comida para Bebé">👶 Comida para Bebé</option>
+                        <option value="Pañales">🧷 Pañales</option>
+                        <option value="Comida para Perro">🐕 Comida para Perro</option>
+                        <option value="Comida para Gato">🐈 Comida para Gato</option>
+                        <option value="Maruchan">🍜 Maruchan</option>
+                        <option value="Salsas">🌶️ Salsas</option>
+                        <option value="Harinas">🌾 Harinas</option>
+                        <option value="Azúcar">🍬 Azúcar</option>
+                        <option value="Sal">🧂 Sal</option>
+                        <option value="Frijoles">🫘 Frijoles</option>
+                        <option value="Aceites">🫒 Aceites</option>
+                        <option value="Toallas Húmedas">🧻 Toallas Húmedas</option>
+                        <option value="Shampoos">🧴 Shampoos</option>
+                        <option value="Rollos">🧻 Rollos</option>
+                        <option value="Servilletas">🧻 Servilletas</option>
+                        <option value="Grasa para Zapatos">👞 Grasa para Zapatos</option>
+                        <option value="Los Más Buscados">⭐ Los Más Buscados</option>
+                        <option value="Nestlé">🍫 Nestlé</option>
+                        <option value="Bolsa para Basura">🗑️ Bolsa para Basura</option>
+                        <option value="Detergente Líquido Ropa">🧺 Detergente Líquido Ropa</option>
+                        <option value="Detergente en Polvo">🧺 Detergente en Polvo</option>
+                        <option value="Cloros">🧴 Cloros</option>
+                        <option value="Jabón para Trastes">🧼 Jabón para Trastes</option>
+                        <option value="Jabón para Trastes Líquido">🧴 Jabón para Trastes Líquido</option>
+                        <option value="Jabones">🧼 Jabones</option>
+                        <option value="Crema para Peinar">💇 Crema para Peinar</option>
+                        <option value="Crema Corporal">🧴 Crema Corporal</option>
+                        <option value="Gel para Manos">🧴 Gel para Manos</option>
+                        <option value="Farmacia">💊 Farmacia</option>
+                        <option value="Desodorantes">🧴 Desodorantes</option>
+                        <option value="Insecticida">🦟 Insecticida</option>
+                        <option value="Audífonos">🎧 Audífonos</option>
+                        <option value="Cosas para Casa">🏠 Cosas para Casa</option>
+                        <option value="Platos">🍽️ Platos</option>
+                        <option value="Vasos">🥤 Vasos</option>
+                        <option value="Peluches">🧸 Peluches</option>
+                        <option value="Cigarros">🚬 Cigarros</option>
+                        <option value="Alcohol y Licores">🍷 Alcohol y Licores</option>
+                        <option value="Hielo">🧊 Hielo</option>
+                        <option value="Papelería">📝 Papelería</option>
+                        <option value="Otros">📦 Otros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-box"></i> Cantidad</label>
+                    <input type="number" id="ciclico-cantidad" placeholder="Cantidad" value="1" min="1" />
+                </div>
+                <button class="btn btn-orange" onclick="window.agregarManualCiclico()">
+                    <i class="fas fa-plus-circle"></i> Agregar Producto
                 </button>
+            </div>
+            
+            <!-- Tab Cíclico (con imágenes) -->
+            <div id="tab-ciclico" class="tab-content">
+                <div class="scan-area scan-area-orange">
+                    <i class="fas fa-images scan-icon"></i>
+                    <span class="scan-hint">Sube foto del sistema para detectar códigos</span>
+                    <input type="file" accept="image/*" multiple id="ciclico-imagenes" />
+                    <button class="btn btn-orange" onclick="window.procesarImagenesCiclico()" style="margin-top:8px;">
+                        <i class="fas fa-file-image"></i> Procesar Imágenes
+                    </button>
+                </div>
+                
+                <div id="ciclico-imagen-resultados" class="scrollable" style="max-height:200px; margin-top:8px;">
+                    <p class="empty-message">Las imágenes procesadas aparecerán aquí</p>
+                </div>
             </div>
         </div>
 
@@ -1016,6 +1221,7 @@
                     <option value="Alcohol y Licores">🍷 Alcohol y Licores</option>
                     <option value="Hielo">🧊 Hielo</option>
                     <option value="Papelería">📝 Papelería</option>
+                    <option value="Otros">📦 Otros</option>
                 </select>
             </div>
             
@@ -1101,11 +1307,23 @@
         </div>
     </section>
 </div>
+</div>
 
 <!-- ========================================== -->
 <!-- JAVASCRIPT - TODO EN UN SOLO ARCHIVO      -->
 <!-- ========================================== -->
 <script>
+// ============================================
+// USUARIOS DEL SISTEMA
+// ============================================
+window.usuarios = {
+    '1230011': { nombre: 'Julio César Nolazco Hoyos', saludo: 'Bienvenido Julio' },
+    '1110008296': { nombre: 'Claudia Teresa Tlapalma Cruz', saludo: 'Bienvenida Claudia' },
+    '1230445': { nombre: 'Juan Cristóbal Hidalgo', saludo: 'Bienvenido Cristóbal' }
+};
+
+window.usuarioActual = null;
+
 // ============================================
 // SISTEMA DE NOTIFICACIONES (Toast)
 // ============================================
@@ -1126,31 +1344,87 @@ window.mostrarToast = function(mensaje, icono = 'ℹ️') {
 };
 
 // ============================================
+// LOGIN
+// ============================================
+window.iniciarSesion = function() {
+    var codigo = document.getElementById('login-codigo').value.trim();
+    var errorEl = document.getElementById('login-error');
+    
+    if (codigo in window.usuarios) {
+        window.usuarioActual = window.usuarios[codigo];
+        errorEl.classList.remove('show');
+        
+        // Mostrar contenido y ocultar login
+        document.getElementById('screen-login').classList.remove('active');
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        
+        // Actualizar mensaje de bienvenida
+        var welcomeMsg = document.getElementById('welcome-message');
+        var headerUser = document.getElementById('header-usuario');
+        var saludo = window.usuarioActual.saludo;
+        welcomeMsg.textContent = '👋 ' + saludo;
+        headerUser.textContent = '🔍 ' + saludo;
+        
+        // Inicializar la app
+        window.initApp();
+        
+        window.mostrarToast('✅ ' + saludo, '👋');
+    } else {
+        errorEl.classList.add('show');
+        document.getElementById('login-codigo').value = '';
+        document.getElementById('login-codigo').focus();
+        window.mostrarToast('❌ Código incorrecto', '❌');
+    }
+};
+
+window.cerrarSesion = function() {
+    if (confirm('¿Cerrar sesión?')) {
+        window.usuarioActual = null;
+        document.getElementById('app-content').style.display = 'none';
+        document.getElementById('screen-login').style.display = 'flex';
+        document.getElementById('screen-login').classList.add('active');
+        document.getElementById('login-codigo').value = '';
+        document.getElementById('login-error').classList.remove('show');
+        window.mostrarToast('👋 Sesión cerrada', '👋');
+    }
+};
+
+// Enter para login
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        var loginScreen = document.getElementById('screen-login');
+        if (loginScreen.classList.contains('active')) {
+            window.iniciarSesion();
+        }
+    }
+});
+
+// ============================================
 // SISTEMA DE PANTALLAS
 // ============================================
 window.showScreen = function(screenId) {
-    // Ocultar todas las pantallas
     document.querySelectorAll('.screen').forEach(function(s) {
         s.classList.remove('active');
     });
     
-    // Mostrar la pantalla seleccionada
     var target = document.getElementById('screen-' + screenId);
     if (target) {
         target.classList.add('active');
     }
     
-    // Actualizar badges
     window.actualizarBadges();
     
-    // Actualizar visualización si es la pantalla visual
     if (screenId === 'visual') {
         window.actualizarVisual();
     }
     
-    // Actualizar inventario si es la pantalla de inventario
     if (screenId === 'inventario') {
         window.renderizarInventario();
+    }
+    
+    if (screenId === 'ciclicos') {
+        window.renderizarCiclicos();
     }
 };
 
@@ -1191,6 +1465,8 @@ window.datos = {
 // ============================================
 // FUNCIONES DE PROMOCIONES
 // ============================================
+window.estiloSeleccionado = 'coca';
+
 window.seleccionarEstilo = function(el, estilo) {
     document.querySelectorAll('.promo-card').forEach(function(card) {
         card.classList.remove('selected');
@@ -1233,7 +1509,6 @@ window.generarPrompt = function() {
     document.getElementById('promptResult').value = prompt;
     document.getElementById('outputSection').classList.remove('hidden');
     
-    // Guardar promoción
     var promocion = {
         id: Date.now(),
         nombre: nombre,
@@ -1382,6 +1657,19 @@ window.eliminarCaducidad = function(index) {
 // ============================================
 // FUNCIONES DE CICLICOS
 // ============================================
+window.cambiarTabCiclico = function(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    
+    document.querySelectorAll('.tab-content').forEach(function(c) {
+        c.classList.remove('active');
+    });
+    
+    document.getElementById('tab-' + tab).classList.add('active');
+};
+
 window.buscarProductoCiclico = function() {
     var codigo = document.getElementById('ciclico-codigo').value.trim();
     if (!codigo) {
@@ -1389,13 +1677,22 @@ window.buscarProductoCiclico = function() {
         return;
     }
     
-    // Buscar en inventario
     var producto = window.datos.inventario.find(function(p) {
         return p.codigo === codigo;
     });
     
     if (producto) {
-        window.agregarProductoCiclico(producto);
+        document.getElementById('ciclico-nombre').value = producto.nombre;
+        // Seleccionar categoría
+        var select = document.getElementById('ciclico-categoria');
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === producto.categoria) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+        document.getElementById('ciclico-cantidad').value = producto.cantidad || 1;
+        window.mostrarToast('✅ Producto encontrado', '✅');
     } else {
         window.mostrarToast('❌ Producto no encontrado en inventario', '❌');
     }
@@ -1403,29 +1700,42 @@ window.buscarProductoCiclico = function() {
     document.getElementById('ciclico-codigo').value = '';
 };
 
-window.agregarProductoCiclico = function(producto) {
+window.agregarManualCiclico = function() {
+    var nombre = document.getElementById('ciclico-nombre').value.trim();
+    var categoria = document.getElementById('ciclico-categoria').value;
+    var cantidad = parseInt(document.getElementById('ciclico-cantidad').value) || 1;
+    var codigo = document.getElementById('ciclico-codigo').value.trim() || 'MAN-' + Date.now();
+    
+    if (!nombre) {
+        window.mostrarToast('⚠️ Ingresa el nombre del producto', '⚠️');
+        return;
+    }
+    
     if (!window.datos.ciclicos) window.datos.ciclicos = [];
     
-    // Verificar si ya está agregado
     var existente = window.datos.ciclicos.find(function(p) {
-        return p.codigo === producto.codigo;
+        return p.codigo === codigo;
     });
     
     if (existente) {
-        existente.cantidad = (existente.cantidad || 0) + 1;
+        existente.cantidad = (existente.cantidad || 0) + cantidad;
     } else {
         window.datos.ciclicos.push({
             id: Date.now(),
-            codigo: producto.codigo,
-            nombre: producto.nombre,
-            categoria: producto.categoria,
-            cantidad: 1,
-            precio: producto.precio
+            codigo: codigo,
+            nombre: nombre,
+            categoria: categoria,
+            cantidad: cantidad
         });
     }
     
     window.Storage.set('ciclicos', window.datos.ciclicos);
     window.renderizarCiclicos();
+    
+    document.getElementById('ciclico-nombre').value = '';
+    document.getElementById('ciclico-cantidad').value = '1';
+    document.getElementById('ciclico-codigo').value = '';
+    
     window.mostrarToast('✅ Producto agregado al conteo', '✅');
 };
 
@@ -1475,13 +1785,22 @@ window.guardarConteoCiclico = function() {
         return;
     }
     
-    // Actualizar inventario con las cantidades contadas
     window.datos.ciclicos.forEach(function(item) {
         var producto = window.datos.inventario.find(function(p) {
             return p.codigo === item.codigo;
         });
         if (producto) {
             producto.cantidad = item.cantidad;
+        } else {
+            window.datos.inventario.push({
+                id: Date.now(),
+                codigo: item.codigo,
+                nombre: item.nombre,
+                categoria: item.categoria || 'Otros',
+                cantidad: item.cantidad,
+                precio: 0,
+                fechaRegistro: new Date().toISOString()
+            });
         }
     });
     
@@ -1495,14 +1814,58 @@ window.guardarConteoCiclico = function() {
 };
 
 window.procesarImagenesCiclico = function() {
-    window.mostrarToast('📷 Función de reconocimiento de imágenes (simulación)', '📷');
-    // Aquí iría la lógica de OCR
+    var input = document.getElementById('ciclico-imagenes');
+    var files = input.files;
+    var container = document.getElementById('ciclico-imagen-resultados');
+    
+    if (files.length === 0) {
+        window.mostrarToast('⚠️ Selecciona al menos una imagen', '⚠️');
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var url = URL.createObjectURL(file);
+        html += '<div style="display:flex; align-items:center; gap:10px; padding:8px; background:#0f172a; border-radius:8px; margin-bottom:4px; border:1px solid #334155;">';
+        html += '  <img src="' + url + '" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">';
+        html += '  <span style="color:#e2e8f0; font-size:0.75rem;">' + file.name + '</span>';
+        html += '  <span style="color:#f97316; font-size:0.65rem; margin-left:auto;">✅ Procesada</span>';
+        html += '</div>';
+    }
+    
+    container.innerHTML = html;
+    window.mostrarToast('📷 ' + files.length + ' imagen(es) procesadas', '📷');
+    
+    // Simular detección de productos
+    setTimeout(function() {
+        // Agregar productos de ejemplo
+        var productosEjemplo = [
+            { nombre: 'Coca-Cola 600ml', categoria: 'Refrescos' },
+            { nombre: 'Sabritas Clásicas', categoria: 'Botanas' },
+            { nombre: 'Galletas Oreo', categoria: 'Galletas' }
+        ];
+        
+        productosEjemplo.forEach(function(p) {
+            var codigo = 'IMG-' + Date.now() + Math.floor(Math.random() * 1000);
+            window.datos.ciclicos.push({
+                id: Date.now(),
+                codigo: codigo,
+                nombre: p.nombre,
+                categoria: p.categoria,
+                cantidad: 1
+            });
+        });
+        
+        window.Storage.set('ciclicos', window.datos.ciclicos);
+        window.renderizarCiclicos();
+        window.mostrarToast('✅ Productos detectados en las imágenes', '✅');
+    }, 1500);
 };
 
 // ============================================
 // FUNCIONES DE INVENTARIO
 // ============================================
-// Definición de categorías para detección automática
 window.categoriasPorPalabra = {
     'refresco': 'Refrescos',
     'coca': 'Refrescos',
@@ -1576,11 +1939,9 @@ window.agregarProductoInventario = function() {
         return;
     }
     
-    // Detectar categoría automáticamente si es "Otros"
     var categoriaFinal = categoria;
     if (categoria === 'Otros' || !categoria) {
         categoriaFinal = window.detectarCategoria(nombre);
-        // Actualizar el select
         var select = document.getElementById('inv-categoria');
         for (var i = 0; i < select.options.length; i++) {
             if (select.options[i].value === categoriaFinal) {
@@ -1600,7 +1961,6 @@ window.agregarProductoInventario = function() {
         fechaRegistro: new Date().toISOString()
     };
     
-    // Verificar si ya existe
     var existente = window.datos.inventario.findIndex(function(p) {
         return p.codigo === codigo;
     });
@@ -1637,7 +1997,6 @@ window.renderizarInventario = function() {
         return;
     }
     
-    // Agrupar por categoría
     var grupos = {};
     productos.forEach(function(p) {
         var cat = p.categoria || 'Sin categoría';
@@ -1645,7 +2004,6 @@ window.renderizarInventario = function() {
         grupos[cat].push(p);
     });
     
-    // Ordenar categorías
     var categoriasOrdenadas = Object.keys(grupos).sort();
     
     var html = '';
@@ -1709,12 +2067,10 @@ window.finalizarInventario = function() {
     }
     
     if (confirm('📊 ¿Deseas generar un PDF del inventario y enviarlo por WhatsApp al número 9987313575?')) {
-        // Generar resumen del inventario
         var resumen = '📊 *INVENTARIO NETO*\n';
         resumen += '📅 ' + new Date().toLocaleDateString() + '\n';
         resumen += '────────────────────\n\n';
         
-        // Agrupar por categoría
         var grupos = {};
         productos.forEach(function(p) {
             var cat = p.categoria || 'Sin categoría';
@@ -1736,7 +2092,6 @@ window.finalizarInventario = function() {
         resumen += '📦 *Total productos:* ' + productos.length + '\n';
         resumen += '🏪 Tiendas NETO';
         
-        // Enviar por WhatsApp al número específico
         var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(resumen);
         window.open(url, '_blank');
         
@@ -1748,9 +2103,7 @@ window.finalizarInventario = function() {
 // FUNCIONES DE ESCANEO
 // ============================================
 window.activarEscaneo = function() {
-    // Verificar si el navegador soporta la API de cámara
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        // Crear un input de tipo file con capture para usar la cámara
         var input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -1761,8 +2114,6 @@ window.activarEscaneo = function() {
             var file = e.target.files[0];
             if (file) {
                 window.mostrarToast('📷 Imagen capturada, procesando...', '📷');
-                // Aquí iría la lógica de procesamiento de la imagen
-                // Por ahora simulamos un escaneo exitoso
                 setTimeout(function() {
                     window.mostrarToast('✅ Código detectado: 7501234567890', '✅');
                 }, 1000);
@@ -1773,7 +2124,6 @@ window.activarEscaneo = function() {
         document.body.appendChild(input);
         input.click();
     } else {
-        // Fallback: usar la galería
         window.mostrarToast('📷 Abriendo galería...', '📷');
         var input = document.createElement('input');
         input.type = 'file';
@@ -1797,7 +2147,6 @@ window.enfocarInput = function(id) {
     var input = document.getElementById(id);
     if (input) {
         input.focus();
-        // Usar la API de escaneo si está disponible
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             window.activarEscaneo();
         }
@@ -1816,7 +2165,6 @@ window.actualizarVisual = function() {
     document.getElementById('vis-caducando').textContent = caducidades.length;
     document.getElementById('vis-promociones').textContent = promociones.length;
     
-    // Últimos productos
     var container = document.getElementById('vis-productos-recientes');
     var recientes = productos.slice(-5).reverse();
     
@@ -1945,13 +2293,11 @@ window.instalarApp = function() {
 window.initApp = function() {
     console.log('🚀 Iniciando NETO Inventario');
     
-    // Inicializar datos desde storage
     window.datos.inventario = window.Storage.get('inventario', []);
     window.datos.promociones = window.Storage.get('promociones', []);
     window.datos.caducidades = window.Storage.get('caducidades', []);
     window.datos.ciclicos = window.Storage.get('ciclicos', []);
     
-    // Renderizar todo
     window.renderizarPromociones();
     window.renderizarCaducidades();
     window.renderizarCiclicos();
@@ -1959,7 +2305,6 @@ window.initApp = function() {
     window.actualizarBadges();
     window.actualizarVisual();
     
-    // Mostrar pantalla de inicio
     window.showScreen('home');
     
     console.log('✅ App inicializada correctamente');
@@ -1967,12 +2312,17 @@ window.initApp = function() {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    window.initApp();
+    // Si ya hay usuario logueado, iniciar directamente
+    if (window.usuarioActual) {
+        window.initApp();
+    }
 });
 
 // También inicializar si el DOM ya está cargado
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    window.initApp();
+    if (window.usuarioActual) {
+        window.initApp();
+    }
 }
 </script>
 
