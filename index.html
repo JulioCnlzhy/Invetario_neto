@@ -124,6 +124,8 @@
         .btn-back:hover { color: #f97316; }
         .btn-purple { background: #7c3aed; color: #ffffff; }
         .btn-purple:hover { background: #6d28d9; }
+        .btn-yellow { background: #d97706; color: #ffffff; }
+        .btn-yellow:hover { background: #b45309; }
 
         .card {
             background: #1e293b;
@@ -231,6 +233,7 @@
         }
         .list-item .item-actions button:hover { background: #334155; color: #ffffff; }
         .list-item .item-actions .delete-btn:hover { color: #ef4444; }
+        .list-item .item-actions .edit-btn:hover { color: #f97316; }
 
         .categoria-section { margin-bottom: 16px; }
         .categoria-title {
@@ -485,7 +488,7 @@
         .producto-item .nombre { color: #ffffff; font-size: 0.78rem; font-weight: 500; flex: 1; }
         .producto-item .cantidad { color: #94a3b8; font-size: 0.7rem; }
         .producto-item .input-cantidad {
-            width: 60px;
+            width: 70px;
             padding: 4px 8px;
             border-radius: 6px;
             background: #1e293b;
@@ -528,6 +531,74 @@
             white-space: pre-wrap;
         }
 
+        /* Estilos para edición de cantidad */
+        .edit-cantidad-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .edit-cantidad-modal .modal-content {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #f97316;
+        }
+        .edit-cantidad-modal .modal-content h3 {
+            color: #f97316;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .edit-cantidad-modal .modal-content .producto-nombre-modal {
+            color: #ffffff;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 8px;
+            background: #0f172a;
+            border-radius: 8px;
+        }
+        .edit-cantidad-modal .modal-content .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-cantidad-modal .modal-content .input-group input {
+            width: 120px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #ffffff;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: 700;
+        }
+        .edit-cantidad-modal .modal-content .input-group input:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+        .edit-cantidad-modal .modal-content .btn-group-modal {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .edit-cantidad-modal .modal-content .btn-group-modal .btn {
+            flex: 1;
+        }
+
         @media (max-width: 400px) {
             .main-menu { gap: 8px; }
             .menu-item { padding: 12px; }
@@ -540,6 +611,7 @@
             .tab-btn { font-size: 0.6rem; padding: 8px 6px; }
             .img-result-item { flex-direction: column; align-items: flex-start; }
             .img-result-item .status { margin-left: 0; }
+            .edit-cantidad-modal .modal-content { padding: 16px; }
         }
     </style>
 </head>
@@ -830,6 +902,9 @@
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
+                <button class="btn btn-yellow" style="width:auto; padding:6px 12px; font-size:0.6rem;" onclick="window.agregarProductoManualCiclico()">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
             </div>
             
             <div class="tab-container">
@@ -918,7 +993,7 @@
                 </button>
             </div>
             
-            <!-- Tab Imágenes con OCR MEJORADO -->
+            <!-- Tab Imágenes con OCR -->
             <div id="tab-ciclico" class="tab-content">
                 <div class="scan-area scan-area-orange">
                     <i class="fas fa-images scan-icon"></i>
@@ -1130,6 +1205,25 @@
 </div>
 
 <!-- ========================================== -->
+<!-- MODAL PARA EDITAR CANTIDAD                -->
+<!-- ========================================== -->
+<div id="modalEditarCantidad" style="display:none;" class="edit-cantidad-modal">
+    <div class="modal-content">
+        <h3>✏️ Editar Cantidad</h3>
+        <div class="producto-nombre-modal" id="modalProductoNombre">Producto</div>
+        <div class="input-group">
+            <button class="btn btn-secondary" onclick="window.cambiarCantidadModal(-1)" style="width:auto; padding:10px 16px; font-size:1.2rem;">−</button>
+            <input type="number" id="modalCantidadInput" value="1" min="0" step="1">
+            <button class="btn btn-secondary" onclick="window.cambiarCantidadModal(1)" style="width:auto; padding:10px 16px; font-size:1.2rem;">+</button>
+        </div>
+        <div class="btn-group-modal">
+            <button class="btn btn-secondary" onclick="window.cerrarModalEditar()">Cancelar</button>
+            <button class="btn btn-success" onclick="window.guardarCantidadModal()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
 <!-- JAVASCRIPT COMPLETO                        -->
 <!-- ========================================== -->
 <script>
@@ -1143,6 +1237,7 @@ window.usuarios = {
 };
 
 window.usuarioActual = null;
+window.indiceEditando = -1;
 
 // ============================================
 // SISTEMA DE NOTIFICACIONES
@@ -1278,7 +1373,6 @@ function extraerProductosDeTexto(texto) {
     console.log('📝 Texto OCR completo:');
     console.log(texto);
     
-    // Palabras clave para detectar nombres de productos
     var palabrasClave = [
         'SALSA', 'COCA', 'LECHE', 'CREMA', 'GELAT', 'NATILLA', 'FLAN', 
         'MARGARINA', 'DETERGENTE', 'LIMPIADOR', 'SUAVIZANTE', 'ZOTE', 
@@ -1290,26 +1384,20 @@ function extraerProductosDeTexto(texto) {
         'VALENTINA', 'HUICHOL', 'NESTLÉ', 'CERVEZA', 'PAMPER', 'HUGGIES'
     ];
     
-    // Primero, buscar líneas con formato CÓDIGO + NOMBRE
     for (var i = 0; i < lineas.length; i++) {
         var linea = lineas[i].trim();
         if (linea.length < 5) continue;
         
-        // Buscar código de barras (6-15 dígitos)
         var codigoMatch = linea.match(/\b(\d{6,15})\b/);
         if (codigoMatch) {
             var codigo = codigoMatch[1];
             var codigoLimpio = codigo.replace(/\D/g, '');
             
-            // Extraer el nombre - todo lo que no sea el código
             var nombre = linea.replace(codigo, '').trim();
-            
-            // Limpiar caracteres especiales
             nombre = nombre.replace(/^[\s\|:;]+/, '');
             nombre = nombre.replace(/[\s\|:;]+$/, '');
             nombre = nombre.replace(/\s{2,}/g, ' ');
             
-            // Buscar cantidad al final
             var cantidadMatch = nombre.match(/(\d+(?:\.\d+)?)\s*$/);
             var cantidad = 1;
             if (cantidadMatch) {
@@ -1317,7 +1405,6 @@ function extraerProductosDeTexto(texto) {
                 nombre = nombre.replace(/\s*\d+(?:\.\d+)?\s*$/, '').trim();
             }
             
-            // Verificar si el nombre parece un producto
             var esProducto = false;
             for (var k = 0; k < palabrasClave.length; k++) {
                 if (nombre.toUpperCase().includes(palabrasClave[k])) {
@@ -1344,16 +1431,13 @@ function extraerProductosDeTexto(texto) {
         }
     }
     
-    // Si no se encontraron productos con código, buscar solo nombres
     if (productos.length === 0) {
         for (var j = 0; j < lineas.length; j++) {
             var linea = lineas[j].trim();
             if (linea.length < 5) continue;
             
-            // Buscar nombres que contengan palabras clave
             for (var k = 0; k < palabrasClave.length; k++) {
                 if (linea.toUpperCase().includes(palabrasClave[k])) {
-                    // Generar código temporal
                     var codigoTemp = 'OCR-' + Date.now() + '-' + j;
                     var categoria = window.detectarCategoria(linea);
                     var existe = productos.some(function(prod) {
@@ -1378,7 +1462,7 @@ function extraerProductosDeTexto(texto) {
 }
 
 // ============================================
-// FUNCIÓN PARA PRE-PROCESAR IMAGEN (mejorar OCR)
+// FUNCIÓN PARA PRE-PROCESAR IMAGEN
 // ============================================
 function preprocesarImagen(imageDataURL, callback) {
     var img = new Image();
@@ -1386,30 +1470,23 @@ function preprocesarImagen(imageDataURL, callback) {
         var canvas = document.createElement('canvas');
         var ctx = canvas.getContext('2d');
         
-        // Aumentar resolución para mejor OCR
         var scale = 2;
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         
-        // Dibujar imagen con mejor calidad
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // Aplicar contraste para mejorar texto
         var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         var data = imageData.data;
         
-        // Aumentar contraste
         for (var i = 0; i < data.length; i += 4) {
             var r = data[i];
             var g = data[i + 1];
             var b = data[i + 2];
             
-            // Convertir a escala de grises con énfasis en contraste
             var gray = 0.299 * r + 0.587 * g + 0.114 * b;
-            
-            // Aumentar contraste
             var contrast = 1.5;
             var newGray = ((gray / 255 - 0.5) * contrast + 0.5) * 255;
             newGray = Math.max(0, Math.min(255, newGray));
@@ -1893,6 +1970,69 @@ window.agregarManualCiclico = function() {
     window.mostrarToast('✅ Producto agregado al conteo', '✅');
 };
 
+// FUNCIÓN PARA AGREGAR PRODUCTO MANUAL DESDE EL BOTÓN
+window.agregarProductoManualCiclico = function() {
+    // Cambiar a la pestaña manual
+    var tabManual = document.querySelector('.tab-btn[onclick*="manual"]');
+    if (tabManual) {
+        tabManual.click();
+    }
+    // Enfocar el campo de nombre
+    document.getElementById('ciclico-nombre').focus();
+};
+
+// FUNCIÓN PARA ABRIR MODAL DE EDICIÓN DE CANTIDAD
+window.abrirModalEditar = function(index) {
+    window.indiceEditando = index;
+    var producto = window.datos.ciclicos[index];
+    if (!producto) return;
+    
+    document.getElementById('modalProductoNombre').textContent = '📦 ' + producto.nombre;
+    document.getElementById('modalCantidadInput').value = producto.cantidad || 1;
+    document.getElementById('modalEditarCantidad').style.display = 'flex';
+};
+
+window.cerrarModalEditar = function() {
+    document.getElementById('modalEditarCantidad').style.display = 'none';
+    window.indiceEditando = -1;
+};
+
+window.cambiarCantidadModal = function(cambio) {
+    var input = document.getElementById('modalCantidadInput');
+    var valor = parseInt(input.value) || 0;
+    var nuevoValor = Math.max(0, valor + cambio);
+    input.value = nuevoValor;
+};
+
+window.guardarCantidadModal = function() {
+    if (window.indiceEditando < 0 || window.indiceEditando >= window.datos.ciclicos.length) {
+        window.cerrarModalEditar();
+        return;
+    }
+    
+    var nuevaCantidad = parseInt(document.getElementById('modalCantidadInput').value) || 0;
+    window.datos.ciclicos[window.indiceEditando].cantidad = nuevaCantidad;
+    
+    window.Storage.set('ciclicos', window.datos.ciclicos);
+    window.renderizarCiclicos();
+    window.cerrarModalEditar();
+    window.mostrarToast('✅ Cantidad actualizada', '✅');
+};
+
+// Cerrar modal con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        window.cerrarModalEditar();
+    }
+});
+
+// Cerrar modal clickeando fuera
+document.getElementById('modalEditarCantidad').addEventListener('click', function(e) {
+    if (e.target === this) {
+        window.cerrarModalEditar();
+    }
+});
+
 window.renderizarCiclicos = function() {
     var lista = document.getElementById('ciclico-lista');
     var count = document.getElementById('ciclico-count');
@@ -1916,6 +2056,7 @@ window.renderizarCiclicos = function() {
         html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 🏷️ ' + (p.categoria || 'Sin categoría') + ' | 🔢 ' + p.codigo + '</div>';
         html += '  </div>';
         html += '  <div class="item-actions">';
+        html += '    <button onclick="window.abrirModalEditar(' + i + ')" class="edit-btn" title="Editar cantidad"><i class="fas fa-pen"></i></button>';
         html += '    <button onclick="window.eliminarCiclico(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
         html += '  </div>';
         html += '</div>';
@@ -1939,6 +2080,18 @@ window.guardarConteoCiclico = function() {
         return;
     }
     
+    // Preguntar si desea editar cantidades antes de guardar
+    if (confirm('📦 ¿Deseas revisar y ajustar las cantidades de los productos antes de guardar?\n\nPresiona "Cancelar" para guardar directamente.')) {
+        // El usuario quiere editar - abrir modal para el primer producto
+        window.abrirModalEditar(0);
+        return;
+    }
+    
+    // Guardar directamente
+    window.ejecutarGuardadoConteo();
+};
+
+window.ejecutarGuardadoConteo = function() {
     window.datos.ciclicos.forEach(function(item) {
         var producto = window.datos.inventario.find(function(p) {
             return p.codigo === item.codigo;
@@ -1968,7 +2121,7 @@ window.guardarConteoCiclico = function() {
 };
 
 // ============================================
-// PROCESAR IMÁGENES CON OCR MEJORADO
+// PROCESAR IMÁGENES CON OCR
 // ============================================
 window.procesarImagenesCiclico = function() {
     var input = document.getElementById('ciclico-imagenes');
@@ -2001,10 +2154,8 @@ window.procesarImagenesCiclico = function() {
                 var statusEl = document.getElementById('status-' + index);
                 var itemEl = document.getElementById('img-item-' + index);
                 
-                // PRIMERO: Intentar leer código de barras con Quagga
                 window.leerCodigoBarras(imageDataURL, function(error, codigo) {
                     if (!error && codigo) {
-                        // Código de barras detectado
                         statusEl.textContent = '✅ ' + codigo;
                         statusEl.className = 'status success';
                         
@@ -2013,7 +2164,6 @@ window.procesarImagenesCiclico = function() {
                         codigoSpan.textContent = '🔢 ' + codigo;
                         itemEl.appendChild(codigoSpan);
                         
-                        // Buscar en inventario
                         var producto = window.datos.inventario.find(function(p) {
                             return p.codigo === codigo;
                         });
@@ -2051,11 +2201,9 @@ window.procesarImagenesCiclico = function() {
                             }
                         }
                     } else {
-                        // No se detectó código de barras → USAR OCR MEJORADO
                         statusEl.textContent = '📖 Pre-procesando...';
                         statusEl.className = 'status ocr';
                         
-                        // Pre-procesar imagen para mejorar OCR
                         preprocesarImagen(imageDataURL, function(processedImage) {
                             statusEl.textContent = '📖 Leyendo texto...';
                             
@@ -2074,13 +2222,11 @@ window.procesarImagenesCiclico = function() {
                                 console.log('📝 OCR Texto completo:');
                                 console.log(texto);
                                 
-                                // Mostrar el texto completo extraído
                                 var divTexto = document.createElement('div');
                                 divTexto.className = 'resultado-ocr';
                                 divTexto.innerHTML = '<div class="texto-extraido"><strong>📄 Texto extraído:</strong>\n' + texto + '</div>';
                                 itemEl.appendChild(divTexto);
                                 
-                                // Extraer productos del texto
                                 var productosExtraidos = extraerProductosDeTexto(texto);
                                 
                                 if (productosExtraidos.length > 0) {
@@ -2198,7 +2344,6 @@ window.procesarPDFConOCR = function() {
                     page.render(renderContext).promise.then(function() {
                         var imageDataURL = canvas.toDataURL('image/png');
                         
-                        // Pre-procesar imagen
                         preprocesarImagen(imageDataURL, function(processedImage) {
                             Tesseract.recognize(
                                 processedImage,
@@ -2222,7 +2367,6 @@ window.procesarPDFConOCR = function() {
                                 html += '  <div class="texto-extraido">' + textoPreview + '</div>';
                                 html += '</div>';
                                 
-                                // Extraer productos del texto
                                 var productosPagina = extraerProductosDeTexto(texto);
                                 
                                 productosPagina.forEach(function(prod) {
