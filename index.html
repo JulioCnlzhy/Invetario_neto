@@ -1206,7 +1206,6 @@
 
         <div class="card">
             <div class="btn-group" style="display:flex; flex-direction:column; gap:4px;">
-                <!-- CAMBIADO: Exportar Backup en PDF -->
                 <button class="btn btn-secondary" onclick="window.exportarDatosPDF()">
                     <i class="fas fa-file-pdf"></i> Exportar Backup (PDF)
                 </button>
@@ -1553,7 +1552,7 @@ window.generarPDFPromociones = function() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-    doc.text('🏷️ PROMOCIONES NETO', 40, 50);
+    doc.text('PROMOCIONES NETO', 40, 50);
     doc.setFontSize(10); doc.setTextColor(200, 200, 200);
     doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
     doc.text('Total: ' + items.length + ' promociones', 40, 85);
@@ -1674,7 +1673,7 @@ window.generarPDFCaducidades = function() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-    doc.text('⏰ CADUCIDADES NETO', 40, 50);
+    doc.text('CADUCIDADES NETO', 40, 50);
     doc.setFontSize(10); doc.setTextColor(200, 200, 200);
     doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
     var totalValor = 0;
@@ -1694,7 +1693,7 @@ window.generarPDFCaducidades = function() {
     });
     var finalY = doc.lastAutoTable.finalY + 20;
     doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-    doc.text('💰 Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+    doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
     doc.save('caducidades_neto.pdf');
     window.mostrarToast('📄 PDF generado', '📄');
 };
@@ -1829,7 +1828,7 @@ window.generarPDFCiclico = function() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-    doc.text('🔄 CONTEO CÍCLICO NETO', 40, 50);
+    doc.text('CONTEO CICLICO NETO', 40, 50);
     doc.setFontSize(10); doc.setTextColor(200, 200, 200);
     doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
     var totalValor = 0;
@@ -1840,7 +1839,7 @@ window.generarPDFCiclico = function() {
     });
     doc.autoTable({
         startY: 90,
-        head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoría']],
+        head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
         body: tableData,
         theme: 'dark',
         styles: { textColor: [255,255,255], fontSize: 8 },
@@ -1849,7 +1848,7 @@ window.generarPDFCiclico = function() {
     });
     var finalY = doc.lastAutoTable.finalY + 20;
     doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-    doc.text('💰 Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+    doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
     doc.save('ciclico_neto.pdf');
     window.mostrarToast('📄 PDF generado', '📄');
 };
@@ -2119,7 +2118,7 @@ window.guardarAleatorios = function() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-    doc.text('🎲 21 PRODUCTOS ALEATORIOS NETO', 40, 50);
+    doc.text('21 PRODUCTOS ALEATORIOS NETO', 40, 50);
     doc.setFontSize(10); doc.setTextColor(200, 200, 200);
     doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
     doc.text('Total: ' + items.length + ' productos', 40, 85);
@@ -2140,19 +2139,19 @@ window.guardarAleatorios = function() {
     });
     var finalY = doc.lastAutoTable.finalY + 20;
     doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-    doc.text('💰 Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+    doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
     doc.save('aleatorios_neto.pdf');
-    var mensaje = '🎲 *21 PRODUCTOS ALEATORIOS NETO*\n';
-    mensaje += '📅 ' + new Date().toLocaleDateString() + '\n';
+    var mensaje = '21 PRODUCTOS ALEATORIOS NETO\n';
+    mensaje += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
     mensaje += '────────────────────\n\n';
     items.forEach(function(p, i) {
         var valor = (p.costo || 0) * (p.cantidad || 0);
         mensaje += (i+1) + '. ' + p.nombre + '\n';
-        mensaje += '   📦 ' + p.cantidad + ' | 💰 $' + (p.costo || 0).toFixed(2) + ' | Total: $' + valor.toFixed(2) + '\n\n';
+        mensaje += '   Cantidad: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2) + ' | Total: $' + valor.toFixed(2) + '\n\n';
     });
     mensaje += '────────────────────\n';
-    mensaje += '💰 *Valor Total: $' + totalValor.toFixed(2) + '*\n';
-    mensaje += '🏪 Tiendas NETO';
+    mensaje += 'Valor Total: $' + totalValor.toFixed(2) + '\n';
+    mensaje += 'Tiendas NETO';
     var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(mensaje);
     window.open(url, '_blank');
     window.mostrarToast('📤 PDF y WhatsApp enviados', '📤');
@@ -2288,7 +2287,7 @@ window.finalizarInventario = function() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-    doc.text('📊 INVENTARIO NETO', 40, 50);
+    doc.text('INVENTARIO NETO', 40, 50);
     doc.setFontSize(10); doc.setTextColor(200, 200, 200);
     doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
     doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 85);
@@ -2314,34 +2313,34 @@ window.finalizarInventario = function() {
     });
     var finalY = doc.lastAutoTable.finalY + 20;
     doc.setFontSize(11); doc.setTextColor(255, 165, 0);
-    doc.text('💰 Valor Físico: $' + totalCosto.toFixed(2), 40, finalY);
-    doc.text('📊 Valor Sistema: $' + totalSistema.toFixed(2), 40, finalY + 18);
+    doc.text('Valor Fisico: $' + totalCosto.toFixed(2), 40, finalY);
+    doc.text('Valor Sistema: $' + totalSistema.toFixed(2), 40, finalY + 18);
     doc.setTextColor(74, 222, 128);
-    doc.text('🟢 Sobrante: +$' + totalSobrante.toFixed(2), 40, finalY + 36);
+    doc.text('Sobrante: +$' + totalSobrante.toFixed(2), 40, finalY + 36);
     doc.setTextColor(248, 113, 113);
-    doc.text('🔴 Faltante: -$' + totalFaltante.toFixed(2), 40, finalY + 54);
+    doc.text('Faltante: -$' + totalFaltante.toFixed(2), 40, finalY + 54);
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     var diferencia = totalSobrante - totalFaltante;
-    doc.text('📊 Diferencia Total: $' + diferencia.toFixed(2), 40, finalY + 76);
+    doc.text('Diferencia Total: $' + diferencia.toFixed(2), 40, finalY + 76);
     doc.save('inventario_neto.pdf');
-    var mensaje = '📊 *INVENTARIO NETO*\n';
-    mensaje += '📅 ' + new Date().toLocaleDateString() + '\n';
-    mensaje += '👤 ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A') + '\n';
+    var mensaje = 'INVENTARIO NETO\n';
+    mensaje += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
+    mensaje += 'Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A') + '\n';
     mensaje += '────────────────────\n\n';
     productos.forEach(function(p) {
         var dif = (p.cantidad || 0) - (p.sistema || 0);
         mensaje += '• ' + p.nombre + '\n';
-        mensaje += '  📦 ' + p.cantidad + ' | 📊 ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + '\n';
-        mensaje += '  💰 $' + (p.costo || 0).toFixed(2) + ' | Total: $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2) + '\n\n';
+        mensaje += '  Fisico: ' + p.cantidad + ' | Sistema: ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + '\n';
+        mensaje += '  Costo: $' + (p.costo || 0).toFixed(2) + ' | Total: $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2) + '\n\n';
     });
     mensaje += '────────────────────\n';
-    mensaje += '💰 Valor Físico: $' + totalCosto.toFixed(2) + '\n';
-    mensaje += '📊 Valor Sistema: $' + totalSistema.toFixed(2) + '\n';
-    mensaje += '🟢 Sobrante: +$' + totalSobrante.toFixed(2) + '\n';
-    mensaje += '🔴 Faltante: -$' + totalFaltante.toFixed(2) + '\n';
-    mensaje += '📊 Diferencia: $' + diferencia.toFixed(2) + '\n';
-    mensaje += '🏪 Tiendas NETO';
+    mensaje += 'Valor Fisico: $' + totalCosto.toFixed(2) + '\n';
+    mensaje += 'Valor Sistema: $' + totalSistema.toFixed(2) + '\n';
+    mensaje += 'Sobrante: +$' + totalSobrante.toFixed(2) + '\n';
+    mensaje += 'Faltante: -$' + totalFaltante.toFixed(2) + '\n';
+    mensaje += 'Diferencia: $' + diferencia.toFixed(2) + '\n';
+    mensaje += 'Tiendas NETO';
     var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(mensaje);
     window.open(url, '_blank');
     window.mostrarToast('📤 PDF y WhatsApp enviados', '📤');
@@ -2428,7 +2427,7 @@ window.enfocarInput = function(id) {
 };
 
 // ============================================
-// EXPORTAR BACKUP EN PDF (CORREGIDO)
+// EXPORTAR BACKUP EN PDF (CORREGIDO - SIN EMOJIS)
 // ============================================
 window.exportarDatosPDF = function() {
     var { jsPDF } = window.jspdf;
@@ -2437,14 +2436,14 @@ window.exportarDatosPDF = function() {
     // ===== ENCABEZADO =====
     doc.setFontSize(20);
     doc.setTextColor(255, 165, 0);
-    doc.text('📦 NETO INVENTARIO - BACKUP COMPLETO', 40, 50);
+    doc.text('NETO INVENTARIO - BACKUP COMPLETO', 40, 50);
     
     doc.setFontSize(10);
     doc.setTextColor(200, 200, 200);
-    doc.text('📅 Fecha de exportación: ' + new Date().toLocaleString(), 40, 75);
-    doc.text('👤 Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 90);
-    doc.text('🏪 Tienda: MIGUEL HIDALGO PUEBLA', 40, 105);
-    doc.text('📍 Dirección: 16 DE SEPTIEMBRE O 9807, PUEBLA', 40, 120);
+    doc.text('Fecha de exportacion: ' + new Date().toLocaleString(), 40, 75);
+    doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 90);
+    doc.text('Tienda: MIGUEL HIDALGO PUEBLA', 40, 105);
+    doc.text('Direccion: 16 DE SEPTIEMBRE O 9807, PUEBLA', 40, 120);
     
     var y = 145;
     
@@ -2452,7 +2451,7 @@ window.exportarDatosPDF = function() {
     var inventario = window.datos.inventario || [];
     doc.setFontSize(14);
     doc.setTextColor(255, 165, 0);
-    doc.text('📊 INVENTARIO GENERAL (' + inventario.length + ' productos)', 40, y);
+    doc.text('INVENTARIO GENERAL (' + inventario.length + ' productos)', 40, y);
     y += 18;
     
     if (inventario.length > 0) {
@@ -2468,7 +2467,7 @@ window.exportarDatosPDF = function() {
         });
         doc.autoTable({
             startY: y,
-            head: [['Producto', 'Físico', 'Sistema', 'Dif', 'Costo/Und', 'Total', 'Categoría']],
+            head: [['Producto', 'Fisico', 'Sistema', 'Dif', 'Costo/Und', 'Total', 'Categoria']],
             body: invData,
             theme: 'dark',
             styles: { textColor: [255,255,255], fontSize: 7 },
@@ -2480,19 +2479,19 @@ window.exportarDatosPDF = function() {
         
         doc.setFontSize(10);
         doc.setTextColor(200, 200, 200);
-        doc.text('💰 Valor Físico: $' + totalInv.toFixed(2), 40, y);
-        doc.text('📊 Valor Sistema: $' + totalSis.toFixed(2), 200, y);
+        doc.text('Valor Fisico: $' + totalInv.toFixed(2), 40, y);
+        doc.text('Valor Sistema: $' + totalSis.toFixed(2), 220, y);
         y += 14;
         doc.setTextColor(74, 222, 128);
-        doc.text('🟢 Sobrante: +$' + totalSobrante.toFixed(2), 40, y);
+        doc.text('Sobrante: +$' + totalSobrante.toFixed(2), 40, y);
         doc.setTextColor(248, 113, 113);
-        doc.text('🔴 Faltante: -$' + totalFaltante.toFixed(2), 200, y);
+        doc.text('Faltante: -$' + totalFaltante.toFixed(2), 220, y);
         y += 14;
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(11);
         var difTotal = totalSobrante - totalFaltante;
         doc.setTextColor(difTotal >= 0 ? 74 : 248, difTotal >= 0 ? 222 : 113, difTotal >= 0 ? 128 : 113);
-        doc.text('📊 Diferencia Total: $' + difTotal.toFixed(2), 40, y);
+        doc.text('Diferencia Total: $' + difTotal.toFixed(2), 40, y);
         y += 25;
     } else {
         doc.setFontSize(10);
@@ -2505,7 +2504,7 @@ window.exportarDatosPDF = function() {
     var caducidades = window.datos.caducidades || [];
     doc.setFontSize(14);
     doc.setTextColor(248, 113, 113);
-    doc.text('⏰ CADUCIDADES (' + caducidades.length + ' productos)', 40, y);
+    doc.text('CADUCIDADES (' + caducidades.length + ' productos)', 40, y);
     y += 18;
     
     if (caducidades.length > 0) {
@@ -2528,7 +2527,7 @@ window.exportarDatosPDF = function() {
         y = doc.lastAutoTable.finalY + 12;
         doc.setFontSize(10);
         doc.setTextColor(255, 165, 0);
-        doc.text('💰 Valor Total Caducidades: $' + totalCad.toFixed(2), 40, y);
+        doc.text('Valor Total Caducidades: $' + totalCad.toFixed(2), 40, y);
         y += 25;
     } else {
         doc.setFontSize(10);
@@ -2541,7 +2540,7 @@ window.exportarDatosPDF = function() {
     var promociones = window.datos.promociones || [];
     doc.setFontSize(14);
     doc.setTextColor(251, 191, 36);
-    doc.text('🏷️ PROMOCIONES (' + promociones.length + ')', 40, y);
+    doc.text('PROMOCIONES (' + promociones.length + ')', 40, y);
     y += 18;
     
     if (promociones.length > 0) {
@@ -2550,7 +2549,7 @@ window.exportarDatosPDF = function() {
         });
         doc.autoTable({
             startY: y,
-            head: [['Producto', 'Promoción', 'Existencia']],
+            head: [['Producto', 'Promocion', 'Existencia']],
             body: promData,
             theme: 'dark',
             styles: { textColor: [255,255,255], fontSize: 7 },
@@ -2566,11 +2565,11 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== 4. CÍCLICOS =====
+    // ===== 4. CICLICOS =====
     var ciclicos = window.datos.ciclicos || [];
     doc.setFontSize(14);
     doc.setTextColor(255, 165, 0);
-    doc.text('🔄 CONTEO CÍCLICO (' + ciclicos.length + ' productos)', 40, y);
+    doc.text('CONTEO CICLICO (' + ciclicos.length + ' productos)', 40, y);
     y += 18;
     
     if (ciclicos.length > 0) {
@@ -2582,7 +2581,7 @@ window.exportarDatosPDF = function() {
         });
         doc.autoTable({
             startY: y,
-            head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoría']],
+            head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
             body: cicData,
             theme: 'dark',
             styles: { textColor: [255,255,255], fontSize: 7 },
@@ -2593,12 +2592,12 @@ window.exportarDatosPDF = function() {
         y = doc.lastAutoTable.finalY + 12;
         doc.setFontSize(10);
         doc.setTextColor(255, 165, 0);
-        doc.text('💰 Valor Total Cíclicos: $' + totalCic.toFixed(2), 40, y);
+        doc.text('Valor Total Ciclicos: $' + totalCic.toFixed(2), 40, y);
         y += 25;
     } else {
         doc.setFontSize(10);
         doc.setTextColor(200, 200, 200);
-        doc.text('Sin productos en conteo cíclico', 40, y);
+        doc.text('Sin productos en conteo ciclico', 40, y);
         y += 20;
     }
     
@@ -2606,7 +2605,7 @@ window.exportarDatosPDF = function() {
     var aleatorios = window.datos.aleatorios || [];
     doc.setFontSize(14);
     doc.setTextColor(124, 58, 237);
-    doc.text('🎲 21 ALEATORIOS (' + aleatorios.length + '/21 productos)', 40, y);
+    doc.text('21 ALEATORIOS (' + aleatorios.length + '/21 productos)', 40, y);
     y += 18;
     
     if (aleatorios.length > 0) {
@@ -2629,7 +2628,7 @@ window.exportarDatosPDF = function() {
         y = doc.lastAutoTable.finalY + 12;
         doc.setFontSize(10);
         doc.setTextColor(124, 58, 237);
-        doc.text('💰 Valor Total Aleatorios: $' + totalAle.toFixed(2), 40, y);
+        doc.text('Valor Total Aleatorios: $' + totalAle.toFixed(2), 40, y);
         y += 25;
     } else {
         doc.setFontSize(10);
@@ -2638,14 +2637,14 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== PIE DE PÁGINA =====
+    // ===== PIE DE PAGINA =====
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     var totalPaginas = doc.internal.getNumberOfPages();
     for (var i = 1; i <= totalPaginas; i++) {
         doc.setPage(i);
-        doc.text('📦 NETO Inventario - Página ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
-        doc.text('🔒 Backup generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
+        doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
+        doc.text('Backup generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
     }
     
     // ===== GUARDAR PDF =====
@@ -2686,7 +2685,7 @@ window.importarDatos = function() {
                     window.actualizarBadges();
                     window.mostrarToast('✅ Datos importados', '✅');
                 } catch (error) {
-                    window.mostrarToast('❌ Archivo inválido', '❌');
+                    window.mostrarToast('❌ Archivo invalido', '❌');
                 }
             };
             reader.readAsText(file);
@@ -2699,7 +2698,7 @@ window.importarDatos = function() {
 // LIMPIAR DATOS
 // ============================================
 window.limpiarTodosLosDatos = function() {
-    if (confirm('⚠️ ¿Eliminar TODOS los datos?') && confirm('⚠️ Confirmación final:')) {
+    if (confirm('⚠️ ¿Eliminar TODOS los datos?') && confirm('⚠️ Confirmacion final:')) {
         window.datos.inventario = [];
         window.datos.promociones = [];
         window.datos.caducidades = [];
