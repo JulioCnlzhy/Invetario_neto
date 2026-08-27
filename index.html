@@ -20,7 +20,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* ========== ESTILOS COMPLETOS ========== */
         * { box-sizing: border-box; }
         body {
             background: #0f172a;
@@ -670,9 +669,7 @@
 </head>
 <body>
 
-<!-- ========================================== -->
-<!-- TOAST NOTIFICATION                         -->
-<!-- ========================================== -->
+<!-- TOAST -->
 <div id="toastContainer">
     <div id="toastContent">
         <span id="toastIcon">ℹ️</span>
@@ -680,33 +677,26 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- PANTALLA DE LOGIN                         -->
-<!-- ========================================== -->
+<!-- LOGIN -->
 <section id="screen-login" class="screen active">
     <div class="login-card">
         <div class="logo">📦</div>
         <h2>NETO Inventario</h2>
         <p>Ingresa tu código de empleado</p>
-        
         <div class="form-group">
             <label><i class="fas fa-id-badge"></i> Código de Empleado</label>
             <input type="text" id="login-codigo" placeholder="Ej: 1230011" autocomplete="off" />
         </div>
-        
         <button class="btn btn-orange" onclick="window.iniciarSesion()">
             <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
         </button>
-        
         <div id="login-error" class="login-error">
             <i class="fas fa-exclamation-circle"></i> Código incorrecto. Intenta de nuevo.
         </div>
     </div>
 </section>
 
-<!-- ========================================== -->
-<!-- CONTENIDO PRINCIPAL                        -->
-<!-- ========================================== -->
+<!-- CONTENIDO PRINCIPAL -->
 <div id="app-content" style="display:none;">
 
 <header class="header">
@@ -715,64 +705,48 @@
 </header>
 
 <div class="container" id="mainContainer">
-    <!-- PANTALLA DE INICIO -->
+    
+    <!-- HOME -->
     <section id="screen-home" class="screen active">
         <div id="welcome-message" class="user-welcome">👋 Bienvenido</div>
-        
-        <!-- Recordatorio -->
         <div id="recordatorio-container"></div>
-        
         <div class="main-menu">
             <div class="menu-item orange" onclick="window.showScreen('promociones')">
-                <span class="icon">🏷️</span>
-                <span class="label">Promociones</span>
+                <span class="icon">🏷️</span><span class="label">Promociones</span>
                 <span class="badge-count" id="badge-promo">0</span>
             </div>
             <div class="menu-item red" onclick="window.showScreen('caducidades')">
-                <span class="icon">⏰</span>
-                <span class="label">Caducidades</span>
+                <span class="icon">⏰</span><span class="label">Caducidades</span>
                 <span class="badge-count" id="badge-cad">0</span>
             </div>
             <div class="menu-item orange" onclick="window.showScreen('ciclicos')">
-                <span class="icon">🔄</span>
-                <span class="label">Conteo Cíclico</span>
+                <span class="icon">🔄</span><span class="label">Conteo Cíclico</span>
             </div>
             <div class="menu-item purple" onclick="window.showScreen('inventario')">
-                <span class="icon">📊</span>
-                <span class="label">Inventario</span>
+                <span class="icon">📊</span><span class="label">Inventario</span>
                 <span class="badge-count" id="badge-inv">0</span>
             </div>
             <div class="menu-item teal" onclick="window.showScreen('aleatorio')">
-                <span class="icon">🎲</span>
-                <span class="label">21 Aleatorios</span>
+                <span class="icon">🎲</span><span class="label">21 Aleatorios</span>
             </div>
             <div class="menu-item green" onclick="window.showScreen('visual')">
-                <span class="icon">👁️</span>
-                <span class="label">Visualización</span>
+                <span class="icon">👁️</span><span class="label">Visualización</span>
             </div>
         </div>
-        
         <button class="btn btn-orange btn-scan" onclick="window.activarEscaneo()" style="margin-top:8px;">
             <i class="fas fa-camera"></i> Escanear Código de Barras
         </button>
-        
-        <button id="btnInstalarApp" onclick="window.instalarApp()"
-            class="btn btn-secondary" style="margin-top:6px;">
+        <button id="btnInstalarApp" onclick="window.instalarApp()" class="btn btn-secondary" style="margin-top:6px;">
             <i class="fas fa-download"></i> Instalar App
         </button>
-        
-        <button onclick="window.cerrarSesion()"
-            class="btn btn-danger" style="margin-top:6px;">
+        <button onclick="window.cerrarSesion()" class="btn btn-danger" style="margin-top:6px;">
             <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
         </button>
     </section>
 
-    <!-- PANTALLA: PROMOCIONES -->
+    <!-- PROMOCIONES -->
     <section id="screen-promociones" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
-        
+        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
         <div class="card">
             <div class="card-title"><span><i class="fas fa-tags"></i> Promociones</span></div>
             <div class="form-group">
@@ -791,39 +765,31 @@
                 <i class="fas fa-save"></i> Guardar Promoción
             </button>
         </div>
-
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-list"></i> Promociones Guardadas</span>
                 <span id="promo-count" class="count-badge">0</span>
             </div>
-            <div id="promo-lista" class="scrollable">
-                <p class="empty-message">No hay promociones guardadas</p>
-            </div>
+            <div id="promo-lista" class="scrollable"><p class="empty-message">No hay promociones guardadas</p></div>
             <button class="btn btn-success" onclick="window.generarPDFPromociones()" style="margin-top:8px;">
                 <i class="fas fa-file-pdf"></i> Generar PDF
             </button>
         </div>
     </section>
 
-    <!-- PANTALLA: CADUCIDADES -->
+    <!-- CADUCIDADES -->
     <section id="screen-caducidades" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
-        
+        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-clock"></i> Registrar Caducidad</span>
                 <span class="barcode-badge"><i class="fas fa-barcode"></i> Código</span>
             </div>
-            
             <div class="scan-area" onclick="window.activarEscaneoParaCaducidad()">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Toca para escanear código de barras</span>
                 <input type="text" id="cad-codigo" placeholder="Código detectado" class="barcode-input" readonly />
             </div>
-            
             <div class="form-group">
                 <label><i class="fas fa-tag"></i> Nombre del Producto</label>
                 <input type="text" id="cad-nombre" placeholder="Nombre del producto" />
@@ -844,15 +810,12 @@
                 <i class="fas fa-save"></i> Guardar
             </button>
         </div>
-
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-list"></i> Productos por Caducar</span>
                 <span id="cad-count" class="count-badge">0</span>
             </div>
-            <div id="cad-lista" class="scrollable">
-                <p class="empty-message">No hay productos registrados</p>
-            </div>
+            <div id="cad-lista" class="scrollable"><p class="empty-message">No hay productos registrados</p></div>
             <div id="cad-resumen" class="resumen-totales" style="display:none;"></div>
             <button class="btn btn-success" onclick="window.generarPDFCaducidades()" style="margin-top:8px;">
                 <i class="fas fa-file-pdf"></i> Generar PDF
@@ -863,12 +826,9 @@
         </div>
     </section>
 
-    <!-- PANTALLA: CICLICOS -->
+    <!-- CICLICOS -->
     <section id="screen-ciclicos" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
-        
+        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-sync-alt"></i> Conteo Cíclico</span>
@@ -876,7 +836,6 @@
                     <i class="fas fa-plus"></i> Agregar
                 </button>
             </div>
-            
             <div class="tab-container">
                 <button class="tab-btn active" onclick="window.cambiarTabCiclico('manual', this)">
                     <i class="fas fa-pen"></i> Manual
@@ -888,14 +847,12 @@
                     <i class="fas fa-file-pdf"></i> PDF+OCR
                 </button>
             </div>
-            
             <div id="tab-manual" class="tab-content active">
                 <div class="scan-area" onclick="window.enfocarInput('ciclico-codigo')">
                     <i class="fas fa-camera scan-icon"></i>
                     <span class="scan-hint">Escanea el código de barras del producto</span>
                     <input type="text" id="ciclico-codigo" placeholder="Código de barras" class="barcode-input" />
                 </div>
-                
                 <div class="form-group">
                     <label><i class="fas fa-tag"></i> Nombre del Producto</label>
                     <input type="text" id="ciclico-nombre" placeholder="Nombre del producto" />
@@ -962,7 +919,6 @@
                     <i class="fas fa-plus-circle"></i> Agregar Producto
                 </button>
             </div>
-            
             <div id="tab-ciclico" class="tab-content">
                 <div class="scan-area scan-area-orange">
                     <i class="fas fa-images scan-icon"></i>
@@ -976,7 +932,6 @@
                     <p class="empty-message">Las imágenes procesadas aparecerán aquí</p>
                 </div>
             </div>
-            
             <div id="tab-pdf" class="tab-content">
                 <div class="scan-area scan-area-purple">
                     <i class="fas fa-file-pdf scan-icon" style="color:#a78bfa;"></i>
@@ -995,15 +950,12 @@
                 </div>
             </div>
         </div>
-
         <div class="card" id="ciclico-resultados">
             <div class="card-title">
                 <span><i class="fas fa-list"></i> Productos Detectados</span>
                 <span id="ciclico-count" class="count-badge">0</span>
             </div>
-            <div id="ciclico-lista">
-                <p class="empty-message">Los productos aparecerán aquí después de escanear</p>
-            </div>
+            <div id="ciclico-lista"><p class="empty-message">Los productos aparecerán aquí después de escanear</p></div>
             <div id="ciclico-resumen" class="resumen-totales" style="display:none;"></div>
             <button class="btn btn-success hidden" id="btn-guardar-ciclico" onclick="window.guardarConteoCiclico()">
                 <i class="fas fa-check-circle"></i> Guardar Conteo
@@ -1014,19 +966,16 @@
         </div>
     </section>
 
-    <!-- PANTALLA: 21 ALEATORIOS -->
+    <!-- 21 ALEATORIOS -->
     <section id="screen-aleatorio" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
-        
+        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-dice"></i> 21 Productos Aleatorios</span>
                 <span class="count-badge" id="aleatorio-count">0/21</span>
             </div>
             <p style="color:#94a3b8; font-size:0.7rem; margin-bottom:10px;">
-                <i class="fas fa-info-circle"></i> Selecciona 21 productos aleatorios del inventario para conteo
+                <i class="fas fa-info-circle"></i> Genera 21 productos aleatorios del inventario o de una lista predefinida
             </p>
             <button class="btn btn-purple" onclick="window.generarAleatorios()">
                 <i class="fas fa-dice"></i> Generar 21 Aleatorios
@@ -1035,14 +984,13 @@
                 <i class="fas fa-trash"></i> Limpiar Lista
             </button>
         </div>
-
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-list"></i> Productos Aleatorios</span>
                 <span id="aleatorio-count2" class="count-badge">0/21</span>
             </div>
             <div id="aleatorio-lista" class="scrollable" style="max-height:400px;">
-                <p class="empty-message">Presiona "Generar 21 Aleatorios" para comenzar</p>
+                <p class="empty-message">🎲 Presiona "Generar 21 Aleatorios" para comenzar</p>
             </div>
             <div id="aleatorio-resumen" class="resumen-totales" style="display:none;"></div>
             <button class="btn btn-success" onclick="window.guardarAleatorios()" style="margin-top:8px;">
@@ -1051,24 +999,19 @@
         </div>
     </section>
 
-    <!-- PANTALLA: INVENTARIO -->
+    <!-- INVENTARIO -->
     <section id="screen-inventario" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
-        
+        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-chart-bar"></i> Inventario General</span>
                 <span class="barcode-badge"><i class="fas fa-barcode"></i> Escanea</span>
             </div>
-            
             <div class="scan-area" onclick="window.enfocarInput('inv-codigo')">
                 <i class="fas fa-camera scan-icon"></i>
                 <span class="scan-hint">Escanea el código de barras del producto</span>
                 <input type="text" id="inv-codigo" placeholder="Código de barras" class="barcode-input" />
             </div>
-            
             <div class="form-group">
                 <label><i class="fas fa-tag"></i> Nombre del Producto</label>
                 <input type="text" id="inv-nombre" placeholder="Nombre del producto" />
@@ -1139,15 +1082,12 @@
                 <i class="fas fa-plus-circle"></i> Agregar Producto
             </button>
         </div>
-
         <div class="card">
             <div class="card-title">
                 <span><i class="fas fa-list"></i> Productos en Inventario</span>
                 <span id="inv-total-count" class="count-badge">0</span>
             </div>
-            <div id="inv-lista-categorias">
-                <p class="empty-message">No hay productos registrados</p>
-            </div>
+            <div id="inv-lista-categorias"><p class="empty-message">No hay productos registrados</p></div>
             <div id="inv-resumen" class="resumen-totales" style="display:none;"></div>
             <button class="btn-finalizar" onclick="window.finalizarInventario()">
                 <i class="fas fa-file-pdf"></i> FINALIZAR INVENTARIO (PDF)
@@ -1155,12 +1095,9 @@
         </div>
     </section>
 
-    <!-- PANTALLA: VISUAL -->
+    <!-- VISUAL -->
     <section id="screen-visual" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')">
-            <i class="fas fa-arrow-left"></i> Volver
-        </button>
-        
+        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
         <div class="card">
             <div class="card-title"><i class="fas fa-eye"></i> Visualización General</div>
             <div class="stats-grid">
@@ -1196,14 +1133,10 @@
                 </div>
             </div>
         </div>
-
         <div class="card">
             <div class="card-title"><i class="fas fa-history"></i> Últimos Productos</div>
-            <div id="vis-productos-recientes" class="scrollable">
-                <p class="empty-message">No hay productos registrados</p>
-            </div>
+            <div id="vis-productos-recientes" class="scrollable"><p class="empty-message">No hay productos registrados</p></div>
         </div>
-
         <div class="card">
             <div class="btn-group" style="display:flex; flex-direction:column; gap:4px;">
                 <button class="btn btn-secondary" onclick="window.exportarDatosPDF()">
@@ -1221,9 +1154,7 @@
 </div>
 </div>
 
-<!-- ========================================== -->
-<!-- MODAL PARA EDITAR                         -->
-<!-- ========================================== -->
+<!-- MODAL EDITAR -->
 <div id="modalEditar" style="display:none;" class="edit-modal">
     <div class="modal-content">
         <h3>✏️ Editar Producto</h3>
@@ -1247,9 +1178,9 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- JAVASCRIPT COMPLETO                        -->
-<!-- ========================================== -->
+<!-- ============================================ -->
+<!-- JAVASCRIPT COMPLETO                         -->
+<!-- ============================================ -->
 <script>
 // ============================================
 // USUARIOS DEL SISTEMA
@@ -1263,6 +1194,58 @@ window.usuarios = {
 window.usuarioActual = null;
 window.indiceEditando = -1;
 window.tipoEditando = '';
+
+// ============================================
+// PRODUCTOS PREDEFINIDOS PARA ALEATORIOS
+// ============================================
+window.productosPredefinidos = [
+    { nombre: 'SALSA BOTANERA CLASICA 370 ML', categoria: 'Salsas' },
+    { nombre: 'COCA COLA ORIGINAL 1 LT', categoria: 'Refrescos' },
+    { nombre: 'COCA COLA ORIGINAL 600 ML', categoria: 'Refrescos' },
+    { nombre: 'PEPSI 1.5 LT', categoria: 'Refrescos' },
+    { nombre: 'SPRITE 600 ML', categoria: 'Refrescos' },
+    { nombre: 'FANTA 600 ML', categoria: 'Refrescos' },
+    { nombre: 'SABRITAS 55 G', categoria: 'Botanas' },
+    { nombre: 'CHEETOS 60 G', categoria: 'Botanas' },
+    { nombre: 'DORITOS 60 G', categoria: 'Botanas' },
+    { nombre: 'GALLETAS OREO 36 G', categoria: 'Galletas' },
+    { nombre: 'GALLETAS GAMESA 45 G', categoria: 'Galletas' },
+    { nombre: 'MARUCHAN 60 G', categoria: 'Maruchan' },
+    { nombre: 'SOPA MARUCHAN 60 G', categoria: 'Maruchan' },
+    { nombre: 'LECHE LALA ENTERA 1 LT', categoria: 'Cámara Fría' },
+    { nombre: 'CREMA LALA 426 GR', categoria: 'Cámara Fría' },
+    { nombre: 'YOGURT DANONINO 90 GR', categoria: 'Cámara Fría' },
+    { nombre: 'DETERGENTE EN POLVO 1 KG', categoria: 'Detergente Líquido Ropa' },
+    { nombre: 'SUAVIZANTE BEST CHOICE', categoria: 'Detergente Líquido Ropa' },
+    { nombre: 'JABON ZOTE BARRA 400 GR', categoria: 'Jabones' },
+    { nombre: 'PAMPERS PAÑAL TALLA 3', categoria: 'Pañales' },
+    { nombre: 'HUGGIES PAÑAL TALLA 4', categoria: 'Pañales' },
+    { nombre: 'NESTLE CHOCOLATE 80 G', categoria: 'Nestlé' },
+    { nombre: 'CERVEZA CORONA 355 ML', categoria: 'Alcohol y Licores' },
+    { nombre: 'HIELO BOLSA 5 KG', categoria: 'Hielo' },
+    { nombre: 'SAL DE MESA 1 KG', categoria: 'Sal' },
+    { nombre: 'AZUCAR ESTANDAR 1 KG', categoria: 'Azúcar' },
+    { nombre: 'ACEITE VEGETAL 1 LT', categoria: 'Aceites' },
+    { nombre: 'FRIJOL NEGRO 1 KG', categoria: 'Frijoles' },
+    { nombre: 'HARINA DE TRIGO 1 KG', categoria: 'Harinas' },
+    { nombre: 'LIMPIADOR MULTIUSOS FABULOSO', categoria: 'Cloros' },
+    { nombre: 'PINO LIMPIADOR 1 LT', categoria: 'Cloros' },
+    { nombre: 'SHAMPOO SEDAL 400 ML', categoria: 'Shampoos' },
+    { nombre: 'DESODORANTE AXE 200 ML', categoria: 'Desodorantes' },
+    { nombre: 'PAPEL ROLLO KITCHEN 2 PZ', categoria: 'Rollos' },
+    { nombre: 'SERVILLETAS ELITE 100 PZ', categoria: 'Servilletas' },
+    { nombre: 'TOALLAS HUMEDAS BABY 80 PZ', categoria: 'Toallas Húmedas' },
+    { nombre: 'CIGARROS MARLBORO', categoria: 'Cigarros' },
+    { nombre: 'BOLSAS PARA BASURA 20 PZ', categoria: 'Bolsa para Basura' },
+    { nombre: 'GEL ANTIBACTERIAL 100 ML', categoria: 'Gel para Manos' },
+    { nombre: 'CREMA CORPORAL NIVEA 200 ML', categoria: 'Crema Corporal' },
+    { nombre: 'FLAN LALA 6/100 GR', categoria: 'Cámara Fría' },
+    { nombre: 'GELATINA DANETTE 100 GR', categoria: 'Cámara Fría' },
+    { nombre: 'NATILLA DANETTE 100 GR', categoria: 'Cámara Fría' },
+    { nombre: 'MARGARINA LALA 90 GR', categoria: 'Cámara Fría' },
+    { nombre: 'PETIT DANONINO 4/42 GR', categoria: 'Cámara Fría' },
+    { nombre: 'BEBIBLE DANONINO 90 GR', categoria: 'Cámara Fría' }
+];
 
 // ============================================
 // SISTEMA DE NOTIFICACIONES
@@ -2041,21 +2024,69 @@ window.procesarPDFConOCR = function() {
 };
 
 // ============================================
-// FUNCIONES DE 21 ALEATORIOS
+// FUNCIONES DE 21 ALEATORIOS (MEJORADO)
 // ============================================
 window.generarAleatorios = function() {
-    var inventario = window.datos.inventario || [];
-    if (inventario.length === 0) { window.mostrarToast('⚠️ No hay productos en inventario', '⚠️'); return; }
-    if (inventario.length < 21) { window.mostrarToast('⚠️ Solo hay ' + inventario.length + ' productos', '⚠️'); return; }
-    var shuffled = [...inventario];
+    var productosDisponibles = [];
+    
+    // Si hay productos en inventario, usarlos
+    if (window.datos.inventario && window.datos.inventario.length > 0) {
+        productosDisponibles = [...window.datos.inventario];
+        window.mostrarToast('📦 Usando ' + productosDisponibles.length + ' productos del inventario', '📦');
+    } else {
+        // Si no hay inventario, usar productos predefinidos
+        productosDisponibles = window.productosPredefinidos.map(function(p, index) {
+            return {
+                id: Date.now() + index,
+                codigo: 'PRED-' + String(index + 1).padStart(4, '0'),
+                nombre: p.nombre,
+                categoria: p.categoria || 'Otros',
+                cantidad: Math.floor(Math.random() * 20) + 1,
+                costo: parseFloat((Math.random() * 50 + 5).toFixed(2)),
+                sistema: Math.floor(Math.random() * 15) + 1,
+                fechaRegistro: new Date().toISOString()
+            };
+        });
+        window.mostrarToast('📦 Usando ' + productosDisponibles.length + ' productos predefinidos', '📦');
+    }
+    
+    if (productosDisponibles.length === 0) {
+        window.mostrarToast('⚠️ No hay productos disponibles', '⚠️');
+        return;
+    }
+    
+    // Barajar (Fisher-Yates)
+    var shuffled = [...productosDisponibles];
     for (var i = shuffled.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    window.datos.aleatorios = shuffled.slice(0, 21);
+    
+    // Tomar hasta 21 productos
+    var cantidad = Math.min(21, shuffled.length);
+    window.datos.aleatorios = shuffled.slice(0, cantidad);
+    
+    // Asignar cantidades aleatorias si vienen de predefinidos
+    window.datos.aleatorios.forEach(function(p) {
+        if (!p.cantidad || p.cantidad === 0) {
+            p.cantidad = Math.floor(Math.random() * 20) + 1;
+        }
+        if (!p.sistema || p.sistema === 0) {
+            p.sistema = Math.floor(Math.random() * 15) + 1;
+        }
+        if (!p.costo || p.costo === 0) {
+            p.costo = parseFloat((Math.random() * 50 + 5).toFixed(2));
+        }
+    });
+    
     window.Storage.set('aleatorios', window.datos.aleatorios);
     window.renderizarAleatorios();
-    window.mostrarToast('🎲 21 productos aleatorios generados', '🎲');
+    
+    if (window.datos.aleatorios.length > 0) {
+        window.mostrarToast('🎲 ' + window.datos.aleatorios.length + ' productos aleatorios generados', '🎲');
+    } else {
+        window.mostrarToast('⚠️ No se pudieron generar productos', '⚠️');
+    }
 };
 
 window.renderizarAleatorios = function() {
@@ -2065,20 +2096,35 @@ window.renderizarAleatorios = function() {
     var items = window.datos.aleatorios || [];
     count.textContent = items.length + '/21';
     count2.textContent = items.length + '/21';
+    
     if (items.length === 0) {
-        lista.innerHTML = '<p class="empty-message">Presiona "Generar 21 Aleatorios" para comenzar</p>';
+        lista.innerHTML = '<p class="empty-message">🎲 Presiona "Generar 21 Aleatorios" para comenzar</p>';
         document.getElementById('aleatorio-resumen').style.display = 'none';
         return;
     }
+    
     var html = '';
     var totalCosto = 0;
+    var totalSistema = 0;
+    
     items.forEach(function(p, i) {
         var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        var sistemaTotal = (p.costo || 0) * (p.sistema || 0);
         totalCosto += costoTotal;
+        totalSistema += sistemaTotal;
+        var dif = (p.cantidad || 0) - (p.sistema || 0);
+        var claseDif = dif > 0 ? 'positiva' : (dif < 0 ? 'negativa' : 'cero');
+        
         html += '<div class="list-item">';
         html += '  <div class="item-info">';
         html += '    <div class="item-name">' + (i+1) + '. ' + p.nombre + '</div>';
-        html += '    <div class="item-detail">📦 ' + (p.cantidad || 0) + ' | 💰 $' + (p.costo || 0).toFixed(2) + ' | 🔢 ' + p.codigo + '</div>';
+        html += '    <div class="item-detail">';
+        html += '      📦 ' + (p.cantidad || 0) + ' | 📊 ' + (p.sistema || 0);
+        html += ' | Dif: <span class="' + claseDif + '">' + (dif >= 0 ? '+' : '') + dif + '</span>';
+        html += ' | 💰 $' + (p.costo || 0).toFixed(2);
+        html += ' | Total: $' + costoTotal.toFixed(2);
+        html += ' | 🏷️ ' + (p.categoria || 'Otros');
+        html += '    </div>';
         html += '  </div>';
         html += '  <div class="item-actions">';
         html += '    <button onclick="window.abrirModalEditarAleatorio(' + i + ')" class="edit-btn"><i class="fas fa-pen"></i></button>';
@@ -2086,10 +2132,19 @@ window.renderizarAleatorios = function() {
         html += '</div>';
     });
     lista.innerHTML = html;
+    
     var resumen = document.getElementById('aleatorio-resumen');
     resumen.style.display = 'block';
-    resumen.innerHTML = '<div class="fila"><span class="label">📦 Total Productos</span><span class="valor">' + items.length + '/21</span></div>' +
-                        '<div class="fila"><span class="label">💰 Valor Total</span><span class="valor">$' + totalCosto.toFixed(2) + '</span></div>';
+    var diferencia = totalCosto - totalSistema;
+    resumen.innerHTML = 
+        '<div class="fila"><span class="label">📦 Productos</span><span class="valor">' + items.length + '/21</span></div>' +
+        '<div class="fila"><span class="label">💰 Valor Físico</span><span class="valor">$' + totalCosto.toFixed(2) + '</span></div>' +
+        '<div class="fila"><span class="label">📊 Valor Sistema</span><span class="valor">$' + totalSistema.toFixed(2) + '</span></div>' +
+        '<div class="fila total"><span class="label">🟢 Sobrante</span><span class="valor positiva">+$' + (diferencia > 0 ? diferencia.toFixed(2) : '0.00') + '</span></div>' +
+        '<div class="fila total"><span class="label">🔴 Faltante</span><span class="valor negativa">-$' + (diferencia < 0 ? Math.abs(diferencia).toFixed(2) : '0.00') + '</span></div>' +
+        '<div class="fila" style="border-top:2px solid #f97316; margin-top:4px; padding-top:6px;">' +
+        '<span class="label" style="color:#f97316; font-weight:700;">📊 Diferencia</span>' +
+        '<span class="valor" style="color:' + (diferencia >= 0 ? '#4ade80' : '#f87171') + '; font-weight:700;">$' + diferencia.toFixed(2) + '</span></div>';
 };
 
 window.abrirModalEditarAleatorio = function(index) {
@@ -2427,7 +2482,7 @@ window.enfocarInput = function(id) {
 };
 
 // ============================================
-// EXPORTAR BACKUP EN PDF (CORREGIDO - SIN EMOJIS)
+// EXPORTAR BACKUP EN PDF (SIN EMOJIS)
 // ============================================
 window.exportarDatosPDF = function() {
     var { jsPDF } = window.jspdf;
@@ -2647,7 +2702,6 @@ window.exportarDatosPDF = function() {
         doc.text('Backup generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
     }
     
-    // ===== GUARDAR PDF =====
     doc.save('neto_backup_' + new Date().toISOString().slice(0,10) + '.pdf');
     window.mostrarToast('📄 Backup PDF generado correctamente', '📄');
 };
