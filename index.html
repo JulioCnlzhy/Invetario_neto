@@ -20,6 +20,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <style>
+        /* ========== ESTILOS COMPLETOS ========== */
         * { box-sizing: border-box; }
         body {
             background: #0f172a;
@@ -649,6 +650,29 @@
         .resumen-totales .fila.total .label { color: #f97316; font-weight: 700; }
         .resumen-totales .fila.total .valor { color: #f97316; font-size: 0.9rem; }
 
+        /* Estilos para Promociones */
+        .promo-card {
+            transition: all 0.2s ease;
+        }
+        .promo-card.selected {
+            border-color: #f97316 !important;
+            background-color: #1e293b !important;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.2);
+            transform: translateY(-2px);
+            border-width: 2px !important;
+        }
+        .promo-card:hover {
+            transform: translateY(-1px);
+            border-color: #475569;
+        }
+
+        #outputSection {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
         @media (max-width: 400px) {
             .main-menu { grid-template-columns: 1fr 1fr; gap: 6px; }
             .menu-item { padding: 10px 6px; }
@@ -664,6 +688,8 @@
             .edit-modal .modal-content { padding: 16px; }
             .producto-item { flex-direction: column; align-items: stretch; }
             .producto-item .nombre { min-width: auto; }
+            .promo-card { padding: 8px; }
+            .promo-card .text-xl { font-size: 1rem; }
         }
     </style>
 </head>
@@ -744,36 +770,147 @@
         </button>
     </section>
 
-    <!-- PROMOCIONES -->
+    <!-- ========================================== -->
+    <!-- PANTALLA: PROMOCIONES (COMPLETA)           -->
+    <!-- ========================================== -->
     <section id="screen-promociones" class="screen">
-        <button class="btn btn-back" onclick="window.showScreen('home')"><i class="fas fa-arrow-left"></i> Volver</button>
-        <div class="card">
-            <div class="card-title"><span><i class="fas fa-tags"></i> Promociones</span></div>
-            <div class="form-group">
-                <label><i class="fas fa-tag"></i> Nombre del producto</label>
-                <input type="text" id="prodNombre" placeholder="Nombre del producto" />
+        <button class="btn btn-back" onclick="window.showScreen('home')">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+        
+        <div class="neto-dark rounded-3xl p-5 shadow-2xl space-y-5" style="background: #0f172a; border: 1px solid #1e293b;">
+            
+            <div class="text-center">
+                <div class="inline-flex items-center gap-2 bg-orange-500 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full mb-2 shadow-md">
+                    ⚡ Tiendas NETO Style
+                </div>
+                <h2 class="text-2xl font-black text-white drop-shadow-md">🛍️ Promociones Neto</h2>
+                <p class="text-xs text-white mt-1">Generador de Prompts Comercial para Imágenes AI</p>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-dollar-sign"></i> Precio/Promoción</label>
-                <input type="text" id="prodPrecio" placeholder="Ej: $18.00 ó 3x2" />
+            
+            <div>
+                <label class="block text-xs font-bold text-white mb-1">Nombre del producto *</label>
+                <input type="text" id="prodNombre" placeholder="Ej: Coca-Cola 600ml, Sabritas 3x2, Shampoo Sedal"
+                    class="w-full neto-input rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-box"></i> Existencia</label>
-                <input type="number" id="prodExistencia" placeholder="Cantidad" value="1" />
+
+            <div>
+                <label class="block text-xs font-bold text-white mb-2 flex items-center gap-1">
+                    <span>🎨</span> <span>Tipo de Promoción / Estilo Visual *</span>
+                </label>
+                <div class="grid grid-cols-2 gap-2.5" id="gridPromociones">
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'coca')"
+                        class="promo-card selected flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-red-500 transition text-white">
+                        <span class="text-xl mb-1">🥤</span>
+                        <span class="text-xs font-bold text-red-400">Coca / Bebida Hielo</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Refrescante, condensación</span>
+                    </button>
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'botanero')"
+                        class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-amber-500 transition text-white">
+                        <span class="text-xl mb-1">🍿</span>
+                        <span class="text-xs font-bold text-amber-400">Botanero / 3x2</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Vibrante, fiesta</span>
+                    </button>
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'frescura')"
+                        class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-cyan-600 transition text-white">
+                        <span class="text-xl mb-1">🥛</span>
+                        <span class="text-xs font-bold text-cyan-400">Lácteos & Frescura</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Limpio, natural</span>
+                    </button>
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'estudio')"
+                        class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-emerald-600 transition text-white">
+                        <span class="text-xl mb-1">🧼</span>
+                        <span class="text-xs font-bold text-emerald-400">Higiene / Premium</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Estudio elegante</span>
+                    </button>
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'remate')"
+                        class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-fuchsia-600 transition text-white">
+                        <span class="text-xl mb-1">⚡</span>
+                        <span class="text-xs font-bold text-fuchsia-400">Remate Relámpago</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Neón, ofertas</span>
+                    </button>
+                    <button type="button" onclick="window.seleccionarEstilo(this, 'clasico')"
+                        class="promo-card flex flex-col items-start p-3 bg-slate-800 border border-slate-700 rounded-2xl text-left hover:border-blue-600 transition text-white">
+                        <span class="text-xl mb-1">🏷️</span>
+                        <span class="text-xs font-bold text-blue-400">Abarrotes NETO</span>
+                        <span class="text-[10px] text-slate-400 leading-tight mt-0.5">Comercial clásico</span>
+                    </button>
+                </div>
             </div>
-            <button class="btn btn-orange" onclick="window.guardarPromocion()">
-                <i class="fas fa-save"></i> Guardar Promoción
+
+            <div id="campoVencimiento" class="hidden transition-all bg-amber-900/30 p-3 rounded-xl border border-amber-700">
+                <label class="block text-xs font-bold text-amber-400 mb-1">🗓️ Fecha de Vencimiento</label>
+                <input type="date" id="prodVencimiento"
+                    class="w-full neto-input rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="checkPerecedero" class="w-4 h-4 rounded border-slate-600 text-orange-500 focus:ring-orange-400 bg-slate-700">
+                <label for="checkPerecedero" class="text-xs font-medium text-white cursor-pointer">¿Tiene fecha de caducidad?</label>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-white mb-1">Precio o Promoción *</label>
+                <input type="text" id="prodPrecio" placeholder="Ej: $18.00 ó 3x2 en botanas"
+                    class="w-full neto-input rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-white mb-1">Piezas en existencia</label>
+                <input type="number" id="prodExistencia" placeholder="Ej: 24"
+                    class="w-full neto-input rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-white mb-1">Foto del producto</label>
+                <div class="relative border-2 border-dashed border-slate-600 rounded-xl p-4 text-center hover:border-orange-500 transition bg-slate-800/50">
+                    <input type="file" id="prodFoto" accept="image/*" capture="environment" class="hidden">
+                    <label for="prodFoto" class="cursor-pointer flex flex-col items-center gap-1.5">
+                        <div class="w-10 h-10 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center">
+                            <i class="fas fa-camera text-lg"></i>
+                        </div>
+                        <span class="text-xs text-white font-bold">Tocar para tomar foto o elegir de la galería</span>
+                        <span class="text-[10px] text-slate-500">Muestra ambas opciones en Android/iOS</span>
+                    </label>
+                    <div id="previewContainer" class="mt-3 hidden">
+                        <img id="imgPreview" class="h-28 mx-auto rounded-lg border-2 border-orange-400 object-cover shadow-md">
+                        <p id="fotoNombre" class="text-[10px] text-slate-400 font-medium mt-1.5"></p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="window.generarPrompt()"
+                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition text-sm tracking-wide">
+                ⚡ GENERAR PROMPT PUBLICITARIO
             </button>
         </div>
-        <div class="card">
+
+        <div id="outputSection" class="mt-4 neto-dark rounded-3xl p-5 hidden space-y-3 shadow-2xl" style="background: #0f172a; border: 1px solid #1e293b;">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xs font-bold text-white uppercase tracking-wider">📋 Tu Prompt listo:</h2>
+                <button onclick="window.copiarPrompt()" class="bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-orange-500 hover:text-white transition">
+                    <i class="fas fa-copy"></i> Copiar
+                </button>
+            </div>
+            
+            <textarea id="promptResult" rows="7" readonly
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-orange-300 focus:outline-none font-mono"></textarea>
+
+            <button onclick="window.enviarWhatsApp()"
+                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2 text-sm">
+                <i class="fab fa-whatsapp text-lg"></i>
+                Enviar por WhatsApp
+            </button>
+        </div>
+
+        <div class="card mt-4">
             <div class="card-title">
-                <span><i class="fas fa-list"></i> Promociones Guardadas</span>
+                <span><i class="fas fa-history"></i> Promociones Guardadas</span>
                 <span id="promo-count" class="count-badge">0</span>
             </div>
-            <div id="promo-lista" class="scrollable"><p class="empty-message">No hay promociones guardadas</p></div>
-            <button class="btn btn-success" onclick="window.generarPDFPromociones()" style="margin-top:8px;">
-                <i class="fas fa-file-pdf"></i> Generar PDF
-            </button>
+            <div id="promo-lista" class="scrollable">
+                <p class="empty-message">No hay promociones guardadas</p>
+            </div>
         </div>
     </section>
 
@@ -975,7 +1112,7 @@
                 <span class="count-badge" id="aleatorio-count">0/21</span>
             </div>
             <p style="color:#94a3b8; font-size:0.7rem; margin-bottom:10px;">
-                <i class="fas fa-info-circle"></i> Genera 21 productos aleatorios del inventario o de una lista predefinida
+                <i class="fas fa-info-circle"></i> Genera 21 productos aleatorios del inventario
             </p>
             <button class="btn btn-purple" onclick="window.generarAleatorios()">
                 <i class="fas fa-dice"></i> Generar 21 Aleatorios
@@ -1076,7 +1213,7 @@
             </div>
             <div class="form-group">
                 <label><i class="fas fa-database"></i> Cantidad en Sistema</label>
-                <input type="number" id="inv-sistema" placeholder="Cantidad en sistema" value="1" min="0" />
+                <input type="number" id="inv-sistema" placeholder="Cantidad en sistema" value="0" min="0" />
             </div>
             <button class="btn btn-orange" onclick="window.agregarProductoInventario()">
                 <i class="fas fa-plus-circle"></i> Agregar Producto
@@ -1169,7 +1306,7 @@
         </div>
         <div class="input-group" style="margin-top:8px;">
             <label><i class="fas fa-database"></i> Sistema:</label>
-            <input type="number" id="modalSistemaInput" value="1" min="0" step="1">
+            <input type="number" id="modalSistemaInput" value="0" min="0" step="1">
         </div>
         <div class="btn-group-modal">
             <button class="btn btn-secondary" onclick="window.cerrarModalEditar()">Cancelar</button>
@@ -1194,58 +1331,7 @@ window.usuarios = {
 window.usuarioActual = null;
 window.indiceEditando = -1;
 window.tipoEditando = '';
-
-// ============================================
-// PRODUCTOS PREDEFINIDOS PARA ALEATORIOS
-// ============================================
-window.productosPredefinidos = [
-    { nombre: 'SALSA BOTANERA CLASICA 370 ML', categoria: 'Salsas' },
-    { nombre: 'COCA COLA ORIGINAL 1 LT', categoria: 'Refrescos' },
-    { nombre: 'COCA COLA ORIGINAL 600 ML', categoria: 'Refrescos' },
-    { nombre: 'PEPSI 1.5 LT', categoria: 'Refrescos' },
-    { nombre: 'SPRITE 600 ML', categoria: 'Refrescos' },
-    { nombre: 'FANTA 600 ML', categoria: 'Refrescos' },
-    { nombre: 'SABRITAS 55 G', categoria: 'Botanas' },
-    { nombre: 'CHEETOS 60 G', categoria: 'Botanas' },
-    { nombre: 'DORITOS 60 G', categoria: 'Botanas' },
-    { nombre: 'GALLETAS OREO 36 G', categoria: 'Galletas' },
-    { nombre: 'GALLETAS GAMESA 45 G', categoria: 'Galletas' },
-    { nombre: 'MARUCHAN 60 G', categoria: 'Maruchan' },
-    { nombre: 'SOPA MARUCHAN 60 G', categoria: 'Maruchan' },
-    { nombre: 'LECHE LALA ENTERA 1 LT', categoria: 'Cámara Fría' },
-    { nombre: 'CREMA LALA 426 GR', categoria: 'Cámara Fría' },
-    { nombre: 'YOGURT DANONINO 90 GR', categoria: 'Cámara Fría' },
-    { nombre: 'DETERGENTE EN POLVO 1 KG', categoria: 'Detergente Líquido Ropa' },
-    { nombre: 'SUAVIZANTE BEST CHOICE', categoria: 'Detergente Líquido Ropa' },
-    { nombre: 'JABON ZOTE BARRA 400 GR', categoria: 'Jabones' },
-    { nombre: 'PAMPERS PAÑAL TALLA 3', categoria: 'Pañales' },
-    { nombre: 'HUGGIES PAÑAL TALLA 4', categoria: 'Pañales' },
-    { nombre: 'NESTLE CHOCOLATE 80 G', categoria: 'Nestlé' },
-    { nombre: 'CERVEZA CORONA 355 ML', categoria: 'Alcohol y Licores' },
-    { nombre: 'HIELO BOLSA 5 KG', categoria: 'Hielo' },
-    { nombre: 'SAL DE MESA 1 KG', categoria: 'Sal' },
-    { nombre: 'AZUCAR ESTANDAR 1 KG', categoria: 'Azúcar' },
-    { nombre: 'ACEITE VEGETAL 1 LT', categoria: 'Aceites' },
-    { nombre: 'FRIJOL NEGRO 1 KG', categoria: 'Frijoles' },
-    { nombre: 'HARINA DE TRIGO 1 KG', categoria: 'Harinas' },
-    { nombre: 'LIMPIADOR MULTIUSOS FABULOSO', categoria: 'Cloros' },
-    { nombre: 'PINO LIMPIADOR 1 LT', categoria: 'Cloros' },
-    { nombre: 'SHAMPOO SEDAL 400 ML', categoria: 'Shampoos' },
-    { nombre: 'DESODORANTE AXE 200 ML', categoria: 'Desodorantes' },
-    { nombre: 'PAPEL ROLLO KITCHEN 2 PZ', categoria: 'Rollos' },
-    { nombre: 'SERVILLETAS ELITE 100 PZ', categoria: 'Servilletas' },
-    { nombre: 'TOALLAS HUMEDAS BABY 80 PZ', categoria: 'Toallas Húmedas' },
-    { nombre: 'CIGARROS MARLBORO', categoria: 'Cigarros' },
-    { nombre: 'BOLSAS PARA BASURA 20 PZ', categoria: 'Bolsa para Basura' },
-    { nombre: 'GEL ANTIBACTERIAL 100 ML', categoria: 'Gel para Manos' },
-    { nombre: 'CREMA CORPORAL NIVEA 200 ML', categoria: 'Crema Corporal' },
-    { nombre: 'FLAN LALA 6/100 GR', categoria: 'Cámara Fría' },
-    { nombre: 'GELATINA DANETTE 100 GR', categoria: 'Cámara Fría' },
-    { nombre: 'NATILLA DANETTE 100 GR', categoria: 'Cámara Fría' },
-    { nombre: 'MARGARINA LALA 90 GR', categoria: 'Cámara Fría' },
-    { nombre: 'PETIT DANONINO 4/42 GR', categoria: 'Cámara Fría' },
-    { nombre: 'BEBIBLE DANONINO 90 GR', categoria: 'Cámara Fría' }
-];
+window.estiloSeleccionado = 'coca';
 
 // ============================================
 // SISTEMA DE NOTIFICACIONES
@@ -1259,6 +1345,120 @@ window.mostrarToast = function(mensaje, icono = 'ℹ️') {
     container.classList.add('show');
     clearTimeout(window.toastTimeout);
     window.toastTimeout = setTimeout(function() { container.classList.remove('show'); }, 3500);
+};
+
+// ============================================
+// FUNCIONES DE PROMOCIONES
+// ============================================
+window.seleccionarEstilo = function(el, estilo) {
+    document.querySelectorAll('.promo-card').forEach(function(card) {
+        card.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    window.estiloSeleccionado = estilo;
+};
+
+window.generarPrompt = function() {
+    var nombre = document.getElementById('prodNombre').value.trim();
+    var precio = document.getElementById('prodPrecio').value.trim();
+    var existencia = document.getElementById('prodExistencia').value.trim();
+    var estilo = window.estiloSeleccionado || 'clasico';
+    var perecedero = document.getElementById('checkPerecedero').checked;
+    var vencimiento = document.getElementById('prodVencimiento').value;
+    var fotoInput = document.getElementById('prodFoto');
+    var fotoFile = fotoInput.files[0];
+    
+    if (!nombre || !precio) {
+        window.mostrarToast('⚠️ Completa el nombre y precio', '⚠️');
+        return;
+    }
+    
+    var estilos = {
+        'coca': 'Refrescante, con hielo y condensación, tonos rojos y blancos, ambiente veraniego',
+        'botanero': 'Vibrante, colores cálidos, ambiente de fiesta, promoción 3x2',
+        'frescura': 'Limpio, natural, tonos pastel, sensación de frescura',
+        'estudio': 'Elegante, iluminación de estudio, fondo oscuro, producto destacado',
+        'remate': 'Neón, colores eléctricos, ambiente de oferta relámpago',
+        'clasico': 'Comercial clásico, iluminación suave, producto en centro'
+    };
+    
+    var prompt = '📸 Imagen publicitaria para ' + nombre + '.\n';
+    prompt += '🎨 Estilo: ' + (estilos[estilo] || estilos['clasico']) + '.\n';
+    prompt += '💰 Promoción: ' + precio + '.\n';
+    if (existencia) prompt += '📦 Disponible: ' + existencia + ' piezas.\n';
+    if (perecedero && vencimiento) prompt += '🗓️ Fecha de caducidad: ' + vencimiento + '.\n';
+    prompt += '🏪 Para tiendas NETO.';
+    
+    document.getElementById('promptResult').value = prompt;
+    document.getElementById('outputSection').classList.remove('hidden');
+    
+    // Guardar promoción
+    var promocion = {
+        id: Date.now(),
+        nombre: nombre,
+        precio: precio,
+        existencia: existencia,
+        estilo: estilo,
+        perecedero: perecedero,
+        vencimiento: vencimiento,
+        fecha: new Date().toISOString(),
+        foto: fotoFile ? URL.createObjectURL(fotoFile) : null,
+        prompt: prompt
+    };
+    
+    window.datos.promociones.unshift(promocion);
+    window.Storage.set('promociones', window.datos.promociones);
+    window.actualizarBadges();
+    window.renderizarPromociones();
+    
+    window.mostrarToast('✅ Prompt generado y promoción guardada', '✅');
+};
+
+window.copiarPrompt = function() {
+    var textarea = document.getElementById('promptResult');
+    textarea.select();
+    document.execCommand('copy');
+    window.mostrarToast('📋 Prompt copiado al portapapeles', '📋');
+};
+
+window.enviarWhatsApp = function() {
+    var prompt = document.getElementById('promptResult').value;
+    var url = 'https://wa.me/?text=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+};
+
+window.renderizarPromociones = function() {
+    var lista = document.getElementById('promo-lista');
+    var count = document.getElementById('promo-count');
+    var items = window.datos.promociones || [];
+    count.textContent = items.length;
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">No hay promociones guardadas</p>';
+        return;
+    }
+    var html = '';
+    items.forEach(function(p, i) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">💰 ' + p.precio + ' | 📦 ' + (p.existencia || 'N/A') + ' | 🎨 ' + (p.estilo || 'clasico') + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.eliminarPromocion(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    lista.innerHTML = html;
+};
+
+window.eliminarPromocion = function(index) {
+    if (confirm('¿Eliminar esta promoción?')) {
+        window.datos.promociones.splice(index, 1);
+        window.Storage.set('promociones', window.datos.promociones);
+        window.renderizarPromociones();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Promoción eliminada', '🗑️');
+    }
 };
 
 // ============================================
@@ -1452,6 +1652,7 @@ window.showScreen = function(screenId) {
     if (screenId === 'ciclicos') window.renderizarCiclicos();
     if (screenId === 'aleatorio') window.renderizarAleatorios();
     if (screenId === 'caducidades') window.renderizarCaducidades();
+    if (screenId === 'promociones') window.renderizarPromociones();
 };
 
 // ============================================
@@ -1470,7 +1671,7 @@ window.Storage = {
 };
 
 // ============================================
-// DATOS GLOBALES
+// DATOS GLOBALES - INICIAN VACIOS
 // ============================================
 window.datos = {
     promociones: window.Storage.get('promociones', []),
@@ -1478,79 +1679,6 @@ window.datos = {
     ciclicos: window.Storage.get('ciclicos', []),
     inventario: window.Storage.get('inventario', []),
     aleatorios: window.Storage.get('aleatorios', [])
-};
-
-// ============================================
-// FUNCIONES DE PROMOCIONES
-// ============================================
-window.guardarPromocion = function() {
-    var nombre = document.getElementById('prodNombre').value.trim();
-    var precio = document.getElementById('prodPrecio').value.trim();
-    var existencia = parseInt(document.getElementById('prodExistencia').value) || 0;
-    if (!nombre || !precio) { window.mostrarToast('⚠️ Completa nombre y precio', '⚠️'); return; }
-    window.datos.promociones.unshift({ id: Date.now(), nombre: nombre, precio: precio, existencia: existencia, fecha: new Date().toISOString() });
-    window.Storage.set('promociones', window.datos.promociones);
-    document.getElementById('prodNombre').value = '';
-    document.getElementById('prodPrecio').value = '';
-    document.getElementById('prodExistencia').value = '1';
-    window.renderizarPromociones();
-    window.actualizarBadges();
-    window.mostrarToast('✅ Promoción guardada', '✅');
-};
-
-window.renderizarPromociones = function() {
-    var lista = document.getElementById('promo-lista');
-    var count = document.getElementById('promo-count');
-    var items = window.datos.promociones || [];
-    count.textContent = items.length;
-    if (items.length === 0) { lista.innerHTML = '<p class="empty-message">No hay promociones guardadas</p>'; return; }
-    var html = '';
-    items.forEach(function(p, i) {
-        html += '<div class="list-item">';
-        html += '  <div class="item-info">';
-        html += '    <div class="item-name">' + p.nombre + '</div>';
-        html += '    <div class="item-detail">💰 ' + p.precio + ' | 📦 ' + (p.existencia || 'N/A') + '</div>';
-        html += '  </div>';
-        html += '  <div class="item-actions">';
-        html += '    <button onclick="window.eliminarPromocion(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
-        html += '  </div>';
-        html += '</div>';
-    });
-    lista.innerHTML = html;
-};
-
-window.eliminarPromocion = function(index) {
-    if (confirm('¿Eliminar esta promoción?')) {
-        window.datos.promociones.splice(index, 1);
-        window.Storage.set('promociones', window.datos.promociones);
-        window.renderizarPromociones();
-        window.actualizarBadges();
-        window.mostrarToast('🗑️ Promoción eliminada', '🗑️');
-    }
-};
-
-window.generarPDFPromociones = function() {
-    var items = window.datos.promociones || [];
-    if (items.length === 0) { window.mostrarToast('⚠️ No hay promociones', '⚠️'); return; }
-    var { jsPDF } = window.jspdf;
-    var doc = new jsPDF('p', 'pt', 'a4');
-    doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-    doc.text('PROMOCIONES NETO', 40, 50);
-    doc.setFontSize(10); doc.setTextColor(200, 200, 200);
-    doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
-    doc.text('Total: ' + items.length + ' promociones', 40, 85);
-    var tableData = items.map(function(p) { return [p.nombre || '', p.precio || '', p.existencia || '0']; });
-    doc.autoTable({
-        startY: 100,
-        head: [['Producto', 'Promoción', 'Existencia']],
-        body: tableData,
-        theme: 'dark',
-        styles: { textColor: [255,255,255], fontSize: 8 },
-        headStyles: { fillColor: [249, 115, 22] },
-        alternateRowStyles: { fillColor: [30, 41, 59] }
-    });
-    doc.save('promociones_neto.pdf');
-    window.mostrarToast('📄 PDF generado', '📄');
 };
 
 // ============================================
@@ -1784,6 +1912,7 @@ window.guardarConteoCiclico = function() {
         if (existente) {
             existente.cantidad = item.cantidad;
             existente.costo = item.costo || existente.costo || 0;
+            if (existente.sistema === undefined) existente.sistema = 0;
         } else {
             window.datos.inventario.push({
                 id: Date.now(),
@@ -2024,68 +2153,34 @@ window.procesarPDFConOCR = function() {
 };
 
 // ============================================
-// FUNCIONES DE 21 ALEATORIOS (MEJORADO)
+// FUNCIONES DE 21 ALEATORIOS
 // ============================================
 window.generarAleatorios = function() {
-    var productosDisponibles = [];
+    var inventario = window.datos.inventario || [];
     
-    // Si hay productos en inventario, usarlos
-    if (window.datos.inventario && window.datos.inventario.length > 0) {
-        productosDisponibles = [...window.datos.inventario];
-        window.mostrarToast('📦 Usando ' + productosDisponibles.length + ' productos del inventario', '📦');
-    } else {
-        // Si no hay inventario, usar productos predefinidos
-        productosDisponibles = window.productosPredefinidos.map(function(p, index) {
-            return {
-                id: Date.now() + index,
-                codigo: 'PRED-' + String(index + 1).padStart(4, '0'),
-                nombre: p.nombre,
-                categoria: p.categoria || 'Otros',
-                cantidad: Math.floor(Math.random() * 20) + 1,
-                costo: parseFloat((Math.random() * 50 + 5).toFixed(2)),
-                sistema: Math.floor(Math.random() * 15) + 1,
-                fechaRegistro: new Date().toISOString()
-            };
-        });
-        window.mostrarToast('📦 Usando ' + productosDisponibles.length + ' productos predefinidos', '📦');
-    }
-    
-    if (productosDisponibles.length === 0) {
-        window.mostrarToast('⚠️ No hay productos disponibles', '⚠️');
+    if (inventario.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el inventario. Agrega productos primero.', '⚠️');
         return;
     }
     
-    // Barajar (Fisher-Yates)
-    var shuffled = [...productosDisponibles];
+    if (inventario.length < 21) {
+        window.mostrarToast('⚠️ Solo hay ' + inventario.length + ' productos en el inventario. Se tomarán todos.', '⚠️');
+    }
+    
+    var shuffled = [...inventario];
     for (var i = shuffled.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     
-    // Tomar hasta 21 productos
     var cantidad = Math.min(21, shuffled.length);
     window.datos.aleatorios = shuffled.slice(0, cantidad);
-    
-    // Asignar cantidades aleatorias si vienen de predefinidos
-    window.datos.aleatorios.forEach(function(p) {
-        if (!p.cantidad || p.cantidad === 0) {
-            p.cantidad = Math.floor(Math.random() * 20) + 1;
-        }
-        if (!p.sistema || p.sistema === 0) {
-            p.sistema = Math.floor(Math.random() * 15) + 1;
-        }
-        if (!p.costo || p.costo === 0) {
-            p.costo = parseFloat((Math.random() * 50 + 5).toFixed(2));
-        }
-    });
     
     window.Storage.set('aleatorios', window.datos.aleatorios);
     window.renderizarAleatorios();
     
     if (window.datos.aleatorios.length > 0) {
-        window.mostrarToast('🎲 ' + window.datos.aleatorios.length + ' productos aleatorios generados', '🎲');
-    } else {
-        window.mostrarToast('⚠️ No se pudieron generar productos', '⚠️');
+        window.mostrarToast('🎲 ' + window.datos.aleatorios.length + ' productos aleatorios generados del inventario', '🎲');
     }
 };
 
@@ -2219,10 +2314,14 @@ window.agregarProductoInventario = function() {
     var codigo = document.getElementById('inv-codigo').value.trim();
     var nombre = document.getElementById('inv-nombre').value.trim();
     var categoria = document.getElementById('inv-categoria').value;
-    var cantidad = parseInt(document.getElementById('inv-cantidad').value) || 1;
+    var cantidad = parseInt(document.getElementById('inv-cantidad').value) || 0;
     var costo = parseFloat(document.getElementById('inv-precio').value) || 0;
     var sistema = parseInt(document.getElementById('inv-sistema').value) || 0;
     if (!codigo || !nombre) { window.mostrarToast('⚠️ Completa código y nombre', '⚠️'); return; }
+    if (cantidad === 0 && sistema === 0) {
+        window.mostrarToast('⚠️ La cantidad física o del sistema debe ser mayor a 0', '⚠️');
+        return;
+    }
     var catFinal = (categoria === 'Otros' || !categoria) ? window.detectarCategoria(nombre) : categoria;
     var existente = window.datos.inventario.findIndex(function(p) { return p.codigo === codigo; });
     if (existente !== -1) {
@@ -2248,7 +2347,7 @@ window.agregarProductoInventario = function() {
     document.getElementById('inv-nombre').value = '';
     document.getElementById('inv-cantidad').value = '1';
     document.getElementById('inv-precio').value = '0';
-    document.getElementById('inv-sistema').value = '1';
+    document.getElementById('inv-sistema').value = '0';
     window.renderizarInventario();
     window.mostrarToast('✅ Producto agregado', '✅');
 };
@@ -2482,13 +2581,12 @@ window.enfocarInput = function(id) {
 };
 
 // ============================================
-// EXPORTAR BACKUP EN PDF (SIN EMOJIS)
+// EXPORTAR BACKUP EN PDF
 // ============================================
 window.exportarDatosPDF = function() {
     var { jsPDF } = window.jspdf;
     var doc = new jsPDF('p', 'pt', 'a4');
     
-    // ===== ENCABEZADO =====
     doc.setFontSize(20);
     doc.setTextColor(255, 165, 0);
     doc.text('NETO INVENTARIO - BACKUP COMPLETO', 40, 50);
@@ -2502,7 +2600,7 @@ window.exportarDatosPDF = function() {
     
     var y = 145;
     
-    // ===== 1. INVENTARIO =====
+    // INVENTARIO
     var inventario = window.datos.inventario || [];
     doc.setFontSize(14);
     doc.setTextColor(255, 165, 0);
@@ -2555,7 +2653,7 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== 2. CADUCIDADES =====
+    // CADUCIDADES
     var caducidades = window.datos.caducidades || [];
     doc.setFontSize(14);
     doc.setTextColor(248, 113, 113);
@@ -2591,7 +2689,7 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== 3. PROMOCIONES =====
+    // PROMOCIONES
     var promociones = window.datos.promociones || [];
     doc.setFontSize(14);
     doc.setTextColor(251, 191, 36);
@@ -2620,7 +2718,7 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== 4. CICLICOS =====
+    // CICLICOS
     var ciclicos = window.datos.ciclicos || [];
     doc.setFontSize(14);
     doc.setTextColor(255, 165, 0);
@@ -2656,7 +2754,7 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== 5. ALEATORIOS =====
+    // ALEATORIOS
     var aleatorios = window.datos.aleatorios || [];
     doc.setFontSize(14);
     doc.setTextColor(124, 58, 237);
@@ -2692,7 +2790,7 @@ window.exportarDatosPDF = function() {
         y += 20;
     }
     
-    // ===== PIE DE PAGINA =====
+    // PIE DE PAGINA
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     var totalPaginas = doc.internal.getNumberOfPages();
