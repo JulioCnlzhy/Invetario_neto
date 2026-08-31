@@ -16,8 +16,10 @@
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    
+    <!-- jsPDF con AutoTable CORREGIDO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         /* ========== ESTILOS COMPLETOS ========== */
@@ -2093,34 +2095,56 @@ window.generarPDFCiclico = function() {
             ];
         });
         
-        // Crear tabla
-        doc.autoTable({
-            startY: 130,
-            head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
-            body: tableData,
-            theme: 'dark',
-            styles: {
-                textColor: [255, 255, 255],
-                fontSize: 8,
-                cellPadding: 4
-            },
-            headStyles: {
-                fillColor: [249, 115, 22],
-                textColor: [255, 255, 255],
-                fontSize: 9,
-                fontStyle: 'bold'
-            },
-            alternateRowStyles: {
-                fillColor: [30, 41, 59]
-            },
-            margin: { left: 20, right: 20 }
-        });
-        
-        // Total
-        var finalY = doc.lastAutoTable.finalY + 20;
-        doc.setFontSize(14);
-        doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+        // Crear tabla - usando autoTable de forma segura
+        if (typeof doc.autoTable === 'function') {
+            doc.autoTable({
+                startY: 130,
+                head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
+                body: tableData,
+                theme: 'dark',
+                styles: {
+                    textColor: [255, 255, 255],
+                    fontSize: 8,
+                    cellPadding: 4
+                },
+                headStyles: {
+                    fillColor: [249, 115, 22],
+                    textColor: [255, 255, 255],
+                    fontSize: 9,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [30, 41, 59]
+                },
+                margin: { left: 20, right: 20 }
+            });
+            
+            // Total
+            var finalY = doc.lastAutoTable.finalY + 20;
+            doc.setFontSize(14);
+            doc.setTextColor(255, 165, 0);
+            doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+        } else {
+            // Fallback si autoTable no está disponible
+            doc.setFontSize(12);
+            doc.setTextColor(255, 255, 255);
+            var y = 150;
+            doc.text('LISTA DE PRODUCTOS:', 40, y);
+            y += 20;
+            
+            items.forEach(function(p, i) {
+                var valor = (p.costo || 0) * (p.cantidad || 0);
+                doc.setFontSize(10);
+                doc.text((i+1) + '. ' + p.nombre + ' - Cant: ' + p.cantidad + ' - Costo: $' + (p.costo || 0).toFixed(2) + ' - Total: $' + valor.toFixed(2), 45, y);
+                y += 14;
+                if (y > 700) { doc.addPage(); y = 50; }
+            });
+            
+            y += 10;
+            doc.setFontSize(14);
+            doc.setTextColor(255, 165, 0);
+            doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
+        }
         
         // Pie de página
         doc.setFontSize(8);
@@ -3264,7 +3288,7 @@ window.initApp = function() {
         if (input) {
             input.removeAttribute('readonly');
             input.style.cursor = 'text';
-            input.style.color = '#000000';
+            input.style.color = '#ffffff';
             if (id !== 'ciclico-codigo') {
                 input.placeholder = 'Código manual o escaneado';
             }
