@@ -48,9 +48,9 @@
             width: 100%;
             padding: 8px 12px;
             border-radius: 8px;
-            background: #ffffff;
+            background: #1e293b;
             border: 2px solid #334155;
-            color: #000000 !important;
+            color: #ffffff !important;
             font-size: 0.875rem;
             margin-top: 8px;
             text-align: center;
@@ -1317,9 +1317,6 @@
     </div>
 </div>
 
-<!-- ============================================ -->
-<!-- JAVASCRIPT COMPLETO                         -->
-<!-- ============================================ -->
 <script>
 // ============================================
 // USUARIOS DEL SISTEMA
@@ -2050,7 +2047,204 @@ window.generarPDFCaducidades = function() {
 };
 
 // ============================================
-// FUNCIONES DE CICLICOS
+// FUNCIONES DE CICLICOS - CORREGIDAS
+// ============================================
+
+window.generarPDFCiclico = function() {
+    var items = window.datos.ciclicos || [];
+    if (items.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el conteo cíclico', '⚠️');
+        return;
+    }
+    
+    try {
+        // Verificar que jsPDF esté disponible
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            window.mostrarToast('❌ Librería PDF no disponible. Recarga la página.', '❌');
+            return;
+        }
+        
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        
+        // Encabezado
+        doc.setFontSize(16);
+        doc.setTextColor(255, 165, 0);
+        doc.text('CONTEO CICLICO NETO', 40, 50);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
+        doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 85);
+        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
+        doc.text('Total productos: ' + items.length, 40, 115);
+        
+        // Preparar datos para la tabla
+        var totalValor = 0;
+        var tableData = items.map(function(p) {
+            var valor = (p.costo || 0) * (p.cantidad || 0);
+            totalValor += valor;
+            return [
+                p.nombre || 'Sin nombre',
+                p.cantidad || 0,
+                '$' + (p.costo || 0).toFixed(2),
+                '$' + valor.toFixed(2),
+                p.categoria || 'Otros'
+            ];
+        });
+        
+        // Crear tabla
+        doc.autoTable({
+            startY: 130,
+            head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
+            body: tableData,
+            theme: 'dark',
+            styles: {
+                textColor: [255, 255, 255],
+                fontSize: 8,
+                cellPadding: 4
+            },
+            headStyles: {
+                fillColor: [249, 115, 22],
+                textColor: [255, 255, 255],
+                fontSize: 9,
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [30, 41, 59]
+            },
+            margin: { left: 20, right: 20 }
+        });
+        
+        // Total
+        var finalY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(14);
+        doc.setTextColor(255, 165, 0);
+        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+        
+        // Pie de página
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        var totalPaginas = doc.internal.getNumberOfPages();
+        for (var i = 1; i <= totalPaginas; i++) {
+            doc.setPage(i);
+            doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
+            doc.text('Generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
+        }
+        
+        doc.save('conteo_ciclico_neto.pdf');
+        window.mostrarToast('📄 PDF de conteo cíclico generado', '📄');
+        
+    } catch (e) {
+        console.error('Error generando PDF:', e);
+        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
+    }
+};
+
+// ============================================
+// GUARDAR CONTEO CICLICO - CORREGIDO
+// ============================================
+window.guardarConteoCiclico = function() {
+    if (!window.datos.ciclicos || window.datos.ciclicos.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el conteo', '⚠️');
+        return;
+    }
+    
+    try {
+        var productosGuardados = 0;
+        window.datos.ciclicos.forEach(function(item) {
+            var existente = window.datos.inventario.find(function(p) { 
+                return p.codigo === item.codigo; 
+            });
+            
+            if (existente) {
+                existente.cantidad = item.cantidad;
+                existente.costo = item.costo || existente.costo || 0;
+                if (existente.sistema === undefined) existente.sistema = 0;
+                productosGuardados++;
+            } else {
+                window.datos.inventario.push({
+                    id: Date.now(),
+                    codigo: item.codigo || 'MAN-' + Date.now(),
+                    nombre: item.nombre,
+                    categoria: item.categoria || 'Otros',
+                    cantidad: item.cantidad || 0,
+                    costo: item.costo || 0,
+                    sistema: 0,
+                    fechaRegistro: new Date().toISOString()
+                });
+                productosGuardados++;
+            }
+        });
+        
+        window.Storage.set('inventario', window.datos.inventario);
+        
+        // Limpiar la lista de cíclicos después de guardar
+        var totalProductos = window.datos.ciclicos.length;
+        window.datos.ciclicos = [];
+        window.Storage.set('ciclicos', []);
+        
+        window.renderizarCiclicos();
+        window.renderizarInventario();
+        window.actualizarBadges();
+        
+        window.mostrarToast('✅ ' + productosGuardados + ' productos guardados en inventario', '✅');
+        
+        // Preguntar si desea generar PDF del conteo guardado
+        if (confirm('¿Deseas generar un PDF del conteo cíclico guardado?')) {
+            // Generar PDF con los datos guardados
+            window.generarPDFCiclicoGuardado(totalProductos);
+        }
+        
+    } catch (e) {
+        console.error('Error al guardar conteo:', e);
+        window.mostrarToast('❌ Error al guardar: ' + e.message, '❌');
+    }
+};
+
+// ============================================
+// GENERAR PDF DEL CONTEO GUARDADO
+// ============================================
+window.generarPDFCiclicoGuardado = function(totalProductos) {
+    try {
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            window.mostrarToast('❌ Librería PDF no disponible.', '❌');
+            return;
+        }
+        
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        
+        doc.setFontSize(18);
+        doc.setTextColor(255, 165, 0);
+        doc.text('CONTEO CICLICO NETO - GUARDADO', 40, 50);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 75);
+        doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 90);
+        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 105);
+        doc.text('Total productos guardados: ' + totalProductos, 40, 120);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(74, 222, 128);
+        doc.text('✅ Conteo guardado exitosamente en el inventario general', 40, 145);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text('Los productos han sido actualizados en el inventario', 40, 165);
+        
+        doc.save('conteo_guardado_neto.pdf');
+        window.mostrarToast('📄 PDF de confirmación generado', '📄');
+        
+    } catch (e) {
+        console.error('Error generando PDF de confirmación:', e);
+        window.mostrarToast('❌ Error al generar PDF de confirmación', '❌');
+    }
+};
+
+// ============================================
+// FUNCIONES DE CICLICOS (ORIGINALES)
 // ============================================
 window.cambiarTabCiclico = function(tab, btn) {
     document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -2140,73 +2334,6 @@ window.eliminarCiclico = function(index) {
         window.Storage.set('ciclicos', window.datos.ciclicos);
         window.renderizarCiclicos();
         window.mostrarToast('🗑️ Producto eliminado', '🗑️');
-    }
-};
-
-window.guardarConteoCiclico = function() {
-    if (!window.datos.ciclicos || window.datos.ciclicos.length === 0) {
-        window.mostrarToast('⚠️ No hay productos', '⚠️'); return;
-    }
-    window.datos.ciclicos.forEach(function(item) {
-        var existente = window.datos.inventario.find(function(p) { return p.codigo === item.codigo; });
-        if (existente) {
-            existente.cantidad = item.cantidad;
-            existente.costo = item.costo || existente.costo || 0;
-            if (existente.sistema === undefined) existente.sistema = 0;
-        } else {
-            window.datos.inventario.push({
-                id: Date.now(),
-                codigo: item.codigo,
-                nombre: item.nombre,
-                categoria: item.categoria || 'Otros',
-                cantidad: item.cantidad,
-                costo: item.costo || 0,
-                sistema: 0,
-                fechaRegistro: new Date().toISOString()
-            });
-        }
-    });
-    window.Storage.set('inventario', window.datos.inventario);
-    window.datos.ciclicos = [];
-    window.Storage.set('ciclicos', []);
-    window.renderizarCiclicos();
-    window.renderizarInventario();
-    window.mostrarToast('✅ Conteo guardado correctamente', '✅');
-};
-
-window.generarPDFCiclico = function() {
-    var items = window.datos.ciclicos || [];
-    if (items.length === 0) { window.mostrarToast('⚠️ No hay productos en el conteo cíclico', '⚠️'); return; }
-    try {
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-        doc.text('CONTEO CICLICO NETO', 40, 50);
-        doc.setFontSize(10); doc.setTextColor(200, 200, 200);
-        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
-        var totalValor = 0;
-        var tableData = items.map(function(p) {
-            var valor = (p.costo || 0) * (p.cantidad || 0);
-            totalValor += valor;
-            return [p.nombre || '', p.cantidad || '0', '$' + (p.costo || 0).toFixed(2), '$' + valor.toFixed(2), p.categoria || 'Otros'];
-        });
-        doc.autoTable({
-            startY: 90,
-            head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
-            body: tableData,
-            theme: 'dark',
-            styles: { textColor: [255,255,255], fontSize: 8 },
-            headStyles: { fillColor: [249, 115, 22] },
-            alternateRowStyles: { fillColor: [30, 41, 59] }
-        });
-        var finalY = doc.lastAutoTable.finalY + 20;
-        doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
-        doc.save('ciclico_neto.pdf');
-        window.mostrarToast('📄 PDF de conteo cíclico generado', '📄');
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF', '❌');
     }
 };
 
