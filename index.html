@@ -17,9 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
-    <!-- jsPDF con AutoTable CORREGIDO -->
+    <!-- jsPDF sin AutoTable para evitar errores -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         /* ========== ESTILOS COMPLETOS ========== */
@@ -1806,18 +1805,20 @@ window.generarPDFPromociones = function() {
         doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
         doc.text('Total: ' + items.length + ' promociones', 40, 85);
         
-        var tableData = items.map(function(p) {
-            return [p.nombre || '', p.precio || '', p.existencia || '0', p.estilo || 'clasico'];
+        // Usar texto plano en lugar de autoTable
+        var y = 100;
+        doc.setFontSize(10);
+        doc.setTextColor(255, 255, 255);
+        items.forEach(function(p, i) {
+            var texto = (i+1) + '. ' + p.nombre + ' | ' + p.precio + ' | Existencia: ' + (p.existencia || 0) + ' | Estilo: ' + (p.estilo || 'clasico');
+            doc.text(texto, 40, y);
+            y += 14;
+            if (y > 700) {
+                doc.addPage();
+                y = 50;
+            }
         });
-        doc.autoTable({
-            startY: 100,
-            head: [['Producto', 'Promoción', 'Existencia', 'Estilo']],
-            body: tableData,
-            theme: 'dark',
-            styles: { textColor: [255,255,255], fontSize: 8 },
-            headStyles: { fillColor: [249, 115, 22] },
-            alternateRowStyles: { fillColor: [30, 41, 59] }
-        });
+        
         doc.save('promociones_neto.pdf');
         window.mostrarToast('📄 PDF de promociones generado', '📄');
     } catch (e) {
@@ -2023,23 +2024,21 @@ window.generarPDFCaducidades = function() {
         doc.setFontSize(10); doc.setTextColor(200, 200, 200);
         doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
         var totalValor = 0;
-        var tableData = items.map(function(p) {
+        
+        var y = 100;
+        doc.setFontSize(10);
+        doc.setTextColor(255, 255, 255);
+        items.forEach(function(p) {
             var costo = (p.costo || 0) * (p.cantidad || 0);
             totalValor += costo;
-            return [p.nombre || '', p.fecha || '', p.cantidad || '0', '$' + (p.costo || 0).toFixed(2), '$' + costo.toFixed(2)];
+            doc.text(p.nombre + ' | ' + p.fecha + ' | ' + p.cantidad + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + costo.toFixed(2), 40, y);
+            y += 14;
+            if (y > 700) { doc.addPage(); y = 50; }
         });
-        doc.autoTable({
-            startY: 90,
-            head: [['Producto', 'Caducidad', 'Cantidad', 'Costo/Und', 'Total']],
-            body: tableData,
-            theme: 'dark',
-            styles: { textColor: [255,255,255], fontSize: 8 },
-            headStyles: { fillColor: [249, 115, 22] },
-            alternateRowStyles: { fillColor: [30, 41, 59] }
-        });
-        var finalY = doc.lastAutoTable.finalY + 20;
+        
+        y += 10;
         doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
         doc.save('caducidades_neto.pdf');
         window.mostrarToast('📄 PDF de caducidades generado', '📄');
     } catch (e) {
@@ -2081,70 +2080,65 @@ window.generarPDFCiclico = function() {
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
         doc.text('Total productos: ' + items.length, 40, 115);
         
-        // Preparar datos para la tabla
+        // Lista de productos en texto plano
+        var y = 140;
         var totalValor = 0;
-        var tableData = items.map(function(p) {
+        doc.setFontSize(10);
+        doc.setTextColor(255, 255, 255);
+        
+        // Encabezados de tabla en texto
+        doc.setTextColor(255, 165, 0);
+        doc.text('Producto', 40, y);
+        doc.text('Cantidad', 200, y);
+        doc.text('Costo/Und', 280, y);
+        doc.text('Total', 360, y);
+        doc.text('Categoria', 420, y);
+        y += 10;
+        doc.line(40, y, 550, y);
+        y += 10;
+        
+        doc.setTextColor(200, 200, 200);
+        items.forEach(function(p, i) {
             var valor = (p.costo || 0) * (p.cantidad || 0);
             totalValor += valor;
-            return [
-                p.nombre || 'Sin nombre',
-                p.cantidad || 0,
-                '$' + (p.costo || 0).toFixed(2),
-                '$' + valor.toFixed(2),
-                p.categoria || 'Otros'
-            ];
+            
+            var nombre = p.nombre || 'Sin nombre';
+            var cantidad = p.cantidad || 0;
+            var costo = '$' + (p.costo || 0).toFixed(2);
+            var total = '$' + valor.toFixed(2);
+            var categoria = p.categoria || 'Otros';
+            
+            doc.text(nombre.substring(0, 25), 40, y);
+            doc.text(cantidad.toString(), 200, y);
+            doc.text(costo, 280, y);
+            doc.text(total, 360, y);
+            doc.text(categoria, 420, y);
+            
+            y += 12;
+            if (y > 700) {
+                doc.addPage();
+                y = 50;
+                doc.setFontSize(10);
+                doc.setTextColor(255, 165, 0);
+                doc.text('Producto', 40, y);
+                doc.text('Cantidad', 200, y);
+                doc.text('Costo/Und', 280, y);
+                doc.text('Total', 360, y);
+                doc.text('Categoria', 420, y);
+                y += 10;
+                doc.line(40, y, 550, y);
+                y += 10;
+                doc.setTextColor(200, 200, 200);
+            }
         });
         
-        // Crear tabla - usando autoTable de forma segura
-        if (typeof doc.autoTable === 'function') {
-            doc.autoTable({
-                startY: 130,
-                head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
-                body: tableData,
-                theme: 'dark',
-                styles: {
-                    textColor: [255, 255, 255],
-                    fontSize: 8,
-                    cellPadding: 4
-                },
-                headStyles: {
-                    fillColor: [249, 115, 22],
-                    textColor: [255, 255, 255],
-                    fontSize: 9,
-                    fontStyle: 'bold'
-                },
-                alternateRowStyles: {
-                    fillColor: [30, 41, 59]
-                },
-                margin: { left: 20, right: 20 }
-            });
-            
-            // Total
-            var finalY = doc.lastAutoTable.finalY + 20;
-            doc.setFontSize(14);
-            doc.setTextColor(255, 165, 0);
-            doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
-        } else {
-            // Fallback si autoTable no está disponible
-            doc.setFontSize(12);
-            doc.setTextColor(255, 255, 255);
-            var y = 150;
-            doc.text('LISTA DE PRODUCTOS:', 40, y);
-            y += 20;
-            
-            items.forEach(function(p, i) {
-                var valor = (p.costo || 0) * (p.cantidad || 0);
-                doc.setFontSize(10);
-                doc.text((i+1) + '. ' + p.nombre + ' - Cant: ' + p.cantidad + ' - Costo: $' + (p.costo || 0).toFixed(2) + ' - Total: $' + valor.toFixed(2), 45, y);
-                y += 14;
-                if (y > 700) { doc.addPage(); y = 50; }
-            });
-            
-            y += 10;
-            doc.setFontSize(14);
-            doc.setTextColor(255, 165, 0);
-            doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
-        }
+        // Total
+        y += 10;
+        doc.line(40, y, 550, y);
+        y += 10;
+        doc.setFontSize(14);
+        doc.setTextColor(255, 165, 0);
+        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
         
         // Pie de página
         doc.setFontSize(8);
@@ -2670,23 +2664,21 @@ window.guardarAleatorios = function() {
         doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
         doc.text('Total: ' + items.length + ' productos', 40, 85);
         var totalValor = 0;
-        var tableData = items.map(function(p, i) {
+        
+        var y = 110;
+        doc.setFontSize(10);
+        doc.setTextColor(255, 255, 255);
+        items.forEach(function(p, i) {
             var valor = (p.costo || 0) * (p.cantidad || 0);
             totalValor += valor;
-            return [(i+1), p.nombre || '', p.cantidad || '0', '$' + (p.costo || 0).toFixed(2), '$' + valor.toFixed(2)];
+            doc.text((i+1) + '. ' + p.nombre + ' | ' + p.cantidad + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + valor.toFixed(2), 40, y);
+            y += 14;
+            if (y > 700) { doc.addPage(); y = 50; }
         });
-        doc.autoTable({
-            startY: 100,
-            head: [['#', 'Producto', 'Cantidad', 'Costo/Und', 'Total']],
-            body: tableData,
-            theme: 'dark',
-            styles: { textColor: [255,255,255], fontSize: 8 },
-            headStyles: { fillColor: [124, 58, 237] },
-            alternateRowStyles: { fillColor: [30, 41, 59] }
-        });
-        var finalY = doc.lastAutoTable.finalY + 20;
+        
+        y += 10;
         doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, finalY);
+        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
         doc.save('aleatorios_neto.pdf');
         
         // Enviar WhatsApp
@@ -2851,36 +2843,34 @@ window.finalizarInventario = function() {
         doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 85);
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
         var totalCosto = 0, totalSistema = 0, totalSobrante = 0, totalFaltante = 0;
-        var tableData = productos.map(function(p) {
+        
+        var y = 130;
+        doc.setFontSize(8);
+        doc.setTextColor(255, 255, 255);
+        productos.forEach(function(p) {
             var dif = (p.cantidad || 0) - (p.sistema || 0);
             var difValor = dif * (p.costo || 0);
             if (difValor > 0) totalSobrante += difValor;
             else totalFaltante += Math.abs(difValor);
             totalCosto += (p.cantidad || 0) * (p.costo || 0);
             totalSistema += (p.sistema || 0) * (p.costo || 0);
-            return [p.nombre || '', p.cantidad || '0', p.sistema || '0', dif, '$' + (p.costo || 0).toFixed(2), '$' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2), p.categoria || 'Otros'];
+            doc.text(p.nombre + ' | ' + p.cantidad + ' | ' + (p.sistema || 0) + ' | ' + (dif >= 0 ? '+' : '') + dif + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2), 40, y);
+            y += 12;
+            if (y > 700) { doc.addPage(); y = 50; }
         });
-        doc.autoTable({
-            startY: 115,
-            head: [['Producto', 'Físico', 'Sistema', 'Dif', 'Costo/Und', 'Total', 'Categoría']],
-            body: tableData,
-            theme: 'dark',
-            styles: { textColor: [255,255,255], fontSize: 7 },
-            headStyles: { fillColor: [249, 115, 22] },
-            alternateRowStyles: { fillColor: [30, 41, 59] }
-        });
-        var finalY = doc.lastAutoTable.finalY + 20;
+        
+        y += 10;
         doc.setFontSize(11); doc.setTextColor(255, 165, 0);
-        doc.text('Valor Fisico: $' + totalCosto.toFixed(2), 40, finalY);
-        doc.text('Valor Sistema: $' + totalSistema.toFixed(2), 40, finalY + 18);
+        doc.text('Valor Fisico: $' + totalCosto.toFixed(2), 40, y);
+        doc.text('Valor Sistema: $' + totalSistema.toFixed(2), 40, y + 18);
         doc.setTextColor(74, 222, 128);
-        doc.text('Sobrante: +$' + totalSobrante.toFixed(2), 40, finalY + 36);
+        doc.text('Sobrante: +$' + totalSobrante.toFixed(2), 40, y + 36);
         doc.setTextColor(248, 113, 113);
-        doc.text('Faltante: -$' + totalFaltante.toFixed(2), 40, finalY + 54);
+        doc.text('Faltante: -$' + totalFaltante.toFixed(2), 40, y + 54);
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(12);
         var diferencia = totalSobrante - totalFaltante;
-        doc.text('Diferencia Total: $' + diferencia.toFixed(2), 40, finalY + 76);
+        doc.text('Diferencia Total: $' + diferencia.toFixed(2), 40, y + 76);
         doc.save('inventario_neto.pdf');
         
         // Enviar WhatsApp
@@ -2992,11 +2982,11 @@ window.exportarDatosPDF = function() {
         
         if (inventario.length > 0) {
             var totalInv = 0, totalSis = 0;
+            doc.setFontSize(8);
+            doc.setTextColor(200, 200, 200);
             inventario.forEach(function(p) {
                 totalInv += (p.cantidad || 0) * (p.costo || 0);
                 totalSis += (p.sistema || 0) * (p.costo || 0);
-                doc.setFontSize(8);
-                doc.setTextColor(200, 200, 200);
                 var dif = (p.cantidad || 0) - (p.sistema || 0);
                 var texto = p.nombre + ' | Fisico: ' + p.cantidad + ' | Sistema: ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + ' | Costo: $' + (p.costo || 0).toFixed(2);
                 doc.text(texto, 45, y);
@@ -3022,9 +3012,9 @@ window.exportarDatosPDF = function() {
         y += 18;
         
         if (caducidades.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(200, 200, 200);
             caducidades.forEach(function(p) {
-                doc.setFontSize(8);
-                doc.setTextColor(200, 200, 200);
                 doc.text(p.nombre + ' | Caduca: ' + p.fecha + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
                 y += 12;
                 if (y > 720) { doc.addPage(); y = 50; }
@@ -3044,9 +3034,9 @@ window.exportarDatosPDF = function() {
         y += 18;
         
         if (promociones.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(200, 200, 200);
             promociones.forEach(function(p) {
-                doc.setFontSize(8);
-                doc.setTextColor(200, 200, 200);
                 doc.text(p.nombre + ' | ' + p.precio + ' | Existencia: ' + (p.existencia || 0), 45, y);
                 y += 12;
                 if (y > 720) { doc.addPage(); y = 50; }
@@ -3066,9 +3056,9 @@ window.exportarDatosPDF = function() {
         y += 18;
         
         if (ciclicos.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(200, 200, 200);
             ciclicos.forEach(function(p) {
-                doc.setFontSize(8);
-                doc.setTextColor(200, 200, 200);
                 doc.text(p.nombre + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
                 y += 12;
                 if (y > 720) { doc.addPage(); y = 50; }
@@ -3088,9 +3078,9 @@ window.exportarDatosPDF = function() {
         y += 18;
         
         if (aleatorios.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(200, 200, 200);
             aleatorios.forEach(function(p, i) {
-                doc.setFontSize(8);
-                doc.setTextColor(200, 200, 200);
                 doc.text((i+1) + '. ' + p.nombre + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
                 y += 12;
                 if (y > 720) { doc.addPage(); y = 50; }
