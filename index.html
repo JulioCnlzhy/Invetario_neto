@@ -1894,7 +1894,7 @@ function extraerProductosDeTexto(texto) {
 }
 
 // ============================================
-// FUNCIONES DE CADUCIDADES
+// FUNCIONES DE CADUCIDADES - CORREGIDAS CON SOPORTE UTF-8
 // ============================================
 window.guardarCaducidad = function() {
     var codigo = document.getElementById('cad-codigo').value.trim();
@@ -1967,6 +1967,9 @@ window.limpiarCaducidades = function() {
     }
 };
 
+// ============================================
+// GENERAR PDF DE CADUCIDADES CON SOPORTE UTF-8
+// ============================================
 window.generarPDFCaducidades = function() {
     var items = window.datos.caducidades || [];
     if (items.length === 0) { 
@@ -1980,18 +1983,32 @@ window.generarPDFCaducidades = function() {
             return;
         }
         
+        // Configurar jsPDF con soporte UTF-8
         var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
+        var doc = new jsPDF({
+            orientation: 'p',
+            unit: 'pt',
+            format: 'a4',
+            compress: true,
+            putOnlyUsedFonts: true,
+            floatPrecision: 16
+        });
+        
+        // Agregar fuente con soporte UTF-8 (usar fuente estándar que soporta caracteres especiales)
+        doc.addFileToVFS('Helvetica', 'Helvetica');
+        doc.addFileToVFS('Helvetica-Bold', 'Helvetica-Bold');
         
         // ENCABEZADO
+        doc.setFont('Helvetica', 'bold');
         doc.setFontSize(18);
         doc.setTextColor(255, 165, 0);
         doc.text('📋 CADUCIDADES NETO', 40, 50);
         
+        doc.setFont('Helvetica', 'normal');
         doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Fecha de generación: ' + new Date().toLocaleDateString(), 40, 72);
-        doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 87);
+        doc.setTextColor(80, 80, 80);
+        doc.text('Fecha de generación: ' + new Date().toLocaleDateString('es-MX'), 40, 72);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 87);
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 102);
         doc.text('Total de productos: ' + items.length, 40, 117);
         doc.text('Tienda: MIGUEL HIDALGO PUEBLA', 40, 132);
@@ -2002,9 +2019,9 @@ window.generarPDFCaducidades = function() {
         
         // ENCABEZADOS DE TABLA
         var y = 165;
+        doc.setFont('Helvetica', 'bold');
         doc.setFontSize(9);
         doc.setTextColor(255, 165, 0);
-        doc.setFont('helvetica', 'bold');
         
         var colX = {
             num: 40,
@@ -2030,33 +2047,40 @@ window.generarPDFCaducidades = function() {
         doc.line(40, y, 560, y);
         y += 10;
         
-        // LISTA DE PRODUCTOS
+        // LISTA DE PRODUCTOS - con soporte UTF-8
         var totalValor = 0;
         var maxY = 750;
+        var pageCount = 1;
         
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('Helvetica', 'normal');
         doc.setFontSize(8);
-        doc.setTextColor(50, 50, 50);
+        doc.setTextColor(40, 40, 40);
         
-        items.forEach(function(p, i) {
+        items.forEach(function(p, idx) {
             var costoTotal = (p.costo || 0) * (p.cantidad || 0);
             totalValor += costoTotal;
             
-            var nombre = (p.nombre || 'Sin nombre').substring(0, 20);
+            // Limpiar y preparar texto para evitar problemas con caracteres especiales
+            var nombre = (p.nombre || 'Sin nombre').substring(0, 25);
             var codigo = (p.codigo || '').substring(0, 12);
             var fecha = p.fecha || 'N/A';
             var cantidad = p.cantidad || 0;
             var costo = (p.costo || 0).toFixed(2);
             var total = costoTotal.toFixed(2);
             
+            // Verificar si necesitamos nueva página
             if (y > maxY) {
                 doc.addPage();
+                pageCount++;
                 y = 50;
+                
+                // Reimprimir encabezados en nueva página
+                doc.setFont('Helvetica', 'bold');
                 doc.setFontSize(10);
                 doc.setTextColor(255, 165, 0);
-                doc.setFont('helvetica', 'bold');
                 doc.text('📋 CADUCIDADES NETO (cont.)', 40, y);
                 y += 15;
+                
                 doc.setFontSize(9);
                 doc.text('#', colX.num, y);
                 doc.text('Producto', colX.nombre, y);
@@ -2068,16 +2092,17 @@ window.generarPDFCaducidades = function() {
                 y += 8;
                 doc.line(40, y, 560, y);
                 y += 10;
-                doc.setFont('helvetica', 'normal');
+                doc.setFont('Helvetica', 'normal');
                 doc.setFontSize(8);
-                doc.setTextColor(50, 50, 50);
+                doc.setTextColor(40, 40, 40);
             }
             
-            doc.text((i + 1).toString(), colX.num, y);
+            // Dibujar fila - usando text con string normal
+            doc.text(String(idx + 1), colX.num, y);
             doc.text(nombre, colX.nombre, y);
             doc.text(codigo, colX.codigo, y);
             doc.text(fecha, colX.fecha, y);
-            doc.text(cantidad.toString(), colX.cantidad, y);
+            doc.text(String(cantidad), colX.cantidad, y);
             doc.text('$' + costo, colX.costo, y);
             doc.text('$' + total, colX.total, y);
             
@@ -2091,15 +2116,15 @@ window.generarPDFCaducidades = function() {
         doc.line(40, y, 560, y);
         y += 12;
         
+        doc.setFont('Helvetica', 'bold');
         doc.setFontSize(12);
         doc.setTextColor(255, 165, 0);
-        doc.setFont('helvetica', 'bold');
         doc.text('💰 VALOR TOTAL: $' + totalValor.toFixed(2), 40, y);
         
         y += 20;
+        doc.setFont('Helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.setFont('helvetica', 'normal');
         doc.text('* Este reporte muestra los productos que están próximos a caducar.', 40, y);
         y += 12;
         doc.text('* Revisa periódicamente para evitar pérdidas por caducidad.', 40, y);
@@ -2110,12 +2135,22 @@ window.generarPDFCaducidades = function() {
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(180, 180, 180);
-            doc.setFont('helvetica', 'italic');
+            doc.setFont('Helvetica', 'italic');
             doc.text('NETO Inventario - Página ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
-            doc.text('Generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
+            doc.text('Generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
         }
         
-        doc.save('caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
+        // Guardar PDF - descarga directa
+        var pdfBlob = doc.output('blob');
+        var url = URL.createObjectURL(pdfBlob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
         window.mostrarToast('📄 PDF de caducidades generado correctamente', '📄');
         
     } catch (e) {
@@ -2149,8 +2184,8 @@ window.generarPDFCiclico = function() {
         
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
-        doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 85);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 85);
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
         doc.text('Total productos: ' + items.length, 40, 115);
         
@@ -2217,7 +2252,7 @@ window.generarPDFCiclico = function() {
             doc.setFontSize(8);
             doc.setTextColor(180, 180, 180);
             doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
-            doc.text('Generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
+            doc.text('Generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
         }
         
         doc.save('conteo_ciclico_neto.pdf');
@@ -2390,8 +2425,8 @@ window.generarPDFCiclicoGuardado = function(totalProductos) {
         
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 75);
-        doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 90);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 75);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 90);
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 105);
         doc.text('Total productos guardados: ' + totalProductos, 40, 120);
         
@@ -2712,7 +2747,7 @@ window.guardarAleatorios = function() {
         doc.setFontSize(16); doc.setTextColor(255, 165, 0);
         doc.text('21 PRODUCTOS ALEATORIOS NETO', 40, 50);
         doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
         doc.text('Total: ' + items.length + ' productos', 40, 85);
         var totalValor = 0;
         
@@ -2733,7 +2768,7 @@ window.guardarAleatorios = function() {
         doc.save('aleatorios_neto.pdf');
         
         var mensaje = '21 PRODUCTOS ALEATORIOS NETO\n';
-        mensaje += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
+        mensaje += 'Fecha: ' + new Date().toLocaleDateString('es-MX') + '\n';
         mensaje += '────────────────────\n\n';
         items.forEach(function(p, i) {
             var valor = (p.costo || 0) * (p.cantidad || 0);
@@ -2889,8 +2924,8 @@ window.finalizarInventario = function() {
         doc.setFontSize(16); doc.setTextColor(255, 165, 0);
         doc.text('INVENTARIO NETO', 40, 50);
         doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
-        doc.text('Hora: ' + new Date().toLocaleTimeString(), 40, 85);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 85);
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
         var totalCosto = 0, totalSistema = 0, totalSobrante = 0, totalFaltante = 0;
         
@@ -2924,7 +2959,7 @@ window.finalizarInventario = function() {
         doc.save('inventario_neto.pdf');
         
         var mensaje = 'INVENTARIO NETO\n';
-        mensaje += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
+        mensaje += 'Fecha: ' + new Date().toLocaleDateString('es-MX') + '\n';
         mensaje += 'Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A') + '\n';
         mensaje += '────────────────────\n\n';
         productos.forEach(function(p) {
@@ -3011,7 +3046,7 @@ window.exportarDatosPDF = function() {
         
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text('Fecha de exportacion: ' + new Date().toLocaleString(), 40, 75);
+        doc.text('Fecha de exportacion: ' + new Date().toLocaleString('es-MX'), 40, 75);
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 90);
         doc.text('Tienda: MIGUEL HIDALGO PUEBLA', 40, 105);
         doc.text('Direccion: 16 DE SEPTIEMBRE O 9807, PUEBLA', 40, 120);
@@ -3143,7 +3178,7 @@ window.exportarDatosPDF = function() {
             doc.setFontSize(8);
             doc.setTextColor(180, 180, 180);
             doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
-            doc.text('Backup generado: ' + new Date().toLocaleString(), 40, doc.internal.pageSize.height - 10);
+            doc.text('Backup generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
         }
         
         doc.save('neto_backup_' + new Date().toISOString().slice(0,10) + '.pdf');
