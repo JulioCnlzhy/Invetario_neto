@@ -17,8 +17,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
-    <!-- jsPDF sin AutoTable para evitar errores -->
+    <!-- jsPDF y AutoTable para mejor soporte UTF-8 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         /* ========== ESTILOS COMPLETOS ========== */
@@ -1894,7 +1895,7 @@ function extraerProductosDeTexto(texto) {
 }
 
 // ============================================
-// FUNCIONES DE CADUCIDADES - CORREGIDAS CON SOPORTE UTF-8
+// FUNCIONES DE CADUCIDADES - CORREGIDAS CON jspdf-autotable
 // ============================================
 window.guardarCaducidad = function() {
     var codigo = document.getElementById('cad-codigo').value.trim();
@@ -1968,7 +1969,7 @@ window.limpiarCaducidades = function() {
 };
 
 // ============================================
-// GENERAR PDF DE CADUCIDADES CON SOPORTE UTF-8
+// GENERAR PDF DE CADUCIDADES CON jspdf-autotable
 // ============================================
 window.generarPDFCaducidades = function() {
     var items = window.datos.caducidades || [];
@@ -1983,28 +1984,14 @@ window.generarPDFCaducidades = function() {
             return;
         }
         
-        // Configurar jsPDF con soporte UTF-8
         var { jsPDF } = window.jspdf;
-        var doc = new jsPDF({
-            orientation: 'p',
-            unit: 'pt',
-            format: 'a4',
-            compress: true,
-            putOnlyUsedFonts: true,
-            floatPrecision: 16
-        });
-        
-        // Agregar fuente con soporte UTF-8 (usar fuente estándar que soporta caracteres especiales)
-        doc.addFileToVFS('Helvetica', 'Helvetica');
-        doc.addFileToVFS('Helvetica-Bold', 'Helvetica-Bold');
+        var doc = new jsPDF('p', 'pt', 'a4');
         
         // ENCABEZADO
-        doc.setFont('Helvetica', 'bold');
         doc.setFontSize(18);
         doc.setTextColor(255, 165, 0);
         doc.text('📋 CADUCIDADES NETO', 40, 50);
         
-        doc.setFont('Helvetica', 'normal');
         doc.setFontSize(10);
         doc.setTextColor(80, 80, 80);
         doc.text('Fecha de generación: ' + new Date().toLocaleDateString('es-MX'), 40, 72);
@@ -2017,117 +2004,81 @@ window.generarPDFCaducidades = function() {
         doc.setLineWidth(1);
         doc.line(40, 145, 560, 145);
         
-        // ENCABEZADOS DE TABLA
-        var y = 165;
-        doc.setFont('Helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(255, 165, 0);
-        
-        var colX = {
-            num: 40,
-            nombre: 70,
-            codigo: 200,
-            fecha: 300,
-            cantidad: 380,
-            costo: 440,
-            total: 510
-        };
-        
-        doc.text('#', colX.num, y);
-        doc.text('Producto', colX.nombre, y);
-        doc.text('Código', colX.codigo, y);
-        doc.text('Fecha Cad.', colX.fecha, y);
-        doc.text('Cant.', colX.cantidad, y);
-        doc.text('Costo', colX.costo, y);
-        doc.text('Total', colX.total, y);
-        
-        y += 8;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(40, y, 560, y);
-        y += 10;
-        
-        // LISTA DE PRODUCTOS - con soporte UTF-8
+        // PREPARAR DATOS PARA LA TABLA
+        var tableData = [];
         var totalValor = 0;
-        var maxY = 750;
-        var pageCount = 1;
-        
-        doc.setFont('Helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(40, 40, 40);
         
         items.forEach(function(p, idx) {
             var costoTotal = (p.costo || 0) * (p.cantidad || 0);
             totalValor += costoTotal;
             
-            // Limpiar y preparar texto para evitar problemas con caracteres especiales
-            var nombre = (p.nombre || 'Sin nombre').substring(0, 25);
-            var codigo = (p.codigo || '').substring(0, 12);
-            var fecha = p.fecha || 'N/A';
-            var cantidad = p.cantidad || 0;
-            var costo = (p.costo || 0).toFixed(2);
-            var total = costoTotal.toFixed(2);
-            
-            // Verificar si necesitamos nueva página
-            if (y > maxY) {
-                doc.addPage();
-                pageCount++;
-                y = 50;
-                
-                // Reimprimir encabezados en nueva página
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(10);
-                doc.setTextColor(255, 165, 0);
-                doc.text('📋 CADUCIDADES NETO (cont.)', 40, y);
-                y += 15;
-                
-                doc.setFontSize(9);
-                doc.text('#', colX.num, y);
-                doc.text('Producto', colX.nombre, y);
-                doc.text('Código', colX.codigo, y);
-                doc.text('Fecha Cad.', colX.fecha, y);
-                doc.text('Cant.', colX.cantidad, y);
-                doc.text('Costo', colX.costo, y);
-                doc.text('Total', colX.total, y);
-                y += 8;
-                doc.line(40, y, 560, y);
-                y += 10;
-                doc.setFont('Helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(40, 40, 40);
-            }
-            
-            // Dibujar fila - usando text con string normal
-            doc.text(String(idx + 1), colX.num, y);
-            doc.text(nombre, colX.nombre, y);
-            doc.text(codigo, colX.codigo, y);
-            doc.text(fecha, colX.fecha, y);
-            doc.text(String(cantidad), colX.cantidad, y);
-            doc.text('$' + costo, colX.costo, y);
-            doc.text('$' + total, colX.total, y);
-            
-            y += 12;
+            tableData.push([
+                (idx + 1).toString(),
+                (p.nombre || 'Sin nombre'),
+                (p.codigo || ''),
+                (p.fecha || 'N/A'),
+                (p.cantidad || 0).toString(),
+                '$' + (p.costo || 0).toFixed(2),
+                '$' + costoTotal.toFixed(2)
+            ]);
         });
         
-        // LÍNEA FINAL Y TOTALES
-        y += 5;
-        doc.setDrawColor(255, 165, 0);
-        doc.setLineWidth(1);
-        doc.line(40, y, 560, y);
-        y += 12;
+        // Agregar fila de total
+        tableData.push([
+            '', '', '', '', '', 'TOTAL:', '$' + totalValor.toFixed(2)
+        ]);
         
-        doc.setFont('Helvetica', 'bold');
-        doc.setFontSize(12);
-        doc.setTextColor(255, 165, 0);
-        doc.text('💰 VALOR TOTAL: $' + totalValor.toFixed(2), 40, y);
+        // GENERAR TABLA CON autoTable
+        doc.autoTable({
+            startY: 155,
+            head: [['#', 'Producto', 'Código', 'Fecha Cad.', 'Cant.', 'Costo', 'Total']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [255, 165, 0],
+                textColor: [255, 255, 255],
+                fontSize: 9,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            bodyStyles: {
+                fontSize: 8,
+                textColor: [40, 40, 40]
+            },
+            columnStyles: {
+                0: { cellWidth: 25, halign: 'center' },
+                1: { cellWidth: 95 },
+                2: { cellWidth: 70 },
+                3: { cellWidth: 70, halign: 'center' },
+                4: { cellWidth: 35, halign: 'center' },
+                5: { cellWidth: 50, halign: 'center' },
+                6: { cellWidth: 50, halign: 'center' }
+            },
+            margin: { left: 40, right: 40 },
+            tableWidth: 'auto',
+            styles: {
+                overflow: 'linebreak',
+                cellPadding: 3
+            },
+            didParseCell: function(data) {
+                // Resaltar la fila de total
+                if (data.section === 'body' && data.row.index === tableData.length - 1) {
+                    data.cell.styles.fillColor = [255, 165, 0];
+                    data.cell.styles.textColor = [255, 255, 255];
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fontSize = 10;
+                }
+            }
+        });
         
-        y += 20;
-        doc.setFont('Helvetica', 'normal');
+        // OBTENER LA POSICIÓN FINAL PARA AGREGAR NOTAS
+        var finalY = doc.lastAutoTable.finalY + 10;
+        
+        // AGREGAR NOTAS
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text('* Este reporte muestra los productos que están próximos a caducar.', 40, y);
-        y += 12;
-        doc.text('* Revisa periódicamente para evitar pérdidas por caducidad.', 40, y);
+        doc.text('* Este reporte muestra los productos que están próximos a caducar.', 40, finalY);
+        doc.text('* Revisa periódicamente para evitar pérdidas por caducidad.', 40, finalY + 12);
         
         // PIE DE PÁGINA
         var totalPaginas = doc.internal.getNumberOfPages();
@@ -2135,22 +2086,12 @@ window.generarPDFCaducidades = function() {
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(180, 180, 180);
-            doc.setFont('Helvetica', 'italic');
             doc.text('NETO Inventario - Página ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
             doc.text('Generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
         }
         
-        // Guardar PDF - descarga directa
-        var pdfBlob = doc.output('blob');
-        var url = URL.createObjectURL(pdfBlob);
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = 'caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
+        // DESCARGAR PDF
+        doc.save('caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
         window.mostrarToast('📄 PDF de caducidades generado correctamente', '📄');
         
     } catch (e) {
@@ -2189,62 +2130,63 @@ window.generarPDFCiclico = function() {
         doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
         doc.text('Total productos: ' + items.length, 40, 115);
         
-        var y = 140;
+        // PREPARAR DATOS
+        var tableData = [];
         var totalValor = 0;
-        doc.setFontSize(10);
-        doc.setTextColor(50, 50, 50);
         
-        doc.setTextColor(255, 165, 0);
-        doc.text('Producto', 40, y);
-        doc.text('Cantidad', 200, y);
-        doc.text('Costo/Und', 280, y);
-        doc.text('Total', 360, y);
-        doc.text('Categoria', 420, y);
-        y += 10;
-        doc.line(40, y, 550, y);
-        y += 10;
-        
-        doc.setTextColor(50, 50, 50);
-        items.forEach(function(p, i) {
+        items.forEach(function(p) {
             var valor = (p.costo || 0) * (p.cantidad || 0);
             totalValor += valor;
-            
-            var nombre = p.nombre || 'Sin nombre';
-            var cantidad = p.cantidad || 0;
-            var costo = '$' + (p.costo || 0).toFixed(2);
-            var total = '$' + valor.toFixed(2);
-            var categoria = p.categoria || 'Otros';
-            
-            doc.text(nombre.substring(0, 25), 40, y);
-            doc.text(cantidad.toString(), 200, y);
-            doc.text(costo, 280, y);
-            doc.text(total, 360, y);
-            doc.text(categoria, 420, y);
-            
-            y += 12;
-            if (y > 700) {
-                doc.addPage();
-                y = 50;
-                doc.setFontSize(10);
-                doc.setTextColor(255, 165, 0);
-                doc.text('Producto', 40, y);
-                doc.text('Cantidad', 200, y);
-                doc.text('Costo/Und', 280, y);
-                doc.text('Total', 360, y);
-                doc.text('Categoria', 420, y);
-                y += 10;
-                doc.line(40, y, 550, y);
-                y += 10;
-                doc.setTextColor(50, 50, 50);
-            }
+            tableData.push([
+                (p.nombre || 'Sin nombre'),
+                (p.cantidad || 0).toString(),
+                '$' + (p.costo || 0).toFixed(2),
+                '$' + valor.toFixed(2),
+                (p.categoria || 'Otros')
+            ]);
         });
         
-        y += 10;
-        doc.line(40, y, 550, y);
-        y += 10;
-        doc.setFontSize(14);
-        doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
+        // Agregar total
+        tableData.push([
+            '', '', '', 'TOTAL:', '$' + totalValor.toFixed(2)
+        ]);
+        
+        doc.autoTable({
+            startY: 130,
+            head: [['Producto', 'Cantidad', 'Costo/Und', 'Total', 'Categoria']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [255, 165, 0],
+                textColor: [255, 255, 255],
+                fontSize: 9,
+                fontStyle: 'bold'
+            },
+            bodyStyles: {
+                fontSize: 8,
+                textColor: [40, 40, 40]
+            },
+            columnStyles: {
+                0: { cellWidth: 100 },
+                1: { cellWidth: 50, halign: 'center' },
+                2: { cellWidth: 60, halign: 'center' },
+                3: { cellWidth: 60, halign: 'center' },
+                4: { cellWidth: 80 }
+            },
+            margin: { left: 40, right: 40 },
+            styles: {
+                overflow: 'linebreak',
+                cellPadding: 3
+            },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.row.index === tableData.length - 1) {
+                    data.cell.styles.fillColor = [255, 165, 0];
+                    data.cell.styles.textColor = [255, 255, 255];
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fontSize = 10;
+                }
+            }
+        });
         
         var totalPaginas = doc.internal.getNumberOfPages();
         for (var i = 1; i <= totalPaginas; i++) {
@@ -2264,6 +2206,9 @@ window.generarPDFCiclico = function() {
     }
 };
 
+// ============================================
+// RESTO DE FUNCIONES (CICLICOS, ALEATORIOS, INVENTARIO, ETC.)
+// ============================================
 window.cambiarTabCiclico = function(tab, btn) {
     document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
