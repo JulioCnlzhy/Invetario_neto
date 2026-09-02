@@ -1408,7 +1408,82 @@ window.obtenerEstadoCaducidad = function(dias) {
 };
 
 // ============================================
-// FUNCIÓN PARA GENERAR PDF CON html2canvas + jsPDF
+// FUNCIÓN PARA GENERAR PDF CON html2canvas + jsPDF (CORREGIDA)
+// ============================================
+window.generarPDF = function(htmlContent, nombreArchivo, titulo) {
+    return new Promise(function(resolve, reject) {
+        try {
+            if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
+                window.mostrarToast('❌ Librerías PDF no disponibles. Recarga la página.', '❌');
+                reject('Librerías no disponibles');
+                return;
+            }
+            
+            var pdfContainer = document.getElementById('pdfContent');
+            pdfContainer.innerHTML = htmlContent;
+            
+            window.mostrarToast('📄 Generando PDF...', '⏳');
+            
+            html2canvas(pdfContainer, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: 750,
+                height: pdfContainer.scrollHeight
+            }).then(function(canvas) {
+                var imgData = canvas.toDataURL('image/jpeg', 0.95);
+                var doc = new jsPDF('p', 'mm', 'a4');
+                var imgWidth = 190;
+                var imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                if (imgHeight > 277) {
+                    var pageHeight = 277;
+                    var pages = Math.ceil(imgHeight / pageHeight);
+                    
+                    for (var i = 0; i < pages; i++) {
+                        if (i > 0) doc.addPage();
+                        var sourceY = (i * pageHeight / imgHeight) * canvas.height;
+                        var sourceHeight = Math.min(pageHeight / imgHeight * canvas.height, canvas.height - sourceY);
+                        
+                        var tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = canvas.width;
+                        tempCanvas.height = sourceHeight;
+                        var ctx = tempCanvas.getContext('2d');
+                        ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+                        
+                        var tempImgData = tempCanvas.toDataURL('image/jpeg', 0.95);
+                        var tempImgWidth = imgWidth;
+                        var tempImgHeight = (sourceHeight * tempImgWidth) / canvas.width;
+                        
+                        doc.addImage(tempImgData, 'JPEG', 10, 10, tempImgWidth, tempImgHeight);
+                    }
+                } else {
+                    doc.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
+                }
+                
+                doc.save(nombreArchivo || 'documento_neto.pdf');
+                pdfContainer.innerHTML = '';
+                window.mostrarToast('📄 PDF generado correctamente', '📄');
+                resolve();
+                
+            }).catch(function(err) {
+                console.error('Error generando PDF:', err);
+                pdfContainer.innerHTML = '';
+                window.mostrarToast('❌ Error al generar PDF: ' + err.message, '❌');
+                reject(err);
+            });
+            
+        } catch (e) {
+            console.error('Error generando PDF:', e);
+            window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
+            reject(e);
+        }
+    });
+};
+
+// ============================================
+// FUNCIÓN PARA GENERAR PDF CADUCIDADES
 // ============================================
 window.generarPDFCaducidades = function() {
     var items = window.datos.caducidades || [];
@@ -1417,133 +1492,71 @@ window.generarPDFCaducidades = function() {
         return; 
     }
     
-    try {
-        if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
-            window.mostrarToast('❌ Librerías PDF no disponibles. Recarga la página.', '❌');
-            return;
-        }
+    var totalValor = 0;
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📋 CADUCIDADES NETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead>
+                    <tr>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">#</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Código</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Fecha Cad.</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Cant.</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Costo</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    items.forEach(function(p, idx) {
+        var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        totalValor += costoTotal;
+        var nombre = (p.nombre || 'Sin nombre');
+        var codigo = (p.codigo || '');
+        var fecha = p.fecha || 'N/A';
+        var cantidad = p.cantidad || 0;
+        var costo = (p.costo || 0).toFixed(2);
+        var total = costoTotal.toFixed(2);
         
-        var totalValor = 0;
-        var pdfContainer = document.getElementById('pdfContent');
-        
-        var htmlContent = `
-            <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
-                <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📋 CADUCIDADES NETO</h1>
-                <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
-                <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
-                <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
-                <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                    <thead>
-                        <tr>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">#</th>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: left;">Producto</th>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Código</th>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Fecha Cad.</th>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Cant.</th>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Costo</th>
-                            <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-        
-        items.forEach(function(p, idx) {
-            var costoTotal = (p.costo || 0) * (p.cantidad || 0);
-            totalValor += costoTotal;
-            var nombre = (p.nombre || 'Sin nombre');
-            var codigo = (p.codigo || '');
-            var fecha = p.fecha || 'N/A';
-            var cantidad = p.cantidad || 0;
-            var costo = (p.costo || 0).toFixed(2);
-            var total = costoTotal.toFixed(2);
-            
-            var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
-            htmlContent += `
-                <tr style="background: ${bgColor};">
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: left;">${nombre}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${codigo}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${fecha}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${cantidad}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${costo}</td>
-                    <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${total}</td>
-                </tr>
-            `;
-        });
-        
+        var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
         htmlContent += `
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="5" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL:</td>
-                            <td colspan="2" style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">$${totalValor.toFixed(2)}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
-                    * Este reporte muestra los productos que están próximos a caducar.<br>
-                    * Revisa periódicamente para evitar pérdidas por caducidad.<br><br>
-                    NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
-                </div>
-            </div>
+            <tr style="background: ${bgColor};">
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: left;">${nombre}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${codigo}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${fecha}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${cantidad}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${costo}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${total}</td>
+            </tr>
         `;
-        
-        pdfContainer.innerHTML = htmlContent;
-        window.mostrarToast('📄 Generando PDF...', '⏳');
-        
-        html2canvas(pdfContainer, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: 750,
-            height: pdfContainer.scrollHeight
-        }).then(function(canvas) {
-            var imgData = canvas.toDataURL('image/jpeg', 0.95);
-            var doc = new jsPDF('p', 'mm', 'a4');
-            var imgWidth = 190;
-            var imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            if (imgHeight > 277) {
-                var pageHeight = 277;
-                var pages = Math.ceil(imgHeight / pageHeight);
-                
-                for (var i = 0; i < pages; i++) {
-                    if (i > 0) doc.addPage();
-                    var sourceY = (i * pageHeight / imgHeight) * canvas.height;
-                    var sourceHeight = Math.min(pageHeight / imgHeight * canvas.height, canvas.height - sourceY);
-                    
-                    var tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = canvas.width;
-                    tempCanvas.height = sourceHeight;
-                    var ctx = tempCanvas.getContext('2d');
-                    ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
-                    
-                    var tempImgData = tempCanvas.toDataURL('image/jpeg', 0.95);
-                    var tempImgWidth = imgWidth;
-                    var tempImgHeight = (sourceHeight * tempImgWidth) / canvas.width;
-                    
-                    doc.addImage(tempImgData, 'JPEG', 10, 10, tempImgWidth, tempImgHeight);
-                }
-            } else {
-                doc.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-            }
-            
-            doc.save('caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
-            pdfContainer.innerHTML = '';
-            window.mostrarToast('📄 PDF de caducidades generado correctamente', '📄');
-            
-        }).catch(function(err) {
-            console.error('Error generando PDF:', err);
-            pdfContainer.innerHTML = '';
-            window.mostrarToast('❌ Error al generar PDF: ' + err.message, '❌');
-        });
-        
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
-    }
+    });
+    
+    htmlContent += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL:</td>
+                        <td colspan="2" style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">$${totalValor.toFixed(2)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Este reporte muestra los productos que están próximos a caducar.<br>
+                * Revisa periódicamente para evitar pérdidas por caducidad.<br><br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 // ============================================
@@ -1556,151 +1569,89 @@ window.generarPDFCaducidadesDetalle = function() {
         return; 
     }
     
-    try {
-        if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
-            window.mostrarToast('❌ Librerías PDF no disponibles. Recarga la página.', '❌');
-            return;
-        }
+    var totalValor = 0;
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📋 DETALLE DE CADUCIDADES NETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+                <thead>
+                    <tr>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">#</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Código</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Fecha Cad.</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Cant.</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Costo/Pza</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Total</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Días Rest.</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    var itemsOrdenados = [...items];
+    itemsOrdenados.sort(function(a, b) {
+        var diasA = window.calcularDiasRestantes(a.fecha);
+        var diasB = window.calcularDiasRestantes(b.fecha);
+        if (diasA === null) return 1;
+        if (diasB === null) return -1;
+        return diasA - diasB;
+    });
+    
+    itemsOrdenados.forEach(function(p, idx) {
+        var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        totalValor += costoTotal;
+        var dias = window.calcularDiasRestantes(p.fecha);
+        var estado = window.obtenerEstadoCaducidad(dias);
+        var claseDias = window.obtenerClaseDias(dias);
+        var nombre = (p.nombre || 'Sin nombre');
+        var codigo = (p.codigo || '');
+        var fecha = p.fecha || 'N/A';
+        var cantidad = p.cantidad || 0;
+        var costo = (p.costo || 0).toFixed(2);
+        var total = costoTotal.toFixed(2);
+        var diasTexto = dias !== null ? dias + ' días' : 'N/A';
+        var colorDias = claseDias === 'verde' ? '#4ade80' : (claseDias === 'amarillo' ? '#facc15' : (claseDias === 'naranja' ? '#fb923c' : '#f87171'));
         
-        var totalValor = 0;
-        var pdfContainer = document.getElementById('pdfContent');
-        
-        var htmlContent = `
-            <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
-                <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📋 DETALLE DE CADUCIDADES NETO</h1>
-                <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
-                <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
-                <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
-                <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
-                    <thead>
-                        <tr>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">#</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: left;">Producto</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Código</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Fecha Cad.</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Cant.</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Costo/Pza</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Total</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Días Rest.</th>
-                            <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-        
-        var itemsOrdenados = [...items];
-        itemsOrdenados.sort(function(a, b) {
-            var diasA = window.calcularDiasRestantes(a.fecha);
-            var diasB = window.calcularDiasRestantes(b.fecha);
-            if (diasA === null) return 1;
-            if (diasB === null) return -1;
-            return diasA - diasB;
-        });
-        
-        itemsOrdenados.forEach(function(p, idx) {
-            var costoTotal = (p.costo || 0) * (p.cantidad || 0);
-            totalValor += costoTotal;
-            var dias = window.calcularDiasRestantes(p.fecha);
-            var estado = window.obtenerEstadoCaducidad(dias);
-            var claseDias = window.obtenerClaseDias(dias);
-            var nombre = (p.nombre || 'Sin nombre');
-            var codigo = (p.codigo || '');
-            var fecha = p.fecha || 'N/A';
-            var cantidad = p.cantidad || 0;
-            var costo = (p.costo || 0).toFixed(2);
-            var total = costoTotal.toFixed(2);
-            var diasTexto = dias !== null ? dias + ' días' : 'N/A';
-            var colorDias = claseDias === 'verde' ? '#4ade80' : (claseDias === 'amarillo' ? '#facc15' : (claseDias === 'naranja' ? '#fb923c' : '#f87171'));
-            
-            var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
-            htmlContent += `
-                <tr style="background: ${bgColor};">
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: left;">${nombre}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${codigo}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${fecha}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${cantidad}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">$${costo}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">$${total}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center; color: ${colorDias}; font-weight: bold;">${diasTexto}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${estado.clase === 'critico' ? '#f87171' : (estado.clase === 'urgente' ? '#fb923c' : (estado.clase === 'proximo' ? '#facc15' : '#4ade80'))};">${estado.texto}</td>
-                </tr>
-            `;
-        });
-        
+        var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
         htmlContent += `
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="6" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL GENERAL:</td>
-                            <td colspan="3" style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">$${totalValor.toFixed(2)}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
-                    * Este reporte muestra el detalle completo de caducidades con días restantes.<br>
-                    * Revisa periódicamente para evitar pérdidas por caducidad.<br><br>
-                    NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
-                </div>
-            </div>
+            <tr style="background: ${bgColor};">
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: left;">${nombre}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${codigo}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${fecha}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${cantidad}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">$${costo}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">$${total}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center; color: ${colorDias}; font-weight: bold;">${diasTexto}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${estado.clase === 'critico' ? '#f87171' : (estado.clase === 'urgente' ? '#fb923c' : (estado.clase === 'proximo' ? '#facc15' : '#4ade80'))};">${estado.texto}</td>
+            </tr>
         `;
-        
-        pdfContainer.innerHTML = htmlContent;
-        window.mostrarToast('📄 Generando PDF detallado...', '⏳');
-        
-        html2canvas(pdfContainer, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: 750,
-            height: pdfContainer.scrollHeight
-        }).then(function(canvas) {
-            var imgData = canvas.toDataURL('image/jpeg', 0.95);
-            var doc = new jsPDF('p', 'mm', 'a4');
-            var imgWidth = 190;
-            var imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            if (imgHeight > 277) {
-                var pageHeight = 277;
-                var pages = Math.ceil(imgHeight / pageHeight);
-                
-                for (var i = 0; i < pages; i++) {
-                    if (i > 0) doc.addPage();
-                    var sourceY = (i * pageHeight / imgHeight) * canvas.height;
-                    var sourceHeight = Math.min(pageHeight / imgHeight * canvas.height, canvas.height - sourceY);
-                    
-                    var tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = canvas.width;
-                    tempCanvas.height = sourceHeight;
-                    var ctx = tempCanvas.getContext('2d');
-                    ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
-                    
-                    var tempImgData = tempCanvas.toDataURL('image/jpeg', 0.95);
-                    var tempImgWidth = imgWidth;
-                    var tempImgHeight = (sourceHeight * tempImgWidth) / canvas.width;
-                    
-                    doc.addImage(tempImgData, 'JPEG', 10, 10, tempImgWidth, tempImgHeight);
-                }
-            } else {
-                doc.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-            }
-            
-            doc.save('caducidades_detalle_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
-            pdfContainer.innerHTML = '';
-            window.mostrarToast('📄 PDF detallado generado correctamente', '📄');
-            
-        }).catch(function(err) {
-            console.error('Error generando PDF:', err);
-            pdfContainer.innerHTML = '';
-            window.mostrarToast('❌ Error al generar PDF: ' + err.message, '❌');
-        });
-        
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
-    }
+    });
+    
+    htmlContent += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL GENERAL:</td>
+                        <td colspan="2" style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">$${totalValor.toFixed(2)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Este reporte muestra el detalle completo de caducidades con días restantes.<br>
+                * Revisa periódicamente para evitar pérdidas por caducidad.<br><br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'caducidades_detalle_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 // ============================================
@@ -1798,7 +1749,6 @@ window.renderizarCaducidadesDetalle = function() {
         <div class="fila"><span class="label" style="color:#4ade80;">🟢 OK (&gt;30 días)</span><span class="valor" style="color:#4ade80;">${ok}</span></div>
     `;
     
-    // Actualizar badge
     document.getElementById('badge-cad-detalle').textContent = items.length;
 };
 
@@ -1818,14 +1768,12 @@ window.editarCaducidad = function(index) {
     if (index < 0 || index >= items.length) return;
     var p = items[index];
     
-    // Rellenar el formulario de caducidades con los datos
     document.getElementById('cad-codigo').value = p.codigo || '';
     document.getElementById('cad-nombre').value = p.nombre || '';
     document.getElementById('cad-fecha').value = p.fecha || '';
     document.getElementById('cad-cantidad').value = p.cantidad || 1;
     document.getElementById('cad-costo').value = p.costo || 0;
     
-    // Eliminar el producto y mostrarlo para editar
     window.datos.caducidades.splice(index, 1);
     window.Storage.set('caducidades', window.datos.caducidades);
     window.renderizarCaducidades();
@@ -1833,7 +1781,6 @@ window.editarCaducidad = function(index) {
     window.actualizarBadges();
     window.mostrarToast('✏️ Producto cargado para edición', '✏️');
     
-    // Cambiar a la pestaña de registro
     window.showScreen('caducidades');
     document.getElementById('cad-nombre').focus();
 };
@@ -2216,35 +2163,58 @@ window.generarPDFPromociones = function() {
         window.mostrarToast('⚠️ No hay promociones guardadas', '⚠️');
         return;
     }
-    try {
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        doc.setFontSize(16);
-        doc.setTextColor(255, 165, 0);
-        doc.text('PROMOCIONES NETO', 40, 50);
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
-        doc.text('Total: ' + items.length + ' promociones', 40, 85);
-        
-        var y = 100;
-        doc.setFontSize(10);
-        doc.setTextColor(50, 50, 50);
-        items.forEach(function(p, i) {
-            var texto = (i+1) + '. ' + p.nombre + ' | ' + p.precio + ' | Existencia: ' + (p.existencia || 0) + ' | Estilo: ' + (p.estilo || 'clasico');
-            doc.text(texto, 40, y);
-            y += 14;
-            if (y > 700) {
-                doc.addPage();
-                y = 50;
-            }
-        });
-        doc.save('promociones_neto.pdf');
-        window.mostrarToast('📄 PDF de promociones generado', '📄');
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF', '❌');
-    }
+    
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">🏷️ PROMOCIONES NETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead>
+                    <tr>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">#</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Precio</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Existencia</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Estilo</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    items.forEach(function(p, idx) {
+        var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
+        htmlContent += `
+            <tr style="background: ${bgColor};">
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: left;">${p.nombre}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.precio}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.existencia || 0}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.estilo || 'clasico'}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${new Date(p.fecha).toLocaleDateString('es-MX')}</td>
+            </tr>
+        `;
+    });
+    
+    htmlContent += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL:</td>
+                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">${items.length} promociones</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Este reporte muestra todas las promociones registradas.<br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'promociones_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 // ============================================
@@ -2508,41 +2478,28 @@ window.guardarConteoCiclico = function() {
 };
 
 window.generarPDFCiclicoGuardado = function(totalProductos) {
-    try {
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-            window.mostrarToast('❌ Librería PDF no disponible.', '❌');
-            return;
-        }
-        
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        
-        doc.setFontSize(18);
-        doc.setTextColor(255, 165, 0);
-        doc.text('CONTEO CICLICO NETO - GUARDADO', 40, 50);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 75);
-        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 90);
-        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 105);
-        doc.text('Total productos guardados: ' + totalProductos, 40, 120);
-        
-        doc.setFontSize(12);
-        doc.setTextColor(74, 222, 128);
-        doc.text('✅ Conteo guardado exitosamente en el inventario general', 40, 145);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Los productos han sido actualizados en el inventario', 40, 165);
-        
-        doc.save('conteo_guardado_neto.pdf');
-        window.mostrarToast('📄 PDF de confirmación generado', '📄');
-        
-    } catch (e) {
-        console.error('Error generando PDF de confirmación:', e);
-        window.mostrarToast('❌ Error al generar PDF de confirmación', '❌');
-    }
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">✅ CONTEO CICLICO GUARDADO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📊</div>
+                <h2 style="color: #f97316; font-size: 18px;">Conteo Cíclico Completado</h2>
+                <p style="font-size: 14px; color: #333; margin: 10px 0;">Total de productos guardados: <strong>${totalProductos}</strong></p>
+                <div style="background: #f0fdf4; border: 2px solid #4ade80; border-radius: 10px; padding: 15px; margin: 20px 0;">
+                    <p style="color: #16a34a; font-weight: bold; margin: 0;">✅ Los productos han sido actualizados en el inventario general</p>
+                </div>
+            </div>
+            <div style="margin-top: 20px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'conteo_guardado_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 window.generarPDFCiclico = function() {
@@ -2552,99 +2509,61 @@ window.generarPDFCiclico = function() {
         return;
     }
     
-    try {
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-            window.mostrarToast('❌ Librería PDF no disponible. Recarga la página.', '❌');
-            return;
-        }
-        
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        
-        doc.setFontSize(16);
-        doc.setTextColor(255, 165, 0);
-        doc.text('CONTEO CICLICO NETO', 40, 50);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
-        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 85);
-        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
-        doc.text('Total productos: ' + items.length, 40, 115);
-        
-        var y = 140;
-        var totalValor = 0;
-        doc.setFontSize(10);
-        doc.setTextColor(50, 50, 50);
-        
-        doc.setTextColor(255, 165, 0);
-        doc.text('Producto', 40, y);
-        doc.text('Cantidad', 200, y);
-        doc.text('Costo/Und', 280, y);
-        doc.text('Total', 360, y);
-        doc.text('Categoria', 420, y);
-        y += 10;
-        doc.line(40, y, 550, y);
-        y += 10;
-        
-        doc.setTextColor(50, 50, 50);
-        items.forEach(function(p, i) {
-            var valor = (p.costo || 0) * (p.cantidad || 0);
-            totalValor += valor;
-            
-            var nombre = p.nombre || 'Sin nombre';
-            var cantidad = p.cantidad || 0;
-            var costo = '$' + (p.costo || 0).toFixed(2);
-            var total = '$' + valor.toFixed(2);
-            var categoria = p.categoria || 'Otros';
-            
-            doc.text(nombre.substring(0, 25), 40, y);
-            doc.text(cantidad.toString(), 200, y);
-            doc.text(costo, 280, y);
-            doc.text(total, 360, y);
-            doc.text(categoria, 420, y);
-            
-            y += 12;
-            if (y > 700) {
-                doc.addPage();
-                y = 50;
-                doc.setFontSize(10);
-                doc.setTextColor(255, 165, 0);
-                doc.text('Producto', 40, y);
-                doc.text('Cantidad', 200, y);
-                doc.text('Costo/Und', 280, y);
-                doc.text('Total', 360, y);
-                doc.text('Categoria', 420, y);
-                y += 10;
-                doc.line(40, y, 550, y);
-                y += 10;
-                doc.setTextColor(50, 50, 50);
-            }
-        });
-        
-        y += 10;
-        doc.line(40, y, 550, y);
-        y += 10;
-        doc.setFontSize(14);
-        doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
-        
-        var totalPaginas = doc.internal.getNumberOfPages();
-        for (var i = 1; i <= totalPaginas; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(180, 180, 180);
-            doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
-            doc.text('Generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
-        }
-        
-        doc.save('conteo_ciclico_neto.pdf');
-        window.mostrarToast('📄 PDF de conteo cíclico generado', '📄');
-        
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
-    }
+    var totalValor = 0;
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">🔄 CONTEO CICLICO NETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead>
+                    <tr>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">#</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Cantidad</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Costo/Und</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Total</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Categoría</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    items.forEach(function(p, idx) {
+        var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        totalValor += costoTotal;
+        var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
+        htmlContent += `
+            <tr style="background: ${bgColor};">
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: left;">${p.nombre || 'Sin nombre'}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.cantidad || 0}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${(p.costo || 0).toFixed(2)}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${costoTotal.toFixed(2)}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.categoria || 'Otros'}</td>
+            </tr>
+        `;
+    });
+    
+    htmlContent += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL:</td>
+                        <td colspan="2" style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">$${totalValor.toFixed(2)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Este reporte muestra el conteo cíclico de productos.<br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'conteo_ciclico_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 // ============================================
@@ -2778,70 +2697,88 @@ window.eliminarProductoInventario = function(codigo) {
 window.finalizarInventario = function() {
     var productos = window.datos.inventario || [];
     if (productos.length === 0) { window.mostrarToast('⚠️ No hay productos', '⚠️'); return; }
-    try {
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-        doc.text('INVENTARIO NETO', 40, 50);
-        doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
-        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 85);
-        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
-        var totalCosto = 0, totalSistema = 0, totalSobrante = 0, totalFaltante = 0;
-        
-        var y = 130;
-        doc.setFontSize(8);
-        doc.setTextColor(50, 50, 50);
-        productos.forEach(function(p) {
-            var dif = (p.cantidad || 0) - (p.sistema || 0);
-            var difValor = dif * (p.costo || 0);
-            if (difValor > 0) totalSobrante += difValor;
-            else totalFaltante += Math.abs(difValor);
-            totalCosto += (p.cantidad || 0) * (p.costo || 0);
-            totalSistema += (p.sistema || 0) * (p.costo || 0);
-            doc.text(p.nombre + ' | ' + p.cantidad + ' | ' + (p.sistema || 0) + ' | ' + (dif >= 0 ? '+' : '') + dif + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2), 40, y);
-            y += 12;
-            if (y > 700) { doc.addPage(); y = 50; }
-        });
-        
-        y += 10;
-        doc.setFontSize(11); doc.setTextColor(255, 165, 0);
-        doc.text('Valor Fisico: $' + totalCosto.toFixed(2), 40, y);
-        doc.text('Valor Sistema: $' + totalSistema.toFixed(2), 40, y + 18);
-        doc.setTextColor(74, 222, 128);
-        doc.text('Sobrante: +$' + totalSobrante.toFixed(2), 40, y + 36);
-        doc.setTextColor(248, 113, 113);
-        doc.text('Faltante: -$' + totalFaltante.toFixed(2), 40, y + 54);
-        doc.setTextColor(255, 165, 0);
-        doc.setFontSize(12);
-        var diferencia = totalSobrante - totalFaltante;
-        doc.text('Diferencia Total: $' + diferencia.toFixed(2), 40, y + 76);
-        doc.save('inventario_neto.pdf');
-        
-        var mensaje = 'INVENTARIO NETO\n';
-        mensaje += 'Fecha: ' + new Date().toLocaleDateString('es-MX') + '\n';
-        mensaje += 'Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A') + '\n';
-        mensaje += '────────────────────\n\n';
-        productos.forEach(function(p) {
-            var dif = (p.cantidad || 0) - (p.sistema || 0);
-            mensaje += '• ' + p.nombre + '\n';
-            mensaje += '  Fisico: ' + p.cantidad + ' | Sistema: ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + '\n';
-            mensaje += '  Costo: $' + (p.costo || 0).toFixed(2) + ' | Total: $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2) + '\n\n';
-        });
-        mensaje += '────────────────────\n';
-        mensaje += 'Valor Fisico: $' + totalCosto.toFixed(2) + '\n';
-        mensaje += 'Valor Sistema: $' + totalSistema.toFixed(2) + '\n';
-        mensaje += 'Sobrante: +$' + totalSobrante.toFixed(2) + '\n';
-        mensaje += 'Faltante: -$' + totalFaltante.toFixed(2) + '\n';
-        mensaje += 'Diferencia: $' + diferencia.toFixed(2) + '\n';
-        mensaje += 'Tiendas NETO';
-        var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(mensaje);
-        window.open(url, '_blank');
-        window.mostrarToast('📤 PDF y WhatsApp enviados', '📤');
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF', '❌');
-    }
+    
+    var totalCosto = 0, totalSistema = 0, totalSobrante = 0, totalFaltante = 0;
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📊 INVENTARIO NETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+                <thead>
+                    <tr>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">#</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Código</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Físico</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Sistema</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Diferencia</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Costo</th>
+                        <th style="background: #f97316; color: white; padding: 5px; border: 1px solid #ddd; text-align: center;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    productos.forEach(function(p, idx) {
+        var dif = (p.cantidad || 0) - (p.sistema || 0);
+        var difValor = dif * (p.costo || 0);
+        if (difValor > 0) totalSobrante += difValor;
+        else totalFaltante += Math.abs(difValor);
+        var total = (p.cantidad || 0) * (p.costo || 0);
+        totalCosto += total;
+        totalSistema += (p.sistema || 0) * (p.costo || 0);
+        var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
+        htmlContent += `
+            <tr style="background: ${bgColor};">
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: left;">${p.nombre || 'Sin nombre'}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${p.codigo || ''}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${p.cantidad || 0}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">${p.sistema || 0}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center; color: ${dif >= 0 ? '#4ade80' : '#f87171'}; font-weight: bold;">${dif >= 0 ? '+' : ''}${dif}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">$${(p.costo || 0).toFixed(2)}</td>
+                <td style="padding: 3px 5px; border: 1px solid #ddd; text-align: center;">$${total.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    var diferencia = totalSobrante - totalFaltante;
+    htmlContent += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 11px;">TOTAL FISICO:</td>
+                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 12px;">$${totalCosto.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #60a5fa; color: white; font-size: 11px;">TOTAL SISTEMA:</td>
+                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #60a5fa; color: white; font-size: 12px;">$${totalSistema.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #4ade80; color: white; font-size: 11px;">🟢 SOBRANTE:</td>
+                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #4ade80; color: white; font-size: 12px;">+$${totalSobrante.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f87171; color: white; font-size: 11px;">🔴 FALTANTE:</td>
+                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f87171; color: white; font-size: 12px;">-$${totalFaltante.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 13px;">📊 DIFERENCIA TOTAL:</td>
+                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 14px;">$${diferencia.toFixed(2)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Inventario generado automáticamente.<br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'inventario_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 // ============================================
@@ -2977,198 +2914,210 @@ window.limpiarAleatorios = function() {
 window.guardarAleatorios = function() {
     var items = window.datos.aleatorios || [];
     if (items.length === 0) { window.mostrarToast('⚠️ No hay productos', '⚠️'); return; }
-    try {
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        doc.setFontSize(16); doc.setTextColor(255, 165, 0);
-        doc.text('21 PRODUCTOS ALEATORIOS NETO', 40, 50);
-        doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
-        doc.text('Total: ' + items.length + ' productos', 40, 85);
-        var totalValor = 0;
-        var y = 110;
-        doc.setFontSize(10); doc.setTextColor(50, 50, 50);
-        items.forEach(function(p, i) {
-            var valor = (p.costo || 0) * (p.cantidad || 0);
-            totalValor += valor;
-            doc.text((i+1) + '. ' + p.nombre + ' | ' + p.cantidad + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + valor.toFixed(2), 40, y);
-            y += 14;
-            if (y > 700) { doc.addPage(); y = 50; }
-        });
-        y += 10;
-        doc.setFontSize(12); doc.setTextColor(255, 165, 0);
-        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
-        doc.save('aleatorios_neto.pdf');
-        window.mostrarToast('📤 PDF enviado', '📤');
-    } catch (e) {
-        console.error('Error generando PDF:', e);
-        window.mostrarToast('❌ Error al generar PDF', '❌');
-    }
+    
+    var totalValor = 0;
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">🎲 21 PRODUCTOS ALEATORIOS NETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead>
+                    <tr>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">#</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Cantidad</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Costo/Und</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Total</th>
+                        <th style="background: #f97316; color: white; padding: 6px; border: 1px solid #ddd; text-align: center;">Categoría</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    items.forEach(function(p, idx) {
+        var valor = (p.costo || 0) * (p.cantidad || 0);
+        totalValor += valor;
+        var bgColor = idx % 2 === 0 ? '#ffffff' : '#f9f9f9';
+        htmlContent += `
+            <tr style="background: ${bgColor};">
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${idx + 1}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: left;">${p.nombre || 'Sin nombre'}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.cantidad || 0}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${(p.costo || 0).toFixed(2)}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">$${valor.toFixed(2)}</td>
+                <td style="padding: 4px 6px; border: 1px solid #ddd; text-align: center;">${p.categoria || 'Otros'}</td>
+            </tr>
+        `;
+    });
+    
+    htmlContent += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold; background: #f97316; color: white; font-size: 12px;">TOTAL:</td>
+                        <td colspan="2" style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; background: #f97316; color: white; font-size: 13px;">$${totalValor.toFixed(2)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top: 15px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Lista de 21 productos aleatorios generada automáticamente.<br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'aleatorios_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
 // ============================================
 // EXPORTAR BACKUP EN PDF
 // ============================================
 window.exportarDatosPDF = function() {
-    try {
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-            window.mostrarToast('❌ Librería PDF no disponible. Recarga la página.', '❌');
-            return;
-        }
-        
-        var { jsPDF } = window.jspdf;
-        var doc = new jsPDF('p', 'pt', 'a4');
-        
-        doc.setFontSize(18);
-        doc.setTextColor(255, 165, 0);
-        doc.text('NETO INVENTARIO - BACKUP COMPLETO', 40, 50);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Fecha de exportacion: ' + new Date().toLocaleString('es-MX'), 40, 75);
-        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 90);
-        doc.text('Tienda: MIGUEL HIDALGO PUEBLA', 40, 105);
-        doc.text('Direccion: 16 DE SEPTIEMBRE O 9807, PUEBLA', 40, 120);
-        
-        var y = 150;
-        var inventario = window.datos.inventario || [];
-        var caducidades = window.datos.caducidades || [];
-        var promociones = window.datos.promociones || [];
-        var ciclicos = window.datos.ciclicos || [];
-        var aleatorios = window.datos.aleatorios || [];
-        
-        doc.setFontSize(14);
-        doc.setTextColor(255, 165, 0);
-        doc.text('INVENTARIO GENERAL (' + inventario.length + ' productos)', 40, y);
-        y += 18;
-        
-        if (inventario.length > 0) {
-            var totalInv = 0, totalSis = 0;
-            doc.setFontSize(8);
-            doc.setTextColor(50, 50, 50);
-            inventario.forEach(function(p) {
-                totalInv += (p.cantidad || 0) * (p.costo || 0);
-                totalSis += (p.sistema || 0) * (p.costo || 0);
-                var dif = (p.cantidad || 0) - (p.sistema || 0);
-                var texto = p.nombre + ' | Fisico: ' + p.cantidad + ' | Sistema: ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + ' | Costo: $' + (p.costo || 0).toFixed(2);
-                doc.text(texto, 45, y);
-                y += 12;
-                if (y > 720) { doc.addPage(); y = 50; }
-            });
-            y += 5;
-            doc.setFontSize(10);
-            doc.setTextColor(255, 165, 0);
-            doc.text('Valor Fisico: $' + totalInv.toFixed(2) + ' | Valor Sistema: $' + totalSis.toFixed(2), 45, y);
-            y += 20;
-        } else {
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Sin productos en inventario', 45, y);
-            y += 20;
-        }
-        
-        doc.setFontSize(14);
-        doc.setTextColor(248, 113, 113);
-        doc.text('CADUCIDADES (' + caducidades.length + ' productos)', 40, y);
-        y += 18;
-        
-        if (caducidades.length > 0) {
-            doc.setFontSize(8);
-            doc.setTextColor(50, 50, 50);
-            caducidades.forEach(function(p) {
-                doc.text(p.nombre + ' | Caduca: ' + p.fecha + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
-                y += 12;
-                if (y > 720) { doc.addPage(); y = 50; }
-            });
-            y += 20;
-        } else {
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Sin productos con caducidad', 45, y);
-            y += 20;
-        }
-        
-        doc.setFontSize(14);
-        doc.setTextColor(251, 191, 36);
-        doc.text('PROMOCIONES (' + promociones.length + ')', 40, y);
-        y += 18;
-        
-        if (promociones.length > 0) {
-            doc.setFontSize(8);
-            doc.setTextColor(50, 50, 50);
-            promociones.forEach(function(p) {
-                doc.text(p.nombre + ' | ' + p.precio + ' | Existencia: ' + (p.existencia || 0), 45, y);
-                y += 12;
-                if (y > 720) { doc.addPage(); y = 50; }
-            });
-            y += 20;
-        } else {
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Sin promociones registradas', 45, y);
-            y += 20;
-        }
-        
-        doc.setFontSize(14);
-        doc.setTextColor(255, 165, 0);
-        doc.text('CONTEO CICLICO (' + ciclicos.length + ' productos)', 40, y);
-        y += 18;
-        
-        if (ciclicos.length > 0) {
-            doc.setFontSize(8);
-            doc.setTextColor(50, 50, 50);
-            ciclicos.forEach(function(p) {
-                doc.text(p.nombre + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
-                y += 12;
-                if (y > 720) { doc.addPage(); y = 50; }
-            });
-            y += 20;
-        } else {
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Sin productos en conteo ciclico', 45, y);
-            y += 20;
-        }
-        
-        doc.setFontSize(14);
-        doc.setTextColor(124, 58, 237);
-        doc.text('21 ALEATORIOS (' + aleatorios.length + '/21 productos)', 40, y);
-        y += 18;
-        
-        if (aleatorios.length > 0) {
-            doc.setFontSize(8);
-            doc.setTextColor(50, 50, 50);
-            aleatorios.forEach(function(p, i) {
-                doc.text((i+1) + '. ' + p.nombre + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
-                y += 12;
-                if (y > 720) { doc.addPage(); y = 50; }
-            });
-            y += 20;
-        } else {
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Sin productos aleatorios', 45, y);
-            y += 20;
-        }
-        
-        var totalPaginas = doc.internal.getNumberOfPages();
-        for (var i = 1; i <= totalPaginas; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(180, 180, 180);
-            doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
-            doc.text('Backup generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
-        }
-        
-        doc.save('neto_backup_' + new Date().toISOString().slice(0,10) + '.pdf');
-        window.mostrarToast('📄 Backup PDF generado correctamente', '📄');
-        
-    } catch (e) {
-        console.error('Error generando PDF de backup:', e);
-        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
+    var inventario = window.datos.inventario || [];
+    var caducidades = window.datos.caducidades || [];
+    var promociones = window.datos.promociones || [];
+    var ciclicos = window.datos.ciclicos || [];
+    var aleatorios = window.datos.aleatorios || [];
+    
+    var htmlContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
+            <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📦 NETO INVENTARIO - BACKUP COMPLETO</h1>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Fecha: ${new Date().toLocaleDateString('es-MX')} - Hora: ${new Date().toLocaleTimeString('es-MX')}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 3px;">Usuario: ${window.usuarioActual ? window.usuarioActual.nombre : 'N/A'}</p>
+            <p style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px;">Tienda: MIGUEL HIDALGO PUEBLA</p>
+            <hr style="border: 2px solid #f97316; margin-bottom: 15px;">
+    `;
+    
+    // Inventario
+    htmlContent += `<h2 style="color: #f97316; font-size: 16px; margin-top: 15px;">📊 INVENTARIO GENERAL (${inventario.length} productos)</h2>`;
+    if (inventario.length > 0) {
+        htmlContent += `<table style="width:100%; border-collapse:collapse; font-size:9px; margin-bottom:15px;">
+            <thead><tr><th style="background:#f97316;color:white;padding:4px;border:1px solid #ddd;">#</th>
+            <th style="background:#f97316;color:white;padding:4px;border:1px solid #ddd;text-align:left;">Producto</th>
+            <th style="background:#f97316;color:white;padding:4px;border:1px solid #ddd;">Código</th>
+            <th style="background:#f97316;color:white;padding:4px;border:1px solid #ddd;">Físico</th>
+            <th style="background:#f97316;color:white;padding:4px;border:1px solid #ddd;">Sistema</th>
+            <th style="background:#f97316;color:white;padding:4px;border:1px solid #ddd;">Costo</th></tr></thead><tbody>`;
+        inventario.forEach(function(p, i) {
+            htmlContent += `<tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${i+1}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:left;">${p.nombre||'Sin nombre'}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.codigo||''}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.cantidad||0}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.sistema||0}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">$${(p.costo||0).toFixed(2)}</td>
+            </tr>`;
+        });
+        htmlContent += `</tbody></table>`;
+    } else {
+        htmlContent += `<p style="color:#94a3b8;font-size:10px;">Sin productos en inventario</p>`;
     }
+    
+    // Caducidades
+    htmlContent += `<h2 style="color: #ef4444; font-size: 16px; margin-top: 15px;">⏰ CADUCIDADES (${caducidades.length} productos)</h2>`;
+    if (caducidades.length > 0) {
+        htmlContent += `<table style="width:100%; border-collapse:collapse; font-size:9px; margin-bottom:15px;">
+            <thead><tr><th style="background:#ef4444;color:white;padding:4px;border:1px solid #ddd;">#</th>
+            <th style="background:#ef4444;color:white;padding:4px;border:1px solid #ddd;text-align:left;">Producto</th>
+            <th style="background:#ef4444;color:white;padding:4px;border:1px solid #ddd;">Código</th>
+            <th style="background:#ef4444;color:white;padding:4px;border:1px solid #ddd;">Fecha Cad.</th>
+            <th style="background:#ef4444;color:white;padding:4px;border:1px solid #ddd;">Cant.</th>
+            <th style="background:#ef4444;color:white;padding:4px;border:1px solid #ddd;">Costo</th></tr></thead><tbody>`;
+        caducidades.forEach(function(p, i) {
+            htmlContent += `<tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${i+1}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:left;">${p.nombre||'Sin nombre'}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.codigo||''}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.fecha||'N/A'}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.cantidad||0}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">$${(p.costo||0).toFixed(2)}</td>
+            </tr>`;
+        });
+        htmlContent += `</tbody></table>`;
+    } else {
+        htmlContent += `<p style="color:#94a3b8;font-size:10px;">Sin productos con caducidad</p>`;
+    }
+    
+    // Promociones
+    htmlContent += `<h2 style="color: #facc15; font-size: 16px; margin-top: 15px;">🏷️ PROMOCIONES (${promociones.length})</h2>`;
+    if (promociones.length > 0) {
+        htmlContent += `<table style="width:100%; border-collapse:collapse; font-size:9px; margin-bottom:15px;">
+            <thead><tr><th style="background:#facc15;color:#333;padding:4px;border:1px solid #ddd;">#</th>
+            <th style="background:#facc15;color:#333;padding:4px;border:1px solid #ddd;text-align:left;">Producto</th>
+            <th style="background:#facc15;color:#333;padding:4px;border:1px solid #ddd;">Precio</th>
+            <th style="background:#facc15;color:#333;padding:4px;border:1px solid #ddd;">Existencia</th></tr></thead><tbody>`;
+        promociones.forEach(function(p, i) {
+            htmlContent += `<tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${i+1}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:left;">${p.nombre||'Sin nombre'}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.precio||''}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.existencia||0}</td>
+            </tr>`;
+        });
+        htmlContent += `</tbody></table>`;
+    } else {
+        htmlContent += `<p style="color:#94a3b8;font-size:10px;">Sin promociones registradas</p>`;
+    }
+    
+    // Conteo Cíclico
+    htmlContent += `<h2 style="color: #2dd4bf; font-size: 16px; margin-top: 15px;">🔄 CONTEO CICLICO (${ciclicos.length} productos)</h2>`;
+    if (ciclicos.length > 0) {
+        htmlContent += `<table style="width:100%; border-collapse:collapse; font-size:9px; margin-bottom:15px;">
+            <thead><tr><th style="background:#2dd4bf;color:#333;padding:4px;border:1px solid #ddd;">#</th>
+            <th style="background:#2dd4bf;color:#333;padding:4px;border:1px solid #ddd;text-align:left;">Producto</th>
+            <th style="background:#2dd4bf;color:#333;padding:4px;border:1px solid #ddd;">Cantidad</th>
+            <th style="background:#2dd4bf;color:#333;padding:4px;border:1px solid #ddd;">Costo</th></tr></thead><tbody>`;
+        ciclicos.forEach(function(p, i) {
+            htmlContent += `<tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${i+1}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:left;">${p.nombre||'Sin nombre'}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.cantidad||0}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">$${(p.costo||0).toFixed(2)}</td>
+            </tr>`;
+        });
+        htmlContent += `</tbody></table>`;
+    } else {
+        htmlContent += `<p style="color:#94a3b8;font-size:10px;">Sin productos en conteo cíclico</p>`;
+    }
+    
+    // 21 Aleatorios
+    htmlContent += `<h2 style="color: #a78bfa; font-size: 16px; margin-top: 15px;">🎲 21 ALEATORIOS (${aleatorios.length}/21 productos)</h2>`;
+    if (aleatorios.length > 0) {
+        htmlContent += `<table style="width:100%; border-collapse:collapse; font-size:9px; margin-bottom:15px;">
+            <thead><tr><th style="background:#a78bfa;color:#fff;padding:4px;border:1px solid #ddd;">#</th>
+            <th style="background:#a78bfa;color:#fff;padding:4px;border:1px solid #ddd;text-align:left;">Producto</th>
+            <th style="background:#a78bfa;color:#fff;padding:4px;border:1px solid #ddd;">Cantidad</th>
+            <th style="background:#a78bfa;color:#fff;padding:4px;border:1px solid #ddd;">Costo</th></tr></thead><tbody>`;
+        aleatorios.forEach(function(p, i) {
+            htmlContent += `<tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${i+1}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:left;">${p.nombre||'Sin nombre'}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">${p.cantidad||0}</td>
+                <td style="padding:3px 4px;border:1px solid #ddd;text-align:center;">$${(p.costo||0).toFixed(2)}</td>
+            </tr>`;
+        });
+        htmlContent += `</tbody></table>`;
+    } else {
+        htmlContent += `<p style="color:#94a3b8;font-size:10px;">Sin productos aleatorios</p>`;
+    }
+    
+    htmlContent += `
+            <div style="margin-top: 20px; font-size: 9px; color: #999; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
+                * Backup completo generado automáticamente.<br>
+                NETO Inventario - Generado: ${new Date().toLocaleString('es-MX')}
+            </div>
+        </div>
+    `;
+    
+    window.generarPDF(htmlContent, 'neto_backup_' + new Date().toISOString().slice(0,10) + '.pdf');
 };
 
+// ============================================
+// IMPORTAR DATOS
+// ============================================
 window.importarDatos = function() {
     var input = document.createElement('input');
     input.type = 'file';
