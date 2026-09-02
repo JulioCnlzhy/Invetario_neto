@@ -17,57 +17,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
-    <!-- Librerías para PDF con soporte UTF-8 - Cargadas con verificación -->
+    <!-- Librerías para PDF - CARGA MEJORADA -->
     <script>
-        // Función para cargar scripts con fallback
-        function cargarScript(url, fallbackUrl, callback) {
+        // Función para cargar scripts con múltiples fallbacks
+        function cargarScriptConFallback(urls, callback, intento) {
+            intento = intento || 0;
+            if (intento >= urls.length) {
+                console.error('❌ Todas las fuentes fallaron');
+                callback(false);
+                return;
+            }
+            
             var script = document.createElement('script');
-            script.src = url;
-            script.onload = callback;
+            script.src = urls[intento];
+            script.onload = function() {
+                console.log('✅ Cargado:', urls[intento]);
+                callback(true);
+            };
             script.onerror = function() {
-                console.warn('Error cargando ' + url + ', intentando fallback...');
-                if (fallbackUrl) {
-                    var fallbackScript = document.createElement('script');
-                    fallbackScript.src = fallbackUrl;
-                    fallbackScript.onload = callback;
-                    fallbackScript.onerror = function() {
-                        console.error('Error cargando fallback también');
-                        callback();
-                    };
-                    document.head.appendChild(fallbackScript);
-                } else {
-                    callback();
-                }
+                console.warn('⚠️ Falló:', urls[intento]);
+                cargarScriptConFallback(urls, callback, intento + 1);
             };
             document.head.appendChild(script);
         }
         
+        // Fuentes alternativas para html2canvas
+        var html2canvasUrls = [
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+            'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+            'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js'
+        ];
+        
+        // Fuentes alternativas para jsPDF
+        var jsPDFUrls = [
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+            'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+            'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+        ];
+        
         var libreriasCargadas = 0;
         var totalLibrerias = 2;
         
-        function verificarLibrerias() {
+        function verificarCargaCompleta() {
             libreriasCargadas++;
+            console.log('📦 Librería cargada:', libreriasCargadas, '/', totalLibrerias);
             if (libreriasCargadas >= totalLibrerias) {
-                console.log('✅ Librerías PDF cargadas correctamente');
-                if (window.initApp && window.usuarioActual) {
+                console.log('✅ Todas las librerías PDF cargadas correctamente');
+                window.libreriasPDFListas = true;
+                // Inicializar app si ya hay usuario
+                if (window.usuarioActual && typeof window.initApp === 'function') {
                     window.initApp();
                 }
+                window.mostrarToast('✅ Librerías PDF listas', '📄');
             }
         }
         
         // Cargar html2canvas
-        cargarScript(
-            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-            'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
-            verificarLibrerias
-        );
+        cargarScriptConFallback(html2canvasUrls, function(exito) {
+            if (exito) {
+                verificarCargaCompleta();
+            } else {
+                console.error('❌ No se pudo cargar html2canvas');
+                window.mostrarToast('⚠️ No se pudo cargar html2canvas', '⚠️');
+            }
+        });
         
         // Cargar jsPDF
-        cargarScript(
-            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-            'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-            verificarLibrerias
-        );
+        cargarScriptConFallback(jsPDFUrls, function(exito) {
+            if (exito) {
+                verificarCargaCompleta();
+            } else {
+                console.error('❌ No se pudo cargar jsPDF');
+                window.mostrarToast('⚠️ No se pudo cargar jsPDF', '⚠️');
+            }
+        });
     </script>
     
     <style>
@@ -925,6 +948,39 @@
             .caducidad-item .row1 { flex-direction: column; align-items: stretch; }
             .caducidad-item .row2 { flex-direction: column; align-items: stretch; }
         }
+        
+        /* Estado de carga de librerías */
+        .loading-pdf {
+            background: #1e293b;
+            border: 1px solid #f97316;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .loading-pdf .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #334155;
+            border-top-color: #f97316;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-pdf .mensaje {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            vertical-align: middle;
+        }
+        .loading-pdf .estado {
+            color: #f97316;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -952,6 +1008,11 @@
         </button>
         <div id="login-error" class="login-error">
             <i class="fas fa-exclamation-circle"></i> Código incorrecto. Intenta de nuevo.
+        </div>
+        <!-- Indicador de carga de librerías -->
+        <div id="loaderStatus" class="loading-pdf" style="margin-top:12px;">
+            <div class="spinner"></div>
+            <span class="mensaje">Cargando librerías PDF... <span class="estado" id="loaderText">⏳</span></span>
         </div>
     </div>
 </section>
@@ -1409,6 +1470,7 @@ window.indiceEditando = -1;
 window.tipoEditando = '';
 window.estiloSeleccionado = 'coca';
 window.ordenCaducidades = 'fecha';
+window.libreriasPDFListas = false;
 
 // ============================================
 // SISTEMA DE NOTIFICACIONES
@@ -1422,21 +1484,6 @@ window.mostrarToast = function(mensaje, icono = 'ℹ️') {
     container.classList.add('show');
     clearTimeout(window.toastTimeout);
     window.toastTimeout = setTimeout(function() { container.classList.remove('show'); }, 3500);
-};
-
-// ============================================
-// FUNCIÓN PARA VERIFICAR LIBRERÍAS PDF
-// ============================================
-window.verificarLibreriasPDF = function() {
-    if (typeof html2canvas === 'undefined') {
-        window.mostrarToast('⚠️ Cargando librerías PDF...', '⏳');
-        return false;
-    }
-    if (typeof jsPDF === 'undefined') {
-        window.mostrarToast('⚠️ Cargando librerías PDF...', '⏳');
-        return false;
-    }
-    return true;
 };
 
 // ============================================
@@ -1472,15 +1519,16 @@ window.obtenerEstadoCaducidad = function(dias) {
 };
 
 // ============================================
-// FUNCIÓN PARA GENERAR PDF CON html2canvas + jsPDF (CORREGIDA CON VERIFICACIÓN)
+// FUNCIÓN PARA GENERAR PDF - VERSIÓN FINAL ESTABLE
 // ============================================
-window.generarPDF = function(htmlContent, nombreArchivo, titulo) {
+window.generarPDF = function(htmlContent, nombreArchivo) {
     return new Promise(function(resolve, reject) {
         try {
-            // Verificar que las librerías estén cargadas
+            // Verificar librerías
             if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
-                window.mostrarToast('⚠️ Las librerías PDF aún no se cargan. Espera un momento y vuelve a intentar.', '⏳');
-                // Intentar cargar las librerías nuevamente
+                window.mostrarToast('⚠️ Librerías PDF no disponibles. Reintentando...', '⏳');
+                
+                // Intentar cargar nuevamente
                 var script = document.createElement('script');
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
                 document.head.appendChild(script);
@@ -1491,13 +1539,14 @@ window.generarPDF = function(htmlContent, nombreArchivo, titulo) {
                 
                 setTimeout(function() {
                     if (typeof html2canvas !== 'undefined' && typeof jsPDF !== 'undefined') {
+                        window.libreriasPDFListas = true;
                         window.mostrarToast('✅ Librerías cargadas. Intenta de nuevo.', '✅');
                         reject('Librerías cargadas después del intento');
                     } else {
-                        window.mostrarToast('❌ No se pudieron cargar las librerías. Revisa tu conexión.', '❌');
+                        window.mostrarToast('❌ No se pudieron cargar las librerías. Verifica tu conexión.', '❌');
                         reject('Librerías no disponibles');
                     }
-                }, 5000);
+                }, 8000);
                 return;
             }
             
@@ -1512,7 +1561,7 @@ window.generarPDF = function(htmlContent, nombreArchivo, titulo) {
                 logging: false,
                 backgroundColor: '#ffffff',
                 width: 750,
-                height: pdfContainer.scrollHeight
+                height: pdfContainer.scrollHeight + 50
             }).then(function(canvas) {
                 var imgData = canvas.toDataURL('image/jpeg', 0.95);
                 var doc = new jsPDF('p', 'mm', 'a4');
