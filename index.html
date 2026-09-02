@@ -17,9 +17,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
-    <!-- Librerías para PDF con soporte UTF-8 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Librerías para PDF con soporte UTF-8 - Cargadas con verificación -->
+    <script>
+        // Función para cargar scripts con fallback
+        function cargarScript(url, fallbackUrl, callback) {
+            var script = document.createElement('script');
+            script.src = url;
+            script.onload = callback;
+            script.onerror = function() {
+                console.warn('Error cargando ' + url + ', intentando fallback...');
+                if (fallbackUrl) {
+                    var fallbackScript = document.createElement('script');
+                    fallbackScript.src = fallbackUrl;
+                    fallbackScript.onload = callback;
+                    fallbackScript.onerror = function() {
+                        console.error('Error cargando fallback también');
+                        callback();
+                    };
+                    document.head.appendChild(fallbackScript);
+                } else {
+                    callback();
+                }
+            };
+            document.head.appendChild(script);
+        }
+        
+        var libreriasCargadas = 0;
+        var totalLibrerias = 2;
+        
+        function verificarLibrerias() {
+            libreriasCargadas++;
+            if (libreriasCargadas >= totalLibrerias) {
+                console.log('✅ Librerías PDF cargadas correctamente');
+                if (window.initApp && window.usuarioActual) {
+                    window.initApp();
+                }
+            }
+        }
+        
+        // Cargar html2canvas
+        cargarScript(
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+            'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+            verificarLibrerias
+        );
+        
+        // Cargar jsPDF
+        cargarScript(
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+            'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+            verificarLibrerias
+        );
+    </script>
     
     <style>
         /* ========== ESTILOS COMPLETOS ========== */
@@ -1376,6 +1425,21 @@ window.mostrarToast = function(mensaje, icono = 'ℹ️') {
 };
 
 // ============================================
+// FUNCIÓN PARA VERIFICAR LIBRERÍAS PDF
+// ============================================
+window.verificarLibreriasPDF = function() {
+    if (typeof html2canvas === 'undefined') {
+        window.mostrarToast('⚠️ Cargando librerías PDF...', '⏳');
+        return false;
+    }
+    if (typeof jsPDF === 'undefined') {
+        window.mostrarToast('⚠️ Cargando librerías PDF...', '⏳');
+        return false;
+    }
+    return true;
+};
+
+// ============================================
 // FUNCIÓN PARA CALCULAR DÍAS RESTANTES
 // ============================================
 window.calcularDiasRestantes = function(fechaCaducidad) {
@@ -1408,14 +1472,32 @@ window.obtenerEstadoCaducidad = function(dias) {
 };
 
 // ============================================
-// FUNCIÓN PARA GENERAR PDF CON html2canvas + jsPDF (CORREGIDA)
+// FUNCIÓN PARA GENERAR PDF CON html2canvas + jsPDF (CORREGIDA CON VERIFICACIÓN)
 // ============================================
 window.generarPDF = function(htmlContent, nombreArchivo, titulo) {
     return new Promise(function(resolve, reject) {
         try {
+            // Verificar que las librerías estén cargadas
             if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
-                window.mostrarToast('❌ Librerías PDF no disponibles. Recarga la página.', '❌');
-                reject('Librerías no disponibles');
+                window.mostrarToast('⚠️ Las librerías PDF aún no se cargan. Espera un momento y vuelve a intentar.', '⏳');
+                // Intentar cargar las librerías nuevamente
+                var script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                document.head.appendChild(script);
+                
+                var script2 = document.createElement('script');
+                script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                document.head.appendChild(script2);
+                
+                setTimeout(function() {
+                    if (typeof html2canvas !== 'undefined' && typeof jsPDF !== 'undefined') {
+                        window.mostrarToast('✅ Librerías cargadas. Intenta de nuevo.', '✅');
+                        reject('Librerías cargadas después del intento');
+                    } else {
+                        window.mostrarToast('❌ No se pudieron cargar las librerías. Revisa tu conexión.', '❌');
+                        reject('Librerías no disponibles');
+                    }
+                }, 5000);
                 return;
             }
             
