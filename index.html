@@ -1180,7 +1180,6 @@ window.generarPDFCaducidades = function() {
     }
     
     try {
-        // Verificar que las librerías estén disponibles
         if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
             window.mostrarToast('❌ Librerías PDF no disponibles. Recarga la página.', '❌');
             return;
@@ -1189,7 +1188,6 @@ window.generarPDFCaducidades = function() {
         var totalValor = 0;
         var pdfContainer = document.getElementById('pdfContent');
         
-        // Construir el HTML para el PDF
         var htmlContent = `
             <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 750px; margin: 0 auto; background: white; color: #333;">
                 <h1 style="color: #f97316; text-align: center; font-size: 22px; margin-bottom: 5px;">📋 CADUCIDADES NETO</h1>
@@ -1253,13 +1251,9 @@ window.generarPDFCaducidades = function() {
             </div>
         `;
         
-        // Poner el contenido en el contenedor oculto
         pdfContainer.innerHTML = htmlContent;
-        
-        // Mostrar toast de espera
         window.mostrarToast('📄 Generando PDF...', '⏳');
         
-        // Usar html2canvas para capturar el contenido
         html2canvas(pdfContainer, {
             scale: 2,
             useCORS: true,
@@ -1273,11 +1267,9 @@ window.generarPDFCaducidades = function() {
             var imgWidth = 190;
             var imgHeight = (canvas.height * imgWidth) / canvas.width;
             
-            // Si la imagen es muy alta, dividir en múltiples páginas
             if (imgHeight > 277) {
                 var pageHeight = 277;
                 var pages = Math.ceil(imgHeight / pageHeight);
-                var currentY = 0;
                 
                 for (var i = 0; i < pages; i++) {
                     if (i > 0) doc.addPage();
@@ -1300,10 +1292,7 @@ window.generarPDFCaducidades = function() {
                 doc.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
             }
             
-            // Guardar PDF
             doc.save('caducidades_neto_' + new Date().toISOString().slice(0,10) + '.pdf');
-            
-            // Limpiar contenedor
             pdfContainer.innerHTML = '';
             window.mostrarToast('📄 PDF de caducidades generado correctamente', '📄');
             
@@ -1320,13 +1309,1814 @@ window.generarPDFCaducidades = function() {
 };
 
 // ============================================
-// RESTO DE FUNCIONES (CICLICOS, ALEATORIOS, INVENTARIO, ETC.)
+// FUNCIÓN MEJORADA PARA LEER CÓDIGO DE BARRAS
 // ============================================
-// ... (el resto del código JavaScript continúa con las mismas funciones que antes)
-// Incluir aquí todas las funciones que estaban en la versión anterior
+window.leerCodigoBarras = function(imagenDataURL, callback) {
+    if (typeof Quagga === 'undefined') {
+        callback('❌ Quagga no está cargado', null);
+        return;
+    }
+    try {
+        var img = new Image();
+        img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var maxSize = 800;
+            var width = img.width;
+            var height = img.height;
+            if (width > height && width > maxSize) {
+                height = Math.round(height * maxSize / width);
+                width = maxSize;
+            } else if (height > maxSize) {
+                width = Math.round(width * maxSize / height);
+                height = maxSize;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height);
+            var data = imageData.data;
+            for (var i = 0; i < data.length; i += 4) {
+                var gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                var contrast = 1.5;
+                var newGray = ((gray / 255 - 0.5) * contrast + 0.5) * 255;
+                newGray = Math.max(0, Math.min(255, newGray));
+                data[i] = data[i+1] = data[i+2] = newGray;
+            }
+            ctx.putImageData(imageData, 0, 0);
+            var processedDataURL = canvas.toDataURL('image/png');
+            
+            Quagga.decodeSingle({
+                src: processedDataURL,
+                numOfWorkers: 0,
+                inputStream: { size: 800, singleChannel: true },
+                decoder: {
+                    readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader'],
+                    multiple: false
+                },
+                locate: true
+            }, function(result) {
+                if (result && result.codeResult) {
+                    callback(null, result.codeResult.code);
+                } else {
+                    Quagga.decodeSingle({
+                        src: imagenDataURL,
+                        numOfWorkers: 0,
+                        inputStream: { size: 800, singleChannel: true },
+                        decoder: {
+                            readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'upc_reader', 'upc_e_reader']
+                        }
+                    }, function(result2) {
+                        if (result2 && result2.codeResult) {
+                            callback(null, result2.codeResult.code);
+                        } else {
+                            callback('❌ No se pudo leer el código de barras', null);
+                        }
+                    });
+                }
+            });
+        };
+        img.onerror = function() { callback('❌ Error al cargar la imagen', null); };
+        img.src = imagenDataURL;
+    } catch (error) {
+        console.error('Error en lectura:', error);
+        callback('❌ Error al procesar la imagen', null);
+    }
+};
 
-// Por razones de espacio, se omite el resto del código pero funciona igual que antes
+// ============================================
+// FUNCIÓN MEJORADA PARA ESCANEAR
+// ============================================
+window.activarEscaneo = function() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    
+    input.onchange = function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                window.mostrarToast('📷 Procesando imagen...', '📷');
+                var imageDataURL = ev.target.result;
+                
+                window.leerCodigoBarras(imageDataURL, function(error, codigo) {
+                    if (error) {
+                        window.mostrarToast('❌ ' + error, '❌');
+                        window.mostrarToast('📖 Intentando OCR...', '📖');
+                        Tesseract.recognize(imageDataURL, 'spa+eng', {
+                            logger: function(m) {
+                                if (m.status === 'recognizing text') {
+                                    console.log('OCR progreso:', m.progress);
+                                }
+                            }
+                        }).then(function(result) {
+                            var texto = result.data.text;
+                            var numeros = texto.match(/\b\d{6,15}\b/g);
+                            if (numeros && numeros.length > 0) {
+                                var codigoEncontrado = numeros[0];
+                                window.mostrarToast('✅ Código por OCR: ' + codigoEncontrado, '✅');
+                                var invInput = document.getElementById('inv-codigo');
+                                if (invInput && document.getElementById('screen-inventario').classList.contains('active')) {
+                                    invInput.value = codigoEncontrado;
+                                }
+                                var cadInput = document.getElementById('cad-codigo');
+                                if (cadInput && document.getElementById('screen-caducidades').classList.contains('active')) {
+                                    cadInput.value = codigoEncontrado;
+                                }
+                                var ciclicoInput = document.getElementById('ciclico-codigo');
+                                if (ciclicoInput && document.getElementById('screen-ciclicos').classList.contains('active')) {
+                                    ciclicoInput.value = codigoEncontrado;
+                                }
+                            } else {
+                                window.mostrarToast('❌ No se detectó código en la imagen', '❌');
+                            }
+                        }).catch(function(err) {
+                            console.error('OCR error:', err);
+                            window.mostrarToast('❌ Error en OCR', '❌');
+                        });
+                        return;
+                    }
+                    
+                    window.mostrarToast('✅ Código: ' + codigo, '✅');
+                    var invInput = document.getElementById('inv-codigo');
+                    if (invInput && document.getElementById('screen-inventario').classList.contains('active')) {
+                        invInput.value = codigo;
+                        invInput.dispatchEvent(new Event('input'));
+                    }
+                    var cadInput = document.getElementById('cad-codigo');
+                    if (cadInput && document.getElementById('screen-caducidades').classList.contains('active')) {
+                        cadInput.value = codigo;
+                        cadInput.dispatchEvent(new Event('input'));
+                    }
+                    var ciclicoInput = document.getElementById('ciclico-codigo');
+                    if (ciclicoInput && document.getElementById('screen-ciclicos').classList.contains('active')) {
+                        ciclicoInput.value = codigo;
+                        ciclicoInput.dispatchEvent(new Event('input'));
+                    }
+                });
+            };
+            reader.readAsDataURL(file);
+        } else {
+            window.mostrarToast('❌ No se seleccionó imagen', '❌');
+        }
+        input.value = '';
+        document.body.removeChild(input);
+    };
+    input.click();
+};
 
+window.activarEscaneoParaCaducidad = function() {
+    window.activarEscaneo();
+};
+
+window.enfocarInput = function(id) {
+    var input = document.getElementById(id);
+    if (input) {
+        input.focus();
+        input.select();
+    }
+};
+
+// ============================================
+// LOGIN
+// ============================================
+window.iniciarSesion = function() {
+    var codigo = document.getElementById('login-codigo').value.trim();
+    var errorEl = document.getElementById('login-error');
+    if (codigo in window.usuarios) {
+        window.usuarioActual = window.usuarios[codigo];
+        errorEl.classList.remove('show');
+        document.getElementById('screen-login').classList.remove('active');
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        var saludo = window.usuarioActual.saludo;
+        document.getElementById('welcome-message').textContent = '👋 ' + saludo;
+        document.getElementById('header-usuario').textContent = '🔍 ' + saludo;
+        window.initApp();
+        window.mostrarToast('✅ ' + saludo, '👋');
+    } else {
+        errorEl.classList.add('show');
+        document.getElementById('login-codigo').value = '';
+        document.getElementById('login-codigo').focus();
+        window.mostrarToast('❌ Código incorrecto', '❌');
+    }
+};
+
+window.cerrarSesion = function() {
+    if (confirm('¿Cerrar sesión?')) {
+        window.usuarioActual = null;
+        document.getElementById('app-content').style.display = 'none';
+        document.getElementById('screen-login').style.display = 'flex';
+        document.getElementById('screen-login').classList.add('active');
+        document.getElementById('login-codigo').value = '';
+        document.getElementById('login-error').classList.remove('show');
+        window.mostrarToast('👋 Sesión cerrada', '👋');
+    }
+};
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        var loginScreen = document.getElementById('screen-login');
+        if (loginScreen.classList.contains('active')) window.iniciarSesion();
+    }
+});
+
+// ============================================
+// SISTEMA DE PANTALLAS
+// ============================================
+window.showScreen = function(screenId) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById('screen-' + screenId);
+    if (target) target.classList.add('active');
+    window.actualizarBadges();
+    window.actualizarVisual();
+    if (screenId === 'inventario') window.renderizarInventario();
+    if (screenId === 'ciclicos') window.renderizarCiclicos();
+    if (screenId === 'aleatorio') window.renderizarAleatorios();
+    if (screenId === 'caducidades') window.renderizarCaducidades();
+    if (screenId === 'promociones') window.renderizarPromociones();
+};
+
+// ============================================
+// ALMACENAMIENTO LOCAL
+// ============================================
+window.Storage = {
+    get: function(key, defaultValue) {
+        try { var data = localStorage.getItem('neto_' + key); return data ? JSON.parse(data) : defaultValue; }
+        catch (e) { return defaultValue; }
+    },
+    set: function(key, value) {
+        try { localStorage.setItem('neto_' + key, JSON.stringify(value)); }
+        catch (e) { console.error('Error guardando:', e); }
+    },
+    remove: function(key) { localStorage.removeItem('neto_' + key); }
+};
+
+// ============================================
+// DATOS GLOBALES
+// ============================================
+window.datos = {
+    promociones: window.Storage.get('promociones', []),
+    caducidades: window.Storage.get('caducidades', []),
+    ciclicos: window.Storage.get('ciclicos', []),
+    inventario: window.Storage.get('inventario', []),
+    aleatorios: window.Storage.get('aleatorios', [])
+};
+
+// ============================================
+// FUNCIONES DE PROMOCIONES
+// ============================================
+window.seleccionarEstilo = function(el, estilo) {
+    document.querySelectorAll('.promo-card').forEach(function(card) {
+        card.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    window.estiloSeleccionado = estilo;
+};
+
+window.generarPrompt = function() {
+    var nombre = document.getElementById('prodNombre').value.trim();
+    var precio = document.getElementById('prodPrecio').value.trim();
+    var existencia = document.getElementById('prodExistencia').value.trim();
+    var estilo = window.estiloSeleccionado || 'clasico';
+    var perecedero = document.getElementById('checkPerecedero').checked;
+    var vencimiento = document.getElementById('prodVencimiento').value;
+    var fotoInput = document.getElementById('prodFoto');
+    var fotoFile = fotoInput.files[0];
+    
+    if (!nombre || !precio) {
+        window.mostrarToast('⚠️ Completa el nombre y precio', '⚠️');
+        return;
+    }
+    
+    var estilos = {
+        'coca': 'Refrescante, con hielo y condensación, tonos rojos y blancos, ambiente veraniego',
+        'botanero': 'Vibrante, colores cálidos, ambiente de fiesta, promoción 3x2',
+        'frescura': 'Limpio, natural, tonos pastel, sensación de frescura',
+        'estudio': 'Elegante, iluminación de estudio, fondo oscuro, producto destacado',
+        'remate': 'Neón, colores eléctricos, ambiente de oferta relámpago',
+        'clasico': 'Comercial clásico, iluminación suave, producto en centro'
+    };
+    
+    var prompt = '📸 Imagen publicitaria para ' + nombre + '.\n';
+    prompt += '🎨 Estilo: ' + (estilos[estilo] || estilos['clasico']) + '.\n';
+    prompt += '💰 Promoción: ' + precio + '.\n';
+    if (existencia) prompt += '📦 Disponible: ' + existencia + ' piezas.\n';
+    if (perecedero && vencimiento) prompt += '🗓️ Fecha de caducidad: ' + vencimiento + '.\n';
+    prompt += '🏪 Para tiendas NETO.';
+    
+    document.getElementById('promptResult').value = prompt;
+    document.getElementById('outputSection').classList.remove('hidden');
+    
+    var promocion = {
+        id: Date.now(),
+        nombre: nombre,
+        precio: precio,
+        existencia: existencia,
+        estilo: estilo,
+        perecedero: perecedero,
+        vencimiento: vencimiento,
+        fecha: new Date().toISOString(),
+        foto: fotoFile ? URL.createObjectURL(fotoFile) : null,
+        prompt: prompt
+    };
+    
+    window.datos.promociones.unshift(promocion);
+    window.Storage.set('promociones', window.datos.promociones);
+    window.actualizarBadges();
+    window.renderizarPromociones();
+    window.mostrarToast('✅ Prompt generado y promoción guardada', '✅');
+};
+
+window.copiarPrompt = function() {
+    var textarea = document.getElementById('promptResult');
+    textarea.select();
+    document.execCommand('copy');
+    window.mostrarToast('📋 Prompt copiado al portapapeles', '📋');
+};
+
+window.enviarWhatsApp = function() {
+    var prompt = document.getElementById('promptResult').value;
+    var url = 'https://wa.me/?text=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+};
+
+window.renderizarPromociones = function() {
+    var lista = document.getElementById('promo-lista');
+    var count = document.getElementById('promo-count');
+    var items = window.datos.promociones || [];
+    count.textContent = items.length;
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">No hay promociones guardadas</p>';
+        return;
+    }
+    var html = '';
+    items.forEach(function(p, i) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">💰 ' + p.precio + ' | 📦 ' + (p.existencia || 'N/A') + ' | 🎨 ' + (p.estilo || 'clasico') + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.eliminarPromocion(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    lista.innerHTML = html;
+};
+
+window.eliminarPromocion = function(index) {
+    if (confirm('¿Eliminar esta promoción?')) {
+        window.datos.promociones.splice(index, 1);
+        window.Storage.set('promociones', window.datos.promociones);
+        window.renderizarPromociones();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Promoción eliminada', '🗑️');
+    }
+};
+
+window.generarPDFPromociones = function() {
+    var items = window.datos.promociones || [];
+    if (items.length === 0) {
+        window.mostrarToast('⚠️ No hay promociones guardadas', '⚠️');
+        return;
+    }
+    try {
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        doc.setFontSize(16);
+        doc.setTextColor(255, 165, 0);
+        doc.text('PROMOCIONES NETO', 40, 50);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Fecha: ' + new Date().toLocaleDateString(), 40, 70);
+        doc.text('Total: ' + items.length + ' promociones', 40, 85);
+        
+        var y = 100;
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        items.forEach(function(p, i) {
+            var texto = (i+1) + '. ' + p.nombre + ' | ' + p.precio + ' | Existencia: ' + (p.existencia || 0) + ' | Estilo: ' + (p.estilo || 'clasico');
+            doc.text(texto, 40, y);
+            y += 14;
+            if (y > 700) {
+                doc.addPage();
+                y = 50;
+            }
+        });
+        doc.save('promociones_neto.pdf');
+        window.mostrarToast('📄 PDF de promociones generado', '📄');
+    } catch (e) {
+        console.error('Error generando PDF:', e);
+        window.mostrarToast('❌ Error al generar PDF', '❌');
+    }
+};
+
+// ============================================
+// CATEGORÍAS
+// ============================================
+window.categoriasPorPalabra = {
+    'salsa': 'Salsas', 'coca': 'Refrescos', 'pepsi': 'Refrescos',
+    'sprite': 'Refrescos', 'fanta': 'Refrescos', 'botana': 'Botanas',
+    'sabritas': 'Botanas', 'cheetos': 'Botanas', 'doritos': 'Botanas',
+    'galleta': 'Galletas', 'oreo': 'Galletas', 'gamesa': 'Galletas',
+    'bimbo': 'Panadería', 'maruchan': 'Maruchan', 'sopa': 'Maruchan',
+    'valentina': 'Salsas', 'huichol': 'Salsas', 'harina': 'Harinas',
+    'azúcar': 'Azúcar', 'sal': 'Sal', 'frijol': 'Frijoles',
+    'aceite': 'Aceites', 'toalla': 'Toallas Húmedas', 'shampoo': 'Shampoos',
+    'rollo': 'Rollos', 'servilleta': 'Servilletas', 'bolsa': 'Bolsa para Basura',
+    'detergente': 'Detergente Líquido Ropa', 'cloro': 'Cloros', 'jabón': 'Jabones',
+    'crema': 'Crema Corporal', 'desodorante': 'Desodorantes',
+    'insecticida': 'Insecticida', 'cigarro': 'Cigarros',
+    'alcohol': 'Alcohol y Licores', 'licor': 'Alcohol y Licores',
+    'hielo': 'Hielo', 'pañal': 'Pañales', 'pampers': 'Pañales',
+    'nestlé': 'Nestlé', 'cerveza': 'Alcohol y Licores',
+    'pollo': 'Cámara Fría', 'carne': 'Cámara Fría', 'queso': 'Cámara Fría',
+    'yogurt': 'Cámara Fría', 'leche': 'Cámara Fría', 'refresco': 'Refrescos'
+};
+
+window.detectarCategoria = function(nombre) {
+    if (!nombre) return 'Otros';
+    var lower = nombre.toLowerCase();
+    for (var palabra in window.categoriasPorPalabra) {
+        if (lower.includes(palabra)) return window.categoriasPorPalabra[palabra];
+    }
+    return 'Otros';
+};
+
+// ============================================
+// FUNCIONES DE CADUCIDADES
+// ============================================
+window.guardarCaducidad = function() {
+    var codigo = document.getElementById('cad-codigo').value.trim();
+    var nombre = document.getElementById('cad-nombre').value.trim();
+    var fecha = document.getElementById('cad-fecha').value;
+    var cantidad = parseInt(document.getElementById('cad-cantidad').value) || 1;
+    var costo = parseFloat(document.getElementById('cad-costo').value) || 0;
+    if (!codigo || !nombre || !fecha) { window.mostrarToast('⚠️ Completa todos los campos', '⚠️'); return; }
+    window.datos.caducidades.unshift({ id: Date.now(), codigo: codigo, nombre: nombre, fecha: fecha, cantidad: cantidad, costo: costo, fechaRegistro: new Date().toISOString() });
+    window.Storage.set('caducidades', window.datos.caducidades);
+    document.getElementById('cad-codigo').value = '';
+    document.getElementById('cad-nombre').value = '';
+    document.getElementById('cad-fecha').value = '';
+    document.getElementById('cad-cantidad').value = '1';
+    document.getElementById('cad-costo').value = '0';
+    window.renderizarCaducidades();
+    window.actualizarBadges();
+    window.mostrarToast('✅ Producto registrado', '✅');
+};
+
+window.renderizarCaducidades = function() {
+    var lista = document.getElementById('cad-lista');
+    var count = document.getElementById('cad-count');
+    var items = window.datos.caducidades || [];
+    count.textContent = items.length;
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        document.getElementById('cad-resumen').style.display = 'none';
+        return;
+    }
+    var html = '';
+    var totalCosto = 0;
+    items.forEach(function(p, i) {
+        var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        totalCosto += costoTotal;
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">📅 ' + p.fecha + ' | 📦 ' + p.cantidad + ' | 💰 $' + (p.costo || 0).toFixed(2) + ' | 🔢 ' + p.codigo + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.eliminarCaducidad(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    lista.innerHTML = html;
+    var resumen = document.getElementById('cad-resumen');
+    resumen.style.display = 'block';
+    resumen.innerHTML = '<div class="fila"><span class="label">📦 Total Productos</span><span class="valor">' + items.length + '</span></div>' +
+                        '<div class="fila"><span class="label">💰 Valor Total</span><span class="valor">$' + totalCosto.toFixed(2) + '</span></div>';
+};
+
+window.eliminarCaducidad = function(index) {
+    if (confirm('¿Eliminar este producto?')) {
+        window.datos.caducidades.splice(index, 1);
+        window.Storage.set('caducidades', window.datos.caducidades);
+        window.renderizarCaducidades();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Producto eliminado', '🗑️');
+    }
+};
+
+window.limpiarCaducidades = function() {
+    if (confirm('¿Eliminar TODAS las caducidades?')) {
+        window.datos.caducidades = [];
+        window.Storage.set('caducidades', []);
+        window.renderizarCaducidades();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Todas las caducidades eliminadas', '🗑️');
+    }
+};
+
+// ============================================
+// FUNCIONES DE CICLICOS
+// ============================================
+window.cambiarTabCiclico = function(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+    document.getElementById('tab-' + tab).classList.add('active');
+};
+
+window.agregarProductoManualCiclico = function() {
+    document.querySelector('.tab-btn[onclick*="manual"]').click();
+    document.getElementById('ciclico-nombre').focus();
+};
+
+window.agregarManualCiclico = function() {
+    var nombre = document.getElementById('ciclico-nombre').value.trim();
+    var categoria = document.getElementById('ciclico-categoria').value;
+    var cantidad = parseInt(document.getElementById('ciclico-cantidad').value) || 1;
+    var costo = parseFloat(document.getElementById('ciclico-costo').value) || 0;
+    var codigo = document.getElementById('ciclico-codigo').value.trim() || 'MAN-' + Date.now();
+    if (!nombre) { window.mostrarToast('⚠️ Ingresa el nombre', '⚠️'); return; }
+    if (!window.datos.ciclicos) window.datos.ciclicos = [];
+    var existente = window.datos.ciclicos.find(function(p) { return p.codigo === codigo; });
+    if (existente) {
+        existente.cantidad = (existente.cantidad || 0) + cantidad;
+        existente.costo = costo || existente.costo || 0;
+    } else {
+        window.datos.ciclicos.push({ id: Date.now(), codigo: codigo, nombre: nombre, categoria: categoria, cantidad: cantidad, costo: costo });
+    }
+    window.Storage.set('ciclicos', window.datos.ciclicos);
+    window.renderizarCiclicos();
+    document.getElementById('ciclico-nombre').value = '';
+    document.getElementById('ciclico-cantidad').value = '1';
+    document.getElementById('ciclico-costo').value = '0';
+    document.getElementById('ciclico-codigo').value = '';
+    window.mostrarToast('✅ Producto agregado', '✅');
+};
+
+window.renderizarCiclicos = function() {
+    var lista = document.getElementById('ciclico-lista');
+    var count = document.getElementById('ciclico-count');
+    var items = window.datos.ciclicos || [];
+    count.textContent = items.length;
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">Los productos aparecerán aquí después de escanear</p>';
+        document.getElementById('btn-guardar-ciclico').classList.add('hidden');
+        document.getElementById('ciclico-resumen').style.display = 'none';
+        return;
+    }
+    document.getElementById('btn-guardar-ciclico').classList.remove('hidden');
+    var html = '';
+    var totalCosto = 0;
+    items.forEach(function(p, i) {
+        var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        totalCosto += costoTotal;
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 💰 $' + (p.costo || 0).toFixed(2) + ' | 🏷️ ' + (p.categoria || 'Otros') + '</div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.abrirModalEditarCiclico(' + i + ')" class="edit-btn"><i class="fas fa-pen"></i></button>';
+        html += '    <button onclick="window.eliminarCiclico(' + i + ')" class="delete-btn"><i class="fas fa-trash"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    lista.innerHTML = html;
+    var resumen = document.getElementById('ciclico-resumen');
+    resumen.style.display = 'block';
+    resumen.innerHTML = '<div class="fila"><span class="label">📦 Total Productos</span><span class="valor">' + items.length + '</span></div>' +
+                        '<div class="fila"><span class="label">💰 Valor Total</span><span class="valor">$' + totalCosto.toFixed(2) + '</span></div>';
+};
+
+window.abrirModalEditarCiclico = function(index) {
+    window.indiceEditando = index; window.tipoEditando = 'ciclico';
+    var producto = window.datos.ciclicos[index];
+    if (!producto) return;
+    document.getElementById('modalProductoNombre').textContent = '📦 ' + producto.nombre;
+    document.getElementById('modalCantidadInput').value = producto.cantidad || 1;
+    document.getElementById('modalCostoInput').value = producto.costo || 0;
+    document.getElementById('modalSistemaInput').value = 0;
+    document.getElementById('modalEditar').style.display = 'flex';
+};
+
+window.eliminarCiclico = function(index) {
+    if (confirm('¿Eliminar este producto del conteo?')) {
+        window.datos.ciclicos.splice(index, 1);
+        window.Storage.set('ciclicos', window.datos.ciclicos);
+        window.renderizarCiclicos();
+        window.mostrarToast('🗑️ Producto eliminado', '🗑️');
+    }
+};
+
+window.guardarConteoCiclico = function() {
+    if (!window.datos.ciclicos || window.datos.ciclicos.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el conteo', '⚠️');
+        return;
+    }
+    
+    try {
+        var productosGuardados = 0;
+        window.datos.ciclicos.forEach(function(item) {
+            var existente = window.datos.inventario.find(function(p) { 
+                return p.codigo === item.codigo; 
+            });
+            
+            if (existente) {
+                existente.cantidad = item.cantidad;
+                existente.costo = item.costo || existente.costo || 0;
+                if (existente.sistema === undefined) existente.sistema = 0;
+                productosGuardados++;
+            } else {
+                window.datos.inventario.push({
+                    id: Date.now(),
+                    codigo: item.codigo || 'MAN-' + Date.now(),
+                    nombre: item.nombre,
+                    categoria: item.categoria || 'Otros',
+                    cantidad: item.cantidad || 0,
+                    costo: item.costo || 0,
+                    sistema: 0,
+                    fechaRegistro: new Date().toISOString()
+                });
+                productosGuardados++;
+            }
+        });
+        
+        window.Storage.set('inventario', window.datos.inventario);
+        var totalProductos = window.datos.ciclicos.length;
+        window.datos.ciclicos = [];
+        window.Storage.set('ciclicos', []);
+        
+        window.renderizarCiclicos();
+        window.renderizarInventario();
+        window.actualizarBadges();
+        
+        window.mostrarToast('✅ ' + productosGuardados + ' productos guardados en inventario', '✅');
+        
+        if (confirm('¿Deseas generar un PDF del conteo cíclico guardado?')) {
+            window.generarPDFCiclicoGuardado(totalProductos);
+        }
+        
+    } catch (e) {
+        console.error('Error al guardar conteo:', e);
+        window.mostrarToast('❌ Error al guardar: ' + e.message, '❌');
+    }
+};
+
+window.generarPDFCiclicoGuardado = function(totalProductos) {
+    try {
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            window.mostrarToast('❌ Librería PDF no disponible.', '❌');
+            return;
+        }
+        
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        
+        doc.setFontSize(18);
+        doc.setTextColor(255, 165, 0);
+        doc.text('CONTEO CICLICO NETO - GUARDADO', 40, 50);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 75);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 90);
+        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 105);
+        doc.text('Total productos guardados: ' + totalProductos, 40, 120);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(74, 222, 128);
+        doc.text('✅ Conteo guardado exitosamente en el inventario general', 40, 145);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Los productos han sido actualizados en el inventario', 40, 165);
+        
+        doc.save('conteo_guardado_neto.pdf');
+        window.mostrarToast('📄 PDF de confirmación generado', '📄');
+        
+    } catch (e) {
+        console.error('Error generando PDF de confirmación:', e);
+        window.mostrarToast('❌ Error al generar PDF de confirmación', '❌');
+    }
+};
+
+window.generarPDFCiclico = function() {
+    var items = window.datos.ciclicos || [];
+    if (items.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el conteo cíclico', '⚠️');
+        return;
+    }
+    
+    try {
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            window.mostrarToast('❌ Librería PDF no disponible. Recarga la página.', '❌');
+            return;
+        }
+        
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        
+        doc.setFontSize(16);
+        doc.setTextColor(255, 165, 0);
+        doc.text('CONTEO CICLICO NETO', 40, 50);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 85);
+        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
+        doc.text('Total productos: ' + items.length, 40, 115);
+        
+        var y = 140;
+        var totalValor = 0;
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        
+        doc.setTextColor(255, 165, 0);
+        doc.text('Producto', 40, y);
+        doc.text('Cantidad', 200, y);
+        doc.text('Costo/Und', 280, y);
+        doc.text('Total', 360, y);
+        doc.text('Categoria', 420, y);
+        y += 10;
+        doc.line(40, y, 550, y);
+        y += 10;
+        
+        doc.setTextColor(50, 50, 50);
+        items.forEach(function(p, i) {
+            var valor = (p.costo || 0) * (p.cantidad || 0);
+            totalValor += valor;
+            
+            var nombre = p.nombre || 'Sin nombre';
+            var cantidad = p.cantidad || 0;
+            var costo = '$' + (p.costo || 0).toFixed(2);
+            var total = '$' + valor.toFixed(2);
+            var categoria = p.categoria || 'Otros';
+            
+            doc.text(nombre.substring(0, 25), 40, y);
+            doc.text(cantidad.toString(), 200, y);
+            doc.text(costo, 280, y);
+            doc.text(total, 360, y);
+            doc.text(categoria, 420, y);
+            
+            y += 12;
+            if (y > 700) {
+                doc.addPage();
+                y = 50;
+                doc.setFontSize(10);
+                doc.setTextColor(255, 165, 0);
+                doc.text('Producto', 40, y);
+                doc.text('Cantidad', 200, y);
+                doc.text('Costo/Und', 280, y);
+                doc.text('Total', 360, y);
+                doc.text('Categoria', 420, y);
+                y += 10;
+                doc.line(40, y, 550, y);
+                y += 10;
+                doc.setTextColor(50, 50, 50);
+            }
+        });
+        
+        y += 10;
+        doc.line(40, y, 550, y);
+        y += 10;
+        doc.setFontSize(14);
+        doc.setTextColor(255, 165, 0);
+        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
+        
+        var totalPaginas = doc.internal.getNumberOfPages();
+        for (var i = 1; i <= totalPaginas; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(180, 180, 180);
+            doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
+            doc.text('Generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
+        }
+        
+        doc.save('conteo_ciclico_neto.pdf');
+        window.mostrarToast('📄 PDF de conteo cíclico generado', '📄');
+        
+    } catch (e) {
+        console.error('Error generando PDF:', e);
+        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
+    }
+};
+
+window.procesarImagenesCiclico = function() {
+    var input = document.getElementById('ciclico-imagenes');
+    var files = input.files;
+    var container = document.getElementById('ciclico-imagen-resultados');
+    if (files.length === 0) { window.mostrarToast('⚠️ Selecciona imágenes', '⚠️'); return; }
+    var html = '', procesadas = 0, total = 0;
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var url = URL.createObjectURL(file);
+        html += '<div class="img-result-item" id="img-item-' + i + '">';
+        html += '  <img src="' + url + '" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">';
+        html += '  <span style="color:#ffffff; font-size:0.65rem; flex:1;">' + file.name + '</span>';
+        html += '  <span class="status pending" id="status-' + i + '">⏳ Procesando...</span>';
+        html += '</div>';
+        var reader = new FileReader();
+        reader.onload = (function(index) {
+            return function(ev) {
+                var imageDataURL = ev.target.result;
+                var statusEl = document.getElementById('status-' + index);
+                var itemEl = document.getElementById('img-item-' + index);
+                window.leerCodigoBarras(imageDataURL, function(error, codigo) {
+                    if (!error && codigo) {
+                        statusEl.textContent = '✅ ' + codigo;
+                        statusEl.className = 'status success';
+                        var existe = window.datos.ciclicos.some(function(p) { return p.codigo === codigo; });
+                        if (!existe) {
+                            var prod = window.datos.inventario.find(function(p) { return p.codigo === codigo; });
+                            window.datos.ciclicos.push({
+                                id: Date.now(),
+                                codigo: codigo,
+                                nombre: prod ? prod.nombre : 'Producto ' + codigo,
+                                categoria: prod ? prod.categoria : 'Otros',
+                                cantidad: 1,
+                                costo: prod ? prod.costo : 0
+                            });
+                            total++;
+                            var span = document.createElement('span');
+                            span.className = 'producto-nombre';
+                            span.textContent = '📦 ' + (prod ? prod.nombre : 'Producto ' + codigo);
+                            itemEl.appendChild(span);
+                        }
+                    } else {
+                        statusEl.textContent = '📖 OCR...';
+                        statusEl.className = 'status ocr';
+                        preprocesarImagen(imageDataURL, function(processed) {
+                            Tesseract.recognize(processed, 'spa+eng', {}).then(function(result) {
+                                var texto = result.data.text;
+                                var div = document.createElement('div');
+                                div.className = 'resultado-ocr';
+                                div.innerHTML = '<div class="texto-extraido">' + texto.substring(0, 150) + '...</div>';
+                                itemEl.appendChild(div);
+                                var productos = extraerProductosDeTexto(texto);
+                                if (productos.length > 0) {
+                                    statusEl.textContent = '✅ ' + productos.length + ' prod';
+                                    statusEl.className = 'status success';
+                                    productos.forEach(function(prod) {
+                                        var existe = window.datos.ciclicos.some(function(p) { return p.codigo === prod.codigo; });
+                                        if (!existe) {
+                                            window.datos.ciclicos.push({
+                                                id: Date.now(),
+                                                codigo: prod.codigo,
+                                                nombre: prod.nombre,
+                                                categoria: prod.categoria || 'Otros',
+                                                cantidad: prod.cantidad || 1,
+                                                costo: 0
+                                            });
+                                            total++;
+                                            var span = document.createElement('span');
+                                            span.className = 'producto-nombre';
+                                            span.textContent = '📦 ' + prod.nombre;
+                                            itemEl.appendChild(span);
+                                        }
+                                    });
+                                } else {
+                                    statusEl.textContent = '❌ Sin productos';
+                                    statusEl.className = 'status error';
+                                }
+                                procesadas++;
+                                if (procesadas === files.length) {
+                                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                                    window.renderizarCiclicos();
+                                    window.mostrarToast('✅ ' + total + ' productos detectados', '✅');
+                                }
+                            }).catch(function() {
+                                statusEl.textContent = '❌ Error OCR';
+                                statusEl.className = 'status error';
+                                procesadas++;
+                                if (procesadas === files.length) {
+                                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                                    window.renderizarCiclicos();
+                                }
+                            });
+                        });
+                    }
+                    procesadas++;
+                    if (procesadas === files.length && !statusEl.textContent.includes('OCR')) {
+                        window.Storage.set('ciclicos', window.datos.ciclicos);
+                        window.renderizarCiclicos();
+                        if (total > 0) window.mostrarToast('✅ ' + total + ' productos detectados', '✅');
+                    }
+                });
+            };
+        })(i);
+        reader.readAsDataURL(file);
+    }
+    container.innerHTML = html;
+    window.mostrarToast('📷 Procesando ' + files.length + ' imágenes...', '📷');
+};
+
+window.procesarPDFConOCR = function() {
+    var input = document.getElementById('ciclico-pdf');
+    var file = input.files[0];
+    var container = document.getElementById('ciclico-pdf-resultados');
+    var progressContainer = document.getElementById('ciclico-pdf-progreso');
+    var progressBar = document.getElementById('pdfProgressBar');
+    var progressText = document.getElementById('pdfProgressText');
+    if (!file) { window.mostrarToast('⚠️ Selecciona un PDF', '⚠️'); return; }
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressText.textContent = '📄 Cargando PDF...';
+    container.innerHTML = '<p class="empty-message">⏳ Procesando...</p>';
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var pdfData = new Uint8Array(e.target.result);
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
+            var totalPages = pdf.numPages;
+            var html = '', paginas = 0, totalProd = 0;
+            function procesarPagina(num) {
+                pdf.getPage(num).then(function(page) {
+                    var viewport = page.getViewport({scale: 2});
+                    var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    page.render({canvasContext: ctx, viewport: viewport}).promise.then(function() {
+                        var imgData = canvas.toDataURL('image/png');
+                        preprocesarImagen(imgData, function(processed) {
+                            Tesseract.recognize(processed, 'spa+eng', {}).then(function(result) {
+                                var texto = result.data.text;
+                                html += '<div class="resultado-ocr"><div class="texto-extraido">📄 Pág ' + num + ': ' + texto.substring(0, 100) + '...</div></div>';
+                                var productos = extraerProductosDeTexto(texto);
+                                productos.forEach(function(prod) {
+                                    var existe = window.datos.ciclicos.some(function(p) { return p.codigo === prod.codigo; });
+                                    if (!existe) {
+                                        window.datos.ciclicos.push({
+                                            id: Date.now(),
+                                            codigo: prod.codigo,
+                                            nombre: prod.nombre,
+                                            categoria: prod.categoria || 'Otros',
+                                            cantidad: prod.cantidad || 1,
+                                            costo: 0
+                                        });
+                                        totalProd++;
+                                    }
+                                });
+                                paginas++;
+                                var prog = Math.round((paginas / totalPages) * 100);
+                                progressBar.style.width = prog + '%';
+                                progressText.textContent = '📄 Página ' + paginas + '/' + totalPages + ' | ' + totalProd + ' productos';
+                                container.innerHTML = html;
+                                if (paginas === totalPages) {
+                                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                                    window.renderizarCiclicos();
+                                    progressText.textContent = '✅ Completado. ' + totalProd + ' productos.';
+                                    window.mostrarToast('✅ ' + totalProd + ' productos extraídos', '✅');
+                                }
+                            }).catch(function() { paginas++; if (paginas === totalPages) { window.Storage.set('ciclicos', window.datos.ciclicos); window.renderizarCiclicos(); } });
+                        });
+                    }).catch(function() { paginas++; if (paginas === totalPages) { window.Storage.set('ciclicos', window.datos.ciclicos); window.renderizarCiclicos(); } });
+                }).catch(function() { paginas++; if (paginas === totalPages) { window.Storage.set('ciclicos', window.datos.ciclicos); window.renderizarCiclicos(); } });
+            }
+            for (var i = 1; i <= totalPages; i++) procesarPagina(i);
+        }).catch(function(err) {
+            progressText.textContent = '❌ Error: ' + err.message;
+            window.mostrarToast('❌ Error al cargar PDF', '❌');
+        });
+    };
+    reader.readAsArrayBuffer(file);
+};
+
+// ============================================
+// FUNCIONES DE 21 ALEATORIOS
+// ============================================
+window.generarAleatorios = function() {
+    var inventario = window.datos.inventario || [];
+    
+    if (inventario.length === 0) {
+        window.mostrarToast('⚠️ No hay productos en el inventario. Agrega productos primero.', '⚠️');
+        return;
+    }
+    
+    if (inventario.length < 21) {
+        window.mostrarToast('⚠️ Solo hay ' + inventario.length + ' productos en el inventario. Se tomarán todos.', '⚠️');
+    }
+    
+    var shuffled = [...inventario];
+    for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    var cantidad = Math.min(21, shuffled.length);
+    window.datos.aleatorios = shuffled.slice(0, cantidad);
+    
+    window.Storage.set('aleatorios', window.datos.aleatorios);
+    window.renderizarAleatorios();
+    
+    if (window.datos.aleatorios.length > 0) {
+        window.mostrarToast('🎲 ' + window.datos.aleatorios.length + ' productos aleatorios generados del inventario', '🎲');
+    }
+};
+
+window.renderizarAleatorios = function() {
+    var lista = document.getElementById('aleatorio-lista');
+    var count = document.getElementById('aleatorio-count');
+    var count2 = document.getElementById('aleatorio-count2');
+    var items = window.datos.aleatorios || [];
+    count.textContent = items.length + '/21';
+    count2.textContent = items.length + '/21';
+    
+    if (items.length === 0) {
+        lista.innerHTML = '<p class="empty-message">🎲 Presiona "Generar 21 Aleatorios" para comenzar</p>';
+        document.getElementById('aleatorio-resumen').style.display = 'none';
+        return;
+    }
+    
+    var html = '';
+    var totalCosto = 0;
+    var totalSistema = 0;
+    
+    items.forEach(function(p, i) {
+        var costoTotal = (p.costo || 0) * (p.cantidad || 0);
+        var sistemaTotal = (p.costo || 0) * (p.sistema || 0);
+        totalCosto += costoTotal;
+        totalSistema += sistemaTotal;
+        var dif = (p.cantidad || 0) - (p.sistema || 0);
+        var claseDif = dif > 0 ? 'positiva' : (dif < 0 ? 'negativa' : 'cero');
+        
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + (i+1) + '. ' + p.nombre + '</div>';
+        html += '    <div class="item-detail">';
+        html += '      📦 ' + (p.cantidad || 0) + ' | 📊 ' + (p.sistema || 0);
+        html += ' | Dif: <span class="' + claseDif + '">' + (dif >= 0 ? '+' : '') + dif + '</span>';
+        html += ' | 💰 $' + (p.costo || 0).toFixed(2);
+        html += ' | Total: $' + costoTotal.toFixed(2);
+        html += ' | 🏷️ ' + (p.categoria || 'Otros');
+        html += '    </div>';
+        html += '  </div>';
+        html += '  <div class="item-actions">';
+        html += '    <button onclick="window.abrirModalEditarAleatorio(' + i + ')" class="edit-btn"><i class="fas fa-pen"></i></button>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    lista.innerHTML = html;
+    
+    var resumen = document.getElementById('aleatorio-resumen');
+    resumen.style.display = 'block';
+    var diferencia = totalCosto - totalSistema;
+    resumen.innerHTML = 
+        '<div class="fila"><span class="label">📦 Productos</span><span class="valor">' + items.length + '/21</span></div>' +
+        '<div class="fila"><span class="label">💰 Valor Físico</span><span class="valor">$' + totalCosto.toFixed(2) + '</span></div>' +
+        '<div class="fila"><span class="label">📊 Valor Sistema</span><span class="valor">$' + totalSistema.toFixed(2) + '</span></div>' +
+        '<div class="fila total"><span class="label">🟢 Sobrante</span><span class="valor positiva">+$' + (diferencia > 0 ? diferencia.toFixed(2) : '0.00') + '</span></div>' +
+        '<div class="fila total"><span class="label">🔴 Faltante</span><span class="valor negativa">-$' + (diferencia < 0 ? Math.abs(diferencia).toFixed(2) : '0.00') + '</span></div>' +
+        '<div class="fila" style="border-top:2px solid #f97316; margin-top:4px; padding-top:6px;">' +
+        '<span class="label" style="color:#f97316; font-weight:700;">📊 Diferencia</span>' +
+        '<span class="valor" style="color:' + (diferencia >= 0 ? '#4ade80' : '#f87171') + '; font-weight:700;">$' + diferencia.toFixed(2) + '</span></div>';
+};
+
+window.abrirModalEditarAleatorio = function(index) {
+    window.indiceEditando = index; window.tipoEditando = 'aleatorio';
+    var producto = window.datos.aleatorios[index];
+    if (!producto) return;
+    document.getElementById('modalProductoNombre').textContent = '📦 ' + producto.nombre;
+    document.getElementById('modalCantidadInput').value = producto.cantidad || 1;
+    document.getElementById('modalCostoInput').value = producto.costo || 0;
+    document.getElementById('modalSistemaInput').value = producto.sistema || 0;
+    document.getElementById('modalEditar').style.display = 'flex';
+};
+
+window.limpiarAleatorios = function() {
+    if (confirm('¿Limpiar lista de aleatorios?')) {
+        window.datos.aleatorios = [];
+        window.Storage.set('aleatorios', []);
+        window.renderizarAleatorios();
+        window.mostrarToast('🗑️ Lista limpiada', '🗑️');
+    }
+};
+
+window.guardarAleatorios = function() {
+    var items = window.datos.aleatorios || [];
+    if (items.length === 0) { window.mostrarToast('⚠️ No hay productos', '⚠️'); return; }
+    try {
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        doc.setFontSize(16); doc.setTextColor(255, 165, 0);
+        doc.text('21 PRODUCTOS ALEATORIOS NETO', 40, 50);
+        doc.setFontSize(10); doc.setTextColor(100, 100, 100);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
+        doc.text('Total: ' + items.length + ' productos', 40, 85);
+        var totalValor = 0;
+        
+        var y = 110;
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        items.forEach(function(p, i) {
+            var valor = (p.costo || 0) * (p.cantidad || 0);
+            totalValor += valor;
+            doc.text((i+1) + '. ' + p.nombre + ' | ' + p.cantidad + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + valor.toFixed(2), 40, y);
+            y += 14;
+            if (y > 700) { doc.addPage(); y = 50; }
+        });
+        
+        y += 10;
+        doc.setFontSize(12); doc.setTextColor(255, 165, 0);
+        doc.text('Valor Total: $' + totalValor.toFixed(2), 40, y);
+        doc.save('aleatorios_neto.pdf');
+        
+        var mensaje = '21 PRODUCTOS ALEATORIOS NETO\n';
+        mensaje += 'Fecha: ' + new Date().toLocaleDateString('es-MX') + '\n';
+        mensaje += '────────────────────\n\n';
+        items.forEach(function(p, i) {
+            var valor = (p.costo || 0) * (p.cantidad || 0);
+            mensaje += (i+1) + '. ' + p.nombre + '\n';
+            mensaje += '   Cantidad: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2) + ' | Total: $' + valor.toFixed(2) + '\n\n';
+        });
+        mensaje += '────────────────────\n';
+        mensaje += 'Valor Total: $' + totalValor.toFixed(2) + '\n';
+        mensaje += 'Tiendas NETO';
+        var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(mensaje);
+        window.open(url, '_blank');
+        window.mostrarToast('📤 PDF y WhatsApp enviados', '📤');
+    } catch (e) {
+        console.error('Error generando PDF:', e);
+        window.mostrarToast('❌ Error al generar PDF', '❌');
+    }
+};
+
+// ============================================
+// FUNCIONES DE INVENTARIO
+// ============================================
+window.agregarProductoInventario = function() {
+    var codigo = document.getElementById('inv-codigo').value.trim();
+    var nombre = document.getElementById('inv-nombre').value.trim();
+    var categoria = document.getElementById('inv-categoria').value;
+    var cantidad = parseInt(document.getElementById('inv-cantidad').value) || 0;
+    var costo = parseFloat(document.getElementById('inv-precio').value) || 0;
+    var sistema = parseInt(document.getElementById('inv-sistema').value) || 0;
+    if (!codigo || !nombre) { window.mostrarToast('⚠️ Completa código y nombre', '⚠️'); return; }
+    if (cantidad === 0 && sistema === 0) {
+        window.mostrarToast('⚠️ La cantidad física o del sistema debe ser mayor a 0', '⚠️');
+        return;
+    }
+    var catFinal = (categoria === 'Otros' || !categoria) ? window.detectarCategoria(nombre) : categoria;
+    var existente = window.datos.inventario.findIndex(function(p) { return p.codigo === codigo; });
+    if (existente !== -1) {
+        window.datos.inventario[existente].cantidad = cantidad;
+        window.datos.inventario[existente].costo = costo;
+        window.datos.inventario[existente].sistema = sistema;
+        window.datos.inventario[existente].nombre = nombre;
+        window.datos.inventario[existente].categoria = catFinal;
+    } else {
+        window.datos.inventario.push({
+            id: Date.now(),
+            codigo: codigo,
+            nombre: nombre,
+            categoria: catFinal,
+            cantidad: cantidad,
+            costo: costo,
+            sistema: sistema,
+            fechaRegistro: new Date().toISOString()
+        });
+    }
+    window.Storage.set('inventario', window.datos.inventario);
+    document.getElementById('inv-codigo').value = '';
+    document.getElementById('inv-nombre').value = '';
+    document.getElementById('inv-cantidad').value = '1';
+    document.getElementById('inv-precio').value = '0';
+    document.getElementById('inv-sistema').value = '0';
+    window.renderizarInventario();
+    window.mostrarToast('✅ Producto agregado', '✅');
+};
+
+window.renderizarInventario = function() {
+    var container = document.getElementById('inv-lista-categorias');
+    var totalCount = document.getElementById('inv-total-count');
+    var productos = window.datos.inventario || [];
+    totalCount.textContent = productos.length;
+    if (productos.length === 0) {
+        container.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        document.getElementById('inv-resumen').style.display = 'none';
+        return;
+    }
+    var grupos = {};
+    productos.forEach(function(p) {
+        var cat = p.categoria || 'Sin categoría';
+        if (!grupos[cat]) grupos[cat] = [];
+        grupos[cat].push(p);
+    });
+    var categorias = Object.keys(grupos).sort();
+    var html = '';
+    var totalCosto = 0, totalSistema = 0, totalFaltante = 0, totalSobrante = 0;
+    categorias.forEach(function(cat) {
+        var items = grupos[cat];
+        html += '<div class="categoria-section">';
+        html += '  <div class="categoria-title"><span>' + cat + '</span><span class="count">' + items.length + ' productos</span></div>';
+        items.forEach(function(p) {
+            var dif = (p.cantidad || 0) - (p.sistema || 0);
+            var difValor = dif * (p.costo || 0);
+            if (difValor > 0) totalSobrante += difValor;
+            else totalFaltante += Math.abs(difValor);
+            totalCosto += (p.cantidad || 0) * (p.costo || 0);
+            totalSistema += (p.sistema || 0) * (p.costo || 0);
+            var claseDif = dif > 0 ? 'positiva' : (dif < 0 ? 'negativa' : 'cero');
+            html += '<div class="producto-item">';
+            html += '  <div class="nombre">' + p.nombre + '</div>';
+            html += '  <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">';
+            html += '    <span class="cantidad">📦 ' + p.cantidad + '</span>';
+            html += '    <span class="cantidad" style="color:#60a5fa;">📊 ' + (p.sistema || 0) + '</span>';
+            html += '    <span class="diferencia ' + claseDif + '">' + (dif >= 0 ? '+' : '') + dif + '</span>';
+            html += '    <span style="color:#94a3b8; font-size:0.6rem;">$' + (p.costo || 0).toFixed(2) + '</span>';
+            html += '    <button onclick="window.abrirModalEditarInventario(\'' + p.codigo + '\')" class="edit-btn" style="background:transparent; border:none; color:#f97316; cursor:pointer; padding:2px 4px;">';
+            html += '      <i class="fas fa-pen" style="font-size:0.6rem;"></i>';
+            html += '    </button>';
+            html += '    <button onclick="window.eliminarProductoInventario(\'' + p.codigo + '\')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:2px 4px;">';
+            html += '      <i class="fas fa-trash" style="font-size:0.6rem;"></i>';
+            html += '    </button>';
+            html += '  </div>';
+            html += '</div>';
+        });
+        html += '</div>';
+    });
+    container.innerHTML = html;
+    var resumen = document.getElementById('inv-resumen');
+    resumen.style.display = 'block';
+    var diferencia = totalSobrante - totalFaltante;
+    resumen.innerHTML = '<div class="fila"><span class="label">📦 Productos</span><span class="valor">' + productos.length + '</span></div>' +
+                        '<div class="fila"><span class="label">💰 Valor Físico</span><span class="valor">$' + totalCosto.toFixed(2) + '</span></div>' +
+                        '<div class="fila"><span class="label">📊 Valor Sistema</span><span class="valor">$' + totalSistema.toFixed(2) + '</span></div>' +
+                        '<div class="fila total"><span class="label">🟢 Sobrante</span><span class="valor positiva">+$' + totalSobrante.toFixed(2) + '</span></div>' +
+                        '<div class="fila total"><span class="label">🔴 Faltante</span><span class="valor negativa">-$' + totalFaltante.toFixed(2) + '</span></div>' +
+                        '<div class="fila" style="border-top:2px solid #f97316; margin-top:4px; padding-top:6px;"><span class="label" style="color:#f97316; font-weight:700;">📊 Diferencia</span><span class="valor" style="color:' + (diferencia >= 0 ? '#4ade80' : '#f87171') + '; font-weight:700;">$' + diferencia.toFixed(2) + '</span></div>';
+};
+
+window.abrirModalEditarInventario = function(codigo) {
+    var producto = window.datos.inventario.find(function(p) { return p.codigo === codigo; });
+    if (!producto) return;
+    var index = window.datos.inventario.indexOf(producto);
+    window.indiceEditando = index; window.tipoEditando = 'inventario';
+    document.getElementById('modalProductoNombre').textContent = '📦 ' + producto.nombre;
+    document.getElementById('modalCantidadInput').value = producto.cantidad || 1;
+    document.getElementById('modalCostoInput').value = producto.costo || 0;
+    document.getElementById('modalSistemaInput').value = producto.sistema || 0;
+    document.getElementById('modalEditar').style.display = 'flex';
+};
+
+window.eliminarProductoInventario = function(codigo) {
+    if (confirm('¿Eliminar este producto del inventario?')) {
+        window.datos.inventario = window.datos.inventario.filter(function(p) { return p.codigo !== codigo; });
+        window.Storage.set('inventario', window.datos.inventario);
+        window.renderizarInventario();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Producto eliminado', '🗑️');
+    }
+};
+
+window.finalizarInventario = function() {
+    var productos = window.datos.inventario || [];
+    if (productos.length === 0) { window.mostrarToast('⚠️ No hay productos', '⚠️'); return; }
+    try {
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        doc.setFontSize(16); doc.setTextColor(255, 165, 0);
+        doc.text('INVENTARIO NETO', 40, 50);
+        doc.setFontSize(10); doc.setTextColor(100, 100, 100);
+        doc.text('Fecha: ' + new Date().toLocaleDateString('es-MX'), 40, 70);
+        doc.text('Hora: ' + new Date().toLocaleTimeString('es-MX'), 40, 85);
+        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 100);
+        var totalCosto = 0, totalSistema = 0, totalSobrante = 0, totalFaltante = 0;
+        
+        var y = 130;
+        doc.setFontSize(8);
+        doc.setTextColor(50, 50, 50);
+        productos.forEach(function(p) {
+            var dif = (p.cantidad || 0) - (p.sistema || 0);
+            var difValor = dif * (p.costo || 0);
+            if (difValor > 0) totalSobrante += difValor;
+            else totalFaltante += Math.abs(difValor);
+            totalCosto += (p.cantidad || 0) * (p.costo || 0);
+            totalSistema += (p.sistema || 0) * (p.costo || 0);
+            doc.text(p.nombre + ' | ' + p.cantidad + ' | ' + (p.sistema || 0) + ' | ' + (dif >= 0 ? '+' : '') + dif + ' | $' + (p.costo || 0).toFixed(2) + ' | $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2), 40, y);
+            y += 12;
+            if (y > 700) { doc.addPage(); y = 50; }
+        });
+        
+        y += 10;
+        doc.setFontSize(11); doc.setTextColor(255, 165, 0);
+        doc.text('Valor Fisico: $' + totalCosto.toFixed(2), 40, y);
+        doc.text('Valor Sistema: $' + totalSistema.toFixed(2), 40, y + 18);
+        doc.setTextColor(74, 222, 128);
+        doc.text('Sobrante: +$' + totalSobrante.toFixed(2), 40, y + 36);
+        doc.setTextColor(248, 113, 113);
+        doc.text('Faltante: -$' + totalFaltante.toFixed(2), 40, y + 54);
+        doc.setTextColor(255, 165, 0);
+        doc.setFontSize(12);
+        var diferencia = totalSobrante - totalFaltante;
+        doc.text('Diferencia Total: $' + diferencia.toFixed(2), 40, y + 76);
+        doc.save('inventario_neto.pdf');
+        
+        var mensaje = 'INVENTARIO NETO\n';
+        mensaje += 'Fecha: ' + new Date().toLocaleDateString('es-MX') + '\n';
+        mensaje += 'Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A') + '\n';
+        mensaje += '────────────────────\n\n';
+        productos.forEach(function(p) {
+            var dif = (p.cantidad || 0) - (p.sistema || 0);
+            mensaje += '• ' + p.nombre + '\n';
+            mensaje += '  Fisico: ' + p.cantidad + ' | Sistema: ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + '\n';
+            mensaje += '  Costo: $' + (p.costo || 0).toFixed(2) + ' | Total: $' + ((p.cantidad || 0) * (p.costo || 0)).toFixed(2) + '\n\n';
+        });
+        mensaje += '────────────────────\n';
+        mensaje += 'Valor Fisico: $' + totalCosto.toFixed(2) + '\n';
+        mensaje += 'Valor Sistema: $' + totalSistema.toFixed(2) + '\n';
+        mensaje += 'Sobrante: +$' + totalSobrante.toFixed(2) + '\n';
+        mensaje += 'Faltante: -$' + totalFaltante.toFixed(2) + '\n';
+        mensaje += 'Diferencia: $' + diferencia.toFixed(2) + '\n';
+        mensaje += 'Tiendas NETO';
+        var url = 'https://wa.me/529987313575?text=' + encodeURIComponent(mensaje);
+        window.open(url, '_blank');
+        window.mostrarToast('📤 PDF y WhatsApp enviados', '📤');
+    } catch (e) {
+        console.error('Error generando PDF:', e);
+        window.mostrarToast('❌ Error al generar PDF', '❌');
+    }
+};
+
+// ============================================
+// MODAL DE EDICIÓN
+// ============================================
+window.cerrarModalEditar = function() {
+    document.getElementById('modalEditar').style.display = 'none';
+    window.indiceEditando = -1;
+};
+
+window.guardarModalEditar = function() {
+    var idx = window.indiceEditando;
+    var tipo = window.tipoEditando;
+    if (idx < 0) { window.cerrarModalEditar(); return; }
+    var cantidad = parseInt(document.getElementById('modalCantidadInput').value) || 0;
+    var costo = parseFloat(document.getElementById('modalCostoInput').value) || 0;
+    var sistema = parseInt(document.getElementById('modalSistemaInput').value) || 0;
+    if (tipo === 'ciclico' && window.datos.ciclicos[idx]) {
+        window.datos.ciclicos[idx].cantidad = cantidad;
+        window.datos.ciclicos[idx].costo = costo;
+        window.Storage.set('ciclicos', window.datos.ciclicos);
+        window.renderizarCiclicos();
+        window.mostrarToast('✅ Producto actualizado', '✅');
+    } else if (tipo === 'inventario' && window.datos.inventario[idx]) {
+        window.datos.inventario[idx].cantidad = cantidad;
+        window.datos.inventario[idx].costo = costo;
+        window.datos.inventario[idx].sistema = sistema;
+        window.Storage.set('inventario', window.datos.inventario);
+        window.renderizarInventario();
+        window.mostrarToast('✅ Producto actualizado', '✅');
+    } else if (tipo === 'aleatorio' && window.datos.aleatorios[idx]) {
+        window.datos.aleatorios[idx].cantidad = cantidad;
+        window.datos.aleatorios[idx].costo = costo;
+        window.datos.aleatorios[idx].sistema = sistema;
+        window.Storage.set('aleatorios', window.datos.aleatorios);
+        window.renderizarAleatorios();
+        window.mostrarToast('✅ Producto actualizado', '✅');
+    }
+    window.cerrarModalEditar();
+};
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') window.cerrarModalEditar();
+});
+
+// ============================================
+// PRE-PROCESAR IMAGEN
+// ============================================
+function preprocesarImagen(imageDataURL, callback) {
+    var img = new Image();
+    img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var scale = 2;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var data = imageData.data;
+        for (var i = 0; i < data.length; i += 4) {
+            var gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+            var newGray = ((gray / 255 - 0.5) * 1.5 + 0.5) * 255;
+            newGray = Math.max(0, Math.min(255, newGray));
+            data[i] = data[i+1] = data[i+2] = newGray;
+        }
+        ctx.putImageData(imageData, 0, 0);
+        callback(canvas.toDataURL('image/png'));
+    };
+    img.onerror = function() { callback(imageDataURL); };
+    img.src = imageDataURL;
+}
+
+// ============================================
+// EXTRAER PRODUCTOS DE TEXTO OCR
+// ============================================
+function extraerProductosDeTexto(texto) {
+    var productos = [];
+    var lineas = texto.split('\n');
+    var palabrasClave = [
+        'SALSA','COCA','LECHE','CREMA','GELAT','NATILLA','FLAN',
+        'MARGARINA','DETERGENTE','LIMPIADOR','SUAVIZANTE','ZOTE',
+        'BEBIBLE','PETIT','NUTRI','VICTORIA','PELON','LUCAS',
+        'CABRITO','CHOCOLATE','CARAMELO','ENCHILADO','HIELO',
+        'ROMA','BEST','PINOL','FABULOSO','DANONINO','DANETTE','LALA'
+    ];
+    for (var i = 0; i < lineas.length; i++) {
+        var linea = lineas[i].trim();
+        if (linea.length < 5) continue;
+        var codigoMatch = linea.match(/\b(\d{6,15})\b/);
+        if (codigoMatch) {
+            var codigo = codigoMatch[1];
+            var nombre = linea.replace(codigo, '').trim().replace(/^[\s\|:;]+/, '').replace(/[\s\|:;]+$/, '').replace(/\s{2,}/g, ' ');
+            var cantidadMatch = nombre.match(/(\d+(?:\.\d+)?)\s*$/);
+            var cantidad = 1;
+            if (cantidadMatch) { cantidad = parseFloat(cantidadMatch[1]) || 1; nombre = nombre.replace(/\s*\d+(?:\.\d+)?\s*$/, '').trim(); }
+            var esProducto = false;
+            for (var k = 0; k < palabrasClave.length; k++) {
+                if (nombre.toUpperCase().includes(palabrasClave[k])) { esProducto = true; break; }
+            }
+            if (nombre.length > 2 && codigo.length >= 6 && esProducto) {
+                var existe = productos.some(function(p) { return p.codigo === codigo; });
+                if (!existe) { productos.push({ codigo: codigo, nombre: nombre, cantidad: cantidad || 1, categoria: window.detectarCategoria(nombre) }); }
+            }
+        }
+    }
+    if (productos.length === 0) {
+        for (var j = 0; j < lineas.length; j++) {
+            var linea = lineas[j].trim();
+            if (linea.length < 5) continue;
+            for (var k = 0; k < palabrasClave.length; k++) {
+                if (linea.toUpperCase().includes(palabrasClave[k])) {
+                    var existe = productos.some(function(p) { return p.nombre === linea; });
+                    if (!existe && linea.length < 80) {
+                        productos.push({ codigo: 'OCR-' + Date.now() + '-' + j, nombre: linea, cantidad: 1, categoria: window.detectarCategoria(linea) });
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    return productos;
+}
+
+// ============================================
+// EXPORTAR BACKUP EN PDF
+// ============================================
+window.exportarDatosPDF = function() {
+    try {
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            window.mostrarToast('❌ Librería PDF no disponible. Recarga la página.', '❌');
+            return;
+        }
+        
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'pt', 'a4');
+        
+        doc.setFontSize(18);
+        doc.setTextColor(255, 165, 0);
+        doc.text('NETO INVENTARIO - BACKUP COMPLETO', 40, 50);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Fecha de exportacion: ' + new Date().toLocaleString('es-MX'), 40, 75);
+        doc.text('Usuario: ' + (window.usuarioActual ? window.usuarioActual.nombre : 'N/A'), 40, 90);
+        doc.text('Tienda: MIGUEL HIDALGO PUEBLA', 40, 105);
+        doc.text('Direccion: 16 DE SEPTIEMBRE O 9807, PUEBLA', 40, 120);
+        
+        var y = 150;
+        var inventario = window.datos.inventario || [];
+        var caducidades = window.datos.caducidades || [];
+        var promociones = window.datos.promociones || [];
+        var ciclicos = window.datos.ciclicos || [];
+        var aleatorios = window.datos.aleatorios || [];
+        
+        doc.setFontSize(14);
+        doc.setTextColor(255, 165, 0);
+        doc.text('INVENTARIO GENERAL (' + inventario.length + ' productos)', 40, y);
+        y += 18;
+        
+        if (inventario.length > 0) {
+            var totalInv = 0, totalSis = 0;
+            doc.setFontSize(8);
+            doc.setTextColor(50, 50, 50);
+            inventario.forEach(function(p) {
+                totalInv += (p.cantidad || 0) * (p.costo || 0);
+                totalSis += (p.sistema || 0) * (p.costo || 0);
+                var dif = (p.cantidad || 0) - (p.sistema || 0);
+                var texto = p.nombre + ' | Fisico: ' + p.cantidad + ' | Sistema: ' + (p.sistema || 0) + ' | Dif: ' + (dif >= 0 ? '+' : '') + dif + ' | Costo: $' + (p.costo || 0).toFixed(2);
+                doc.text(texto, 45, y);
+                y += 12;
+                if (y > 720) { doc.addPage(); y = 50; }
+            });
+            y += 5;
+            doc.setFontSize(10);
+            doc.setTextColor(255, 165, 0);
+            doc.text('Valor Fisico: $' + totalInv.toFixed(2) + ' | Valor Sistema: $' + totalSis.toFixed(2), 45, y);
+            y += 20;
+        } else {
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Sin productos en inventario', 45, y);
+            y += 20;
+        }
+        
+        doc.setFontSize(14);
+        doc.setTextColor(248, 113, 113);
+        doc.text('CADUCIDADES (' + caducidades.length + ' productos)', 40, y);
+        y += 18;
+        
+        if (caducidades.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(50, 50, 50);
+            caducidades.forEach(function(p) {
+                doc.text(p.nombre + ' | Caduca: ' + p.fecha + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
+                y += 12;
+                if (y > 720) { doc.addPage(); y = 50; }
+            });
+            y += 20;
+        } else {
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Sin productos con caducidad', 45, y);
+            y += 20;
+        }
+        
+        doc.setFontSize(14);
+        doc.setTextColor(251, 191, 36);
+        doc.text('PROMOCIONES (' + promociones.length + ')', 40, y);
+        y += 18;
+        
+        if (promociones.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(50, 50, 50);
+            promociones.forEach(function(p) {
+                doc.text(p.nombre + ' | ' + p.precio + ' | Existencia: ' + (p.existencia || 0), 45, y);
+                y += 12;
+                if (y > 720) { doc.addPage(); y = 50; }
+            });
+            y += 20;
+        } else {
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Sin promociones registradas', 45, y);
+            y += 20;
+        }
+        
+        doc.setFontSize(14);
+        doc.setTextColor(255, 165, 0);
+        doc.text('CONTEO CICLICO (' + ciclicos.length + ' productos)', 40, y);
+        y += 18;
+        
+        if (ciclicos.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(50, 50, 50);
+            ciclicos.forEach(function(p) {
+                doc.text(p.nombre + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
+                y += 12;
+                if (y > 720) { doc.addPage(); y = 50; }
+            });
+            y += 20;
+        } else {
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Sin productos en conteo ciclico', 45, y);
+            y += 20;
+        }
+        
+        doc.setFontSize(14);
+        doc.setTextColor(124, 58, 237);
+        doc.text('21 ALEATORIOS (' + aleatorios.length + '/21 productos)', 40, y);
+        y += 18;
+        
+        if (aleatorios.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(50, 50, 50);
+            aleatorios.forEach(function(p, i) {
+                doc.text((i+1) + '. ' + p.nombre + ' | Cant: ' + p.cantidad + ' | Costo: $' + (p.costo || 0).toFixed(2), 45, y);
+                y += 12;
+                if (y > 720) { doc.addPage(); y = 50; }
+            });
+            y += 20;
+        } else {
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Sin productos aleatorios', 45, y);
+            y += 20;
+        }
+        
+        var totalPaginas = doc.internal.getNumberOfPages();
+        for (var i = 1; i <= totalPaginas; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(180, 180, 180);
+            doc.text('NETO Inventario - Pagina ' + i + ' de ' + totalPaginas, 40, doc.internal.pageSize.height - 20);
+            doc.text('Backup generado: ' + new Date().toLocaleString('es-MX'), 40, doc.internal.pageSize.height - 10);
+        }
+        
+        doc.save('neto_backup_' + new Date().toISOString().slice(0,10) + '.pdf');
+        window.mostrarToast('📄 Backup PDF generado correctamente', '📄');
+        
+    } catch (e) {
+        console.error('Error generando PDF de backup:', e);
+        window.mostrarToast('❌ Error al generar PDF: ' + e.message, '❌');
+    }
+};
+
+// ============================================
+// IMPORTAR DATOS (JSON)
+// ============================================
+window.importarDatos = function() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    var datos = JSON.parse(ev.target.result);
+                    if (datos.inventario) window.datos.inventario = datos.inventario;
+                    if (datos.promociones) window.datos.promociones = datos.promociones;
+                    if (datos.caducidades) window.datos.caducidades = datos.caducidades;
+                    if (datos.ciclicos) window.datos.ciclicos = datos.ciclicos;
+                    if (datos.aleatorios) window.datos.aleatorios = datos.aleatorios;
+                    window.Storage.set('inventario', window.datos.inventario);
+                    window.Storage.set('promociones', window.datos.promociones);
+                    window.Storage.set('caducidades', window.datos.caducidades);
+                    window.Storage.set('ciclicos', window.datos.ciclicos);
+                    window.Storage.set('aleatorios', window.datos.aleatorios);
+                    window.renderizarInventario();
+                    window.renderizarPromociones();
+                    window.renderizarCaducidades();
+                    window.renderizarCiclicos();
+                    window.renderizarAleatorios();
+                    window.actualizarVisual();
+                    window.actualizarBadges();
+                    window.mostrarToast('✅ Datos importados', '✅');
+                } catch (error) {
+                    window.mostrarToast('❌ Archivo invalido', '❌');
+                }
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+};
+
+// ============================================
+// LIMPIAR DATOS
+// ============================================
+window.limpiarTodosLosDatos = function() {
+    if (confirm('⚠️ ¿Eliminar TODOS los datos?') && confirm('⚠️ Confirmacion final:')) {
+        window.datos.inventario = [];
+        window.datos.promociones = [];
+        window.datos.caducidades = [];
+        window.datos.ciclicos = [];
+        window.datos.aleatorios = [];
+        window.Storage.set('inventario', []);
+        window.Storage.set('promociones', []);
+        window.Storage.set('caducidades', []);
+        window.Storage.set('ciclicos', []);
+        window.Storage.set('aleatorios', []);
+        window.renderizarInventario();
+        window.renderizarPromociones();
+        window.renderizarCaducidades();
+        window.renderizarCiclicos();
+        window.renderizarAleatorios();
+        window.actualizarVisual();
+        window.actualizarBadges();
+        window.mostrarToast('🗑️ Todos los datos eliminados', '🗑️');
+    }
+};
+
+// ============================================
+// ACTUALIZACIÓN DE BADGES
+// ============================================
+window.actualizarBadges = function() {
+    document.getElementById('badge-promo').textContent = (window.datos.promociones || []).length;
+    document.getElementById('badge-cad').textContent = (window.datos.caducidades || []).length;
+    document.getElementById('badge-inv').textContent = (window.datos.inventario || []).length;
+};
+
+// ============================================
+// FUNCIONES DE VISUALIZACIÓN
+// ============================================
+window.actualizarVisual = function() {
+    var inv = window.datos.inventario || [];
+    var cad = window.datos.caducidades || [];
+    var prom = window.datos.promociones || [];
+    var ale = window.datos.aleatorios || [];
+    var cic = window.datos.ciclicos || [];
+    document.getElementById('vis-total-productos').textContent = inv.length;
+    document.getElementById('vis-caducando').textContent = cad.length;
+    document.getElementById('vis-promociones').textContent = prom.length;
+    document.getElementById('vis-aleatorios').textContent = ale.length;
+    document.getElementById('vis-ciclicos').textContent = cic.length;
+    var totalValor = 0;
+    inv.forEach(function(p) { totalValor += (p.cantidad || 0) * (p.costo || 0); });
+    document.getElementById('vis-total-inventario').textContent = '$' + totalValor.toFixed(2);
+    var container = document.getElementById('vis-productos-recientes');
+    var recientes = inv.slice(-5).reverse();
+    if (recientes.length === 0) {
+        container.innerHTML = '<p class="empty-message">No hay productos registrados</p>';
+        return;
+    }
+    var html = '';
+    recientes.forEach(function(p) {
+        html += '<div class="list-item">';
+        html += '  <div class="item-info">';
+        html += '    <div class="item-name">' + p.nombre + '</div>';
+        html += '    <div class="item-detail">📦 ' + p.cantidad + ' | 💰 $' + (p.costo || 0).toFixed(2) + ' | 🏷️ ' + (p.categoria || 'Sin categoría') + '</div>';
+        html += '  </div>';
+        html += '</div>';
+    });
+    container.innerHTML = html;
+};
+
+// ============================================
+// RECORDATORIOS
+// ============================================
+function verificarRecordatorios() {
+    var ahora = new Date();
+    var horas = ahora.getHours();
+    var minutos = ahora.getMinutes();
+    var container = document.getElementById('recordatorio-container');
+    var esHorario = (horas === 3 && minutos >= 20 && minutos <= 30) || (horas === 22 && minutos >= 20 && minutos <= 30);
+    if (esHorario) {
+        var mensaje = '⏰ No olvides cerrar sesión o checar tu salida en el sistema de la sucursal.';
+        container.innerHTML = '<div class="recordatorio">' +
+            '<span class="icono">⏰</span>' +
+            '<span class="mensaje">' + mensaje + '</span>' +
+            '<button class="btn-cerrar" onclick="document.getElementById(\'recordatorio-container\').innerHTML=\'\'">✕</button>' +
+            '</div>';
+    }
+}
+
+// ============================================
+// INSTALACIÓN DE APP
+// ============================================
+window.instalarApp = function() {
+    window.mostrarToast('📱 Abre Chrome → "Instalar app"', '📱');
+};
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+window.initApp = function() {
+    console.log('🚀 Iniciando NETO Inventario');
+    window.datos.inventario = window.Storage.get('inventario', []);
+    window.datos.promociones = window.Storage.get('promociones', []);
+    window.datos.caducidades = window.Storage.get('caducidades', []);
+    window.datos.ciclicos = window.Storage.get('ciclicos', []);
+    window.datos.aleatorios = window.Storage.get('aleatorios', []);
+    window.renderizarPromociones();
+    window.renderizarCaducidades();
+    window.renderizarCiclicos();
+    window.renderizarInventario();
+    window.renderizarAleatorios();
+    window.actualizarBadges();
+    window.actualizarVisual();
+    window.showScreen('home');
+    setInterval(verificarRecordatorios, 60000);
+    verificarRecordatorios();
+    
+    var camposCodigo = ['inv-codigo', 'cad-codigo', 'ciclico-codigo'];
+    camposCodigo.forEach(function(id) {
+        var input = document.getElementById(id);
+        if (input) {
+            input.removeAttribute('readonly');
+            input.style.cursor = 'text';
+            input.style.color = '#ffffff';
+            if (id !== 'ciclico-codigo') {
+                input.placeholder = 'Código manual o escaneado';
+            }
+        }
+    });
+    
+    console.log('✅ App inicializada correctamente');
+    console.log('📷 Sistema de escaneo mejorado activo');
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.usuarioActual) window.initApp();
+});
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    if (window.usuarioActual) window.initApp();
+}
 </script>
+
 </body>
 </html>
